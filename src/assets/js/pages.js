@@ -87,7 +87,7 @@
     const action = item.open_seat ? '<a class="text-link" href="join?interest=leadership">Express interest →</a>' : (item.email ? `<a class="text-link" href="mailto:${esc(item.email)}">Email →</a>` : '');
     return `<article class="card leader-card" data-filter-value="${item.open_seat ? 'open' : 'current'}">
       <div class="leader-card__avatar">${avatar}</div>
-      <div><h3>${esc(item.name || 'Open position')}</h3><p class="leader-card__role">${esc(item.role)}</p><p>${esc(item.bio || '')}</p>${item.expected_time ? `<p><strong>Expected time:</strong> ${esc(item.expected_time)}</p>` : ''}${action}</div>
+      <div><h3>${esc(item.name || 'Open position')}</h3><p class="leader-card__role">${esc(item.role)}</p><p>${esc(item.bio || '')}</p>${action}</div>
     </article>`;
   }
 

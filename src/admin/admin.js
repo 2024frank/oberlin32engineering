@@ -86,7 +86,7 @@
     leaders: {
       label: 'Leadership', singular: 'leadership record', titleField: 'name', subtitleField: 'role', imageField: 'photo_url', order: 'sort_order.asc,name.asc',
       description: 'Show named organizers and specific open roles. Do not publish placeholder people.',
-      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('role','Role',{required:true}), text('term','Term'), text('class_year','Class year'), text('major','Major or pathway'), area('bio','Biography or role description',{rows:5}), text('expected_time','Expected time'), image('photo_url','Portrait'), text('linkedin_url','LinkedIn URL'), text('email','Email'), check('current','Current'), check('advisor','Advisor'), check('open_seat','Open role'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('role','Role',{required:true}), text('term','Term'), text('class_year','Class year'), text('major','Major or pathway'), area('bio','Biography or role description',{rows:5}), image('photo_url','Portrait'), text('linkedin_url','LinkedIn URL'), text('email','Email'), check('current','Current'), check('advisor','Advisor'), check('open_seat','Open role'), check('published','Published'), number('sort_order','Sort order',{min:0})]
     },
     resources: {
       label: 'Resources', singular: 'resource', titleField: 'title', subtitleField: 'category', order: 'pinned.desc,sort_order.asc,title.asc',

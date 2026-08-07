@@ -206,7 +206,7 @@ p { color: var(--ink-650); }
 .page-hero__grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(18rem, .75fr); align-items: end; gap: clamp(2rem, 6vw, 6rem); }
 .page-hero h1 { max-width: 13ch; margin-bottom: 1.25rem; }
 .page-hero__lead { max-width: 42rem; margin-bottom: 0; font-size: clamp(1.08rem, 2vw, 1.3rem); }
-.page-hero__aside { padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgba(255, 255, 255, .82); box-shadow: var(--shadow-sm); }
+.page-hero__aside { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .page-hero__aside p:last-child { margin-bottom: 0; }
 .page-hero__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
 .section { padding: clamp(4rem, 8vw, 7rem) 0; }
@@ -242,11 +242,11 @@ p { color: var(--ink-650); }
 .home-hero__proof { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin-top: 1.4rem; color: var(--ink-650); font-size: .86rem; font-weight: 650; }
 .home-hero__proof span { display: inline-flex; align-items: center; gap: .45rem; }
 .home-hero__proof span::before { content: "✓"; color: var(--success); font-weight: 900; }
-.hero-card { padding: 1rem; border: 1px solid rgba(123, 18, 48, .18); border-radius: var(--radius-lg); background: white; box-shadow: var(--shadow-md); }
+.hero-card { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .hero-card figure { margin: 0; }
 .hero-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 0; }
-.hero-card figcaption { display: flex; justify-content: space-between; gap: 1rem; padding: .85rem .25rem .15rem; color: var(--ink-500); font-size: .75rem; }
-.hero-card__status { margin-top: .6rem; padding: 1rem; border-radius: var(--radius-md); background: var(--paper-soft); }
+.hero-card figcaption { display: flex; justify-content: space-between; gap: 1rem; padding: .85rem 0 .15rem; color: var(--ink-500); font-size: .75rem; }
+.hero-card__status { margin-top: .9rem; padding: 0; border-radius: 0; background: none; }
 .hero-card__status strong { display: block; margin-bottom: .25rem; }
 .hero-card__status p { margin: 0; font-size: .9rem; }
 .pathway-strip { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; background: white; }
