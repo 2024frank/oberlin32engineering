@@ -11,6 +11,7 @@ import hashlib
 import html
 import json
 import os
+import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -303,6 +304,25 @@ self.addEventListener('fetch', (event) => {{
 """
 
 
+def stamp_admin_assets(revision: str) -> None:
+    """Version the admin's own CSS/JS URLs.
+
+    The admin is copied verbatim rather than templated, so its <link>/<script>
+    tags carried no cache key. Browsers held a stale admin.css across deploys
+    and kept rendering the previous theme even after a successful build.
+    """
+    index = OUT / "admin" / "index.html"
+    if not index.exists():
+        return
+    markup = index.read_text(encoding="utf-8")
+    markup = re.sub(
+        r'(href|src)="(admin\.(?:css|js))(?:\?v=[^"]*)?"',
+        lambda m: f'{m.group(1)}="{m.group(2)}?v={revision}"',
+        markup,
+    )
+    index.write_text(markup, encoding="utf-8")
+
+
 def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -313,6 +333,7 @@ def build() -> None:
     copy_tree(SRC / "assets", OUT / "assets")
     copy_tree(ROOT / "content", OUT / "content")
     copy_tree(SRC / "admin", OUT / "admin")
+    stamp_admin_assets(revision)
 
     write(OUT / "assets" / "js" / "runtime-config.js", runtime_config())
     write(OUT / "site.webmanifest", generate_manifest())
