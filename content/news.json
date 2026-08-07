@@ -1,0 +1,39 @@
+[
+  {
+    "id": "society-launch",
+    "slug": "building-a-home-for-engineering-at-oberlin",
+    "title": "Building a Home for Engineering at Oberlin",
+    "excerpt": "The founding team is bringing students across departments and class years toward one community built around connection, preparation, and action.",
+    "body": "Oberlin students interested in engineering often move through similar courses and decisions without a consistent place to meet one another. The Oberlin 3-2 Engineering Society is being built to become that place through shared knowledge, mentorship, projects, panels, and opportunity.",
+    "author": "Oberlin 3-2 Engineering Society",
+    "published_at": "2026-08-06",
+    "cover_url": "",
+    "featured": true,
+    "published": true
+  },
+  {
+    "id": "project-board-open",
+    "slug": "the-project-board-is-open",
+    "title": "Starter Project Briefs Are Open for Review",
+    "excerpt": "Six interdisciplinary starting points are available for founding members to challenge, reshape, lead, or replace with stronger ideas.",
+    "body": "The project board is not a list of active assignments. It is a starting point for discussion and team formation. A concept becomes an active project only after students confirm a lead, scope, permissions, support, safety needs, and an achievable next step.",
+    "author": "Projects Team",
+    "published_at": "2026-08-06",
+    "cover_url": "",
+    "featured": true,
+    "published": true
+  },
+  {
+    "id": "engineering-challenge-announced",
+    "slug": "introducing-the-oberlin-engineering-challenge",
+    "title": "A future Engineering Challenge is being explored",
+    "excerpt": "A possible future public stage where teams could design, build, test, and explain engineering work that matters.",
+    "body": "The society is exploring a future Oberlin Engineering Challenge as a possible public showcase for interdisciplinary student work. The format, date, venue, eligibility, judges, awards, and resources are not yet confirmed. Interested students can help evaluate and design the concept.",
+    "author": "Organizing Team",
+    "published_at": "2026-08-06",
+    "cover_url": "",
+    "featured": true,
+    "published": true,
+    "summary": "Founding members can help decide whether a public build challenge is useful, feasible, and responsible."
+  }
+]

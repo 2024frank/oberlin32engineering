@@ -1,5 +1,15 @@
-# Security
+# Security policy
 
-This is a static website and should never contain API keys, passwords, access tokens, private student data, or unredacted form exports.
+This repository must never contain access tokens, passwords, database passwords, private keys, service-level API keys, private form exports, or student contact lists.
 
-To report a security or privacy issue, contact the founding team privately rather than opening a public GitHub issue. Until a society email address is configured, use the founding-member form and state that the message concerns website security.
+## Reporting a problem
+
+Report a security or privacy concern privately to the founding team through the contact method on the public website. Do not open a public issue containing credentials or personal information.
+
+## Supported version
+
+The current `main` branch is the supported version.
+
+## Administrator system
+
+The optional administrator interface uses Supabase authentication and row-level security. Only the public publishable key may be provided to the browser. Never commit or expose a Supabase service secret.

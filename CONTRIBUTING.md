@@ -1,25 +1,12 @@
 # Contributing
 
-Thanks for helping improve the Oberlin 3-2 Engineering Society website.
+Thank you for helping build a durable engineering community at Oberlin.
 
-## Before editing
+1. Create a branch for the change.
+2. Update source files in `src/` and structured content in `content/`.
+3. Run `python scripts/build.py`.
+4. Run `python scripts/check_site.py`.
+5. Confirm that planned activities are not described as confirmed unless the founding team has approved them.
+6. Open a pull request explaining the change and how it was tested.
 
-1. Create a branch from `main`.
-2. Keep factual claims about the 3-2 program tied to official Oberlin sources.
-3. Label proposed projects, events, and funding as proposed until they are approved.
-4. Do not publish student names, emails, phone numbers, or photographs without permission.
-5. Preserve keyboard navigation, visible focus states, semantic headings, and reduced-motion support.
-
-## Local preview
-
-From the repository root:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
-
-## Pull requests
-
-Describe what changed, why it changed, and how you tested desktop and mobile layouts. Attach screenshots for visual changes.
+Do not commit personal student information, credentials, form response exports, or copyrighted media without permission.

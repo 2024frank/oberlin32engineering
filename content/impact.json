@@ -1,0 +1,62 @@
+{
+  "founded": "2026",
+  "current_term": "2026–27",
+  "operating_stage": "Founding year",
+  "public_metrics": [
+    {
+      "value": "01",
+      "label": "community being built",
+      "note": "Across departments, class years, and engineering interests"
+    },
+    {
+      "value": "06",
+      "label": "initial project briefs",
+      "note": "Open to challenge, lead, and reshape"
+    },
+    {
+      "value": "04",
+      "label": "partner engineering schools",
+      "note": "Referenced through official Oberlin resources"
+    },
+    {
+      "value": "01",
+      "label": "future challenge concept",
+      "note": "Format and date not yet confirmed"
+    }
+  ],
+  "milestones": [
+    {
+      "period": "Summer 2026",
+      "title": "Organizing phase",
+      "description": "Mission, identity, founding recruitment, digital systems, and initial project concepts are being prepared.",
+      "status": "active"
+    },
+    {
+      "period": "Fall 2026",
+      "title": "Campus launch",
+      "description": "Form the founding board, table, hold the first general meeting, open the resource hub, and evaluate project teams and programs.",
+      "status": "planned"
+    },
+    {
+      "period": "2026–27",
+      "title": "Build and learn",
+      "description": "Develop only the projects and programs that have clear teams, responsible scope, appropriate support, and achievable next steps.",
+      "status": "planned"
+    },
+    {
+      "period": "Future phase",
+      "title": "Public demonstration concept",
+      "description": "Consider a project showcase or engineering challenge after teams, resources, safety, space, and partners are confirmed.",
+      "status": "concept"
+    }
+  ],
+  "reports": [
+    {
+      "year": "2026–27",
+      "title": "Founding Year Annual Report",
+      "status": "Planned for the end of the founding year",
+      "url": "",
+      "published": true
+    }
+  ]
+}

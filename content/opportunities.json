@@ -1,0 +1,54 @@
+[
+  {
+    "id": "founding-board",
+    "title": "Join the Founding Team",
+    "organization": "Oberlin 3-2 Engineering Society",
+    "type": "Leadership",
+    "description": "Help establish the systems, programs, identity, and culture that future boards will inherit.",
+    "deadline_label": "Applications reviewed on a rolling basis",
+    "deadline": "",
+    "location": "Oberlin College",
+    "url": "https://forms.gle/6pPoj3hqQMJADLjZ6",
+    "featured": true,
+    "published": true
+  },
+  {
+    "id": "project-leads",
+    "title": "Become a Project Lead",
+    "organization": "Oberlin 3-2 Engineering Society",
+    "type": "Projects",
+    "description": "Choose a proposed brief, test its feasibility, sharpen the scope, recruit collaborators, and define a responsible first milestone.",
+    "deadline_label": "Fall 2026 team formation",
+    "deadline": "",
+    "location": "Hybrid project work",
+    "url": "projects.html",
+    "featured": true,
+    "published": true
+  },
+  {
+    "id": "competition-committee",
+    "title": "Help Evaluate the Engineering Challenge Concept",
+    "organization": "Oberlin 3-2 Engineering Society",
+    "type": "Competition",
+    "description": "Join the group deciding whether a future public build challenge is useful and feasible, and help draft possible tracks, review standards, safety needs, logistics, and resource requirements.",
+    "deadline_label": "Exploratory group forming",
+    "deadline": "",
+    "location": "Oberlin College",
+    "url": "competition.html",
+    "featured": true,
+    "published": true
+  },
+  {
+    "id": "panel-volunteers",
+    "title": "Programs and Panel Team",
+    "organization": "Oberlin 3-2 Engineering Society",
+    "type": "Programs",
+    "description": "Help identify speakers, contact alumni, plan useful questions, and run high-quality technical and career events.",
+    "deadline_label": "Open throughout the year",
+    "deadline": "",
+    "location": "Oberlin College",
+    "url": "join.html",
+    "featured": false,
+    "published": true
+  }
+]

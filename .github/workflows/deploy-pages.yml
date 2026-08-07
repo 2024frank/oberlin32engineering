@@ -1,4 +1,4 @@
-name: Build and deploy website to GitHub Pages
+name: Build, validate, and deploy website
 
 on:
   push:
@@ -11,11 +11,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: github-pages
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -29,19 +29,32 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Build static website
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build static site
+        env:
+          SITE_ENV: production
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          SUPABASE_STORAGE_BUCKET: ${{ vars.SUPABASE_STORAGE_BUCKET }}
         run: python scripts/build.py
 
-      - name: Run site checks
-        run: python scripts/check_site.py
+      - name: Validate release
+        run: |
+          python scripts/check_site.py
+          for file in site/assets/js/*.js site/admin/*.js; do node --check "$file"; done
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload generated website
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: "site"
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment

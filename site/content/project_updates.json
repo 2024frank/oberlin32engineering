@@ -1,0 +1,46 @@
+[
+  {
+    "id": "project-board-published",
+    "project_id": "student-tools",
+    "title": "Starter project board published",
+    "summary": "Six interdisciplinary concepts are available for founding members to review, reshape, lead, or replace.",
+    "body": "These are proposed briefs, not completed teams or funded commitments. A concept becomes active only after members confirm a responsible scope, leadership, permissions, safety needs, available support, and a realistic first milestone.",
+    "milestone": "Open review",
+    "published_at": "2026-08-06",
+    "image_url": "",
+    "published": true
+  },
+  {
+    "id": "environmental-sensing-brief",
+    "project_id": "environmental-sensing",
+    "title": "Environmental sensing brief opened for interest",
+    "summary": "Students interested in sensors, embedded systems, data, design, or field research can help decide whether this should become a first-year build.",
+    "body": "The first step is not buying hardware. It is identifying a useful measurement problem, intended users, site permissions, maintenance expectations, safety requirements, and the smallest test that would produce meaningful evidence.",
+    "milestone": "Concept review",
+    "published_at": "2026-08-06",
+    "image_url": "",
+    "published": true
+  },
+  {
+    "id": "autonomous-system-interest",
+    "project_id": "autonomous-systems",
+    "title": "Autonomous systems concept seeks a potential lead",
+    "summary": "A student lead could help choose one focused task and evaluate whether a small team can build and test it responsibly.",
+    "body": "Possible work includes mechanics, sensing, embedded control, software, and testing. The concept remains open until a lead, workspace, safety plan, mentorship needs, and achievable scope are identified.",
+    "milestone": "Leadership interest",
+    "published_at": "2026-08-06",
+    "image_url": "",
+    "published": true
+  },
+  {
+    "id": "assistive-design-safeguard",
+    "project_id": "assistive-design",
+    "title": "Assistive design concept starts with a partner-first safeguard",
+    "summary": "No device should be designed until a willing person or organization helps define the need and meaning of success.",
+    "body": "Any future team should begin with listening, consent, shared problem definition, accessibility, realistic testing, and responsible ownership. This concept remains inactive until an appropriate partner and process are confirmed.",
+    "milestone": "Safeguard defined",
+    "published_at": "2026-08-06",
+    "image_url": "",
+    "published": true
+  }
+]

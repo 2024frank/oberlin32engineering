@@ -1,0 +1,66 @@
+[
+  {
+    "id": "caltech",
+    "name": "California Institute of Technology",
+    "short_name": "Caltech",
+    "location": "Pasadena, California",
+    "region_code": "CA",
+    "url": "https://www.caltech.edu/",
+    "questions": [
+      "Current transfer pathway and eligibility",
+      "Engineering field fit",
+      "Course sequencing",
+      "Financial aid and housing"
+    ],
+    "published": true,
+    "sort_order": 1
+  },
+  {
+    "id": "case-western",
+    "name": "Case Western Reserve University",
+    "short_name": "Case Western Reserve",
+    "location": "Cleveland, Ohio",
+    "region_code": "OH",
+    "url": "https://case.edu/",
+    "questions": [
+      "Current transfer pathway and eligibility",
+      "Engineering field fit",
+      "Course sequencing",
+      "Financial aid and housing"
+    ],
+    "published": true,
+    "sort_order": 2
+  },
+  {
+    "id": "columbia",
+    "name": "Columbia University",
+    "short_name": "Columbia University",
+    "location": "New York, New York",
+    "region_code": "NY",
+    "url": "https://www.columbia.edu/",
+    "questions": [
+      "Current transfer pathway and eligibility",
+      "Engineering field fit",
+      "Course sequencing",
+      "Financial aid and housing"
+    ],
+    "published": true,
+    "sort_order": 3
+  },
+  {
+    "id": "washu",
+    "name": "Washington University in St. Louis",
+    "short_name": "Washington University",
+    "location": "St. Louis, Missouri",
+    "region_code": "MO",
+    "url": "https://wustl.edu/",
+    "questions": [
+      "Current transfer pathway and eligibility",
+      "Engineering field fit",
+      "Course sequencing",
+      "Financial aid and housing"
+    ],
+    "published": true,
+    "sort_order": 4
+  }
+]

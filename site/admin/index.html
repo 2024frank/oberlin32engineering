@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090c12">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Secure content and operations dashboard for the Oberlin 3-2 Engineering Society.">
+  <title>Society Command Center · Oberlin 3-2 Engineering Society</title>
+  <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <script src="../assets/js/runtime-config.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <div class="admin-noise" aria-hidden="true"></div>
+
+  <main class="auth-screen" data-auth-screen>
+    <section class="auth-brand">
+      <a href="../index.html" class="admin-brand" aria-label="Return to public website">
+        <img src="../assets/images/logo-mark.svg" alt="" width="64" height="64">
+        <span><strong>OBERLIN <b>3-2</b></strong><small>ENGINEERING SOCIETY</small></span>
+      </a>
+      <div class="auth-copy">
+        <span class="admin-kicker">SOCIETY OPERATIONS</span>
+        <h1>The organization’s<br><em>command center.</em></h1>
+        <p>Publish projects, update the organizing team, manage events and resources, review submissions, develop future concepts, and keep the public website current.</p>
+      </div>
+      <div class="auth-systems" aria-label="Admin capabilities">
+        <span>PROJECTS</span><i></i><span>LEADERSHIP</span><i></i><span>PROGRAMS</span><i></i><span>PUBLISHING</span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-card" data-login-card>
+        <div class="auth-card-head">
+          <span class="system-light"><i></i> SECURE ACCESS</span>
+          <span>ADMIN / EDITOR</span>
+        </div>
+        <div data-configured-login>
+          <h2>Sign in</h2>
+          <p>Use the email account approved in the society’s administrator directory.</p>
+          <form class="auth-form" data-login-form>
+            <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
+            <label>Password<input type="password" name="password" autocomplete="current-password" required placeholder="••••••••"></label>
+            <button class="admin-button primary" type="submit"><span>Enter command center</span><b>→</b></button>
+            <p class="form-message" data-auth-message aria-live="polite"></p>
+          </form>
+          <button class="text-button" type="button" data-reset-password>Send password reset email</button>
+        </div>
+        <div class="setup-state" data-setup-state hidden>
+          <span class="setup-code">CONFIG_REQUIRED</span>
+          <h2>Connect the content system</h2>
+          <p>The public site is ready and uses its built-in content. To enable secure editing, uploads, and submissions, connect a Supabase project.</p>
+          <ol>
+            <li>Run <code>database/schema.sql</code> in Supabase.</li>
+            <li>Add the project URL and publishable key to GitHub repository variables.</li>
+            <li>Create an admin user and add their ID to <code>profiles</code>.</li>
+          </ol>
+          <a class="admin-button primary" href="https://github.com/2024frank/oberlin32engineering/blob/main/docs/ADMIN_SETUP.md" target="_blank" rel="noopener"><span>Open setup guide</span><b>↗</b></a>
+          <a class="text-button link" href="../index.html">Return to public website</a>
+        </div>
+        <p class="auth-security">Protected by Supabase Auth and row-level security. Public visitors cannot access unpublished records or administrative actions.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="admin-app" data-admin-app hidden>
+    <aside class="admin-sidebar" data-sidebar>
+      <div class="sidebar-head">
+        <a href="../index.html" class="admin-brand compact" aria-label="Public website">
+          <img src="../assets/images/logo-mark.svg" alt="" width="44" height="44">
+          <span><strong>O32</strong><small>COMMAND</small></span>
+        </a>
+        <button class="sidebar-close" type="button" data-sidebar-close aria-label="Close navigation">×</button>
+      </div>
+
+      <nav class="admin-nav" aria-label="Admin sections">
+        <span class="nav-section-label">OVERVIEW</span>
+        <button type="button" class="active" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</button>
+        <button type="button" data-view="submissions"><span class="nav-icon">↳</span>Submissions <b data-submission-count>0</b></button>
+        <span class="nav-section-label">PUBLISH</span>
+        <button type="button" data-view="projects"><span class="nav-icon">◇</span>Projects</button>
+        <button type="button" data-view="project_updates"><span class="nav-icon">↻</span>Project updates</button>
+        <button type="button" data-view="leaders"><span class="nav-icon">◎</span>Leadership</button>
+        <button type="button" data-view="events"><span class="nav-icon">□</span>Events</button>
+        <button type="button" data-view="news_posts"><span class="nav-icon">≋</span>News</button>
+        <button type="button" data-view="resources"><span class="nav-icon">▤</span>Resources</button>
+        <button type="button" data-view="opportunities"><span class="nav-icon">↗</span>Opportunities</button>
+        <span class="nav-section-label">FLAGSHIP + ARCHIVE</span>
+        <button type="button" data-view="competition_editions"><span class="nav-icon">✦</span>Engineering Challenge</button>
+        <button type="button" data-view="sponsors"><span class="nav-icon">⬡</span>Partners + sponsors</button>
+        <button type="button" data-view="partner_schools"><span class="nav-icon">⌁</span>3-2 partner schools</button>
+        <button type="button" data-view="impact"><span class="nav-icon">◫</span>Impact + reports</button>
+        <button type="button" data-view="documents"><span class="nav-icon">▧</span>Documents</button>
+        <span class="nav-section-label">SYSTEM</span>
+        <button type="button" data-view="site_settings"><span class="nav-icon">⚙</span>Site settings</button>
+        <button type="button" data-view="media"><span class="nav-icon">▣</span>Media library</button>
+        <button type="button" data-view="content_audit"><span class="nav-icon">≡</span>Change history</button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="user-avatar" data-user-initials>KA</div>
+        <div><strong data-user-name>Administrator</strong><small data-user-role>admin</small></div>
+        <button type="button" data-logout aria-label="Sign out">↪</button>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="sidebar-open" type="button" data-sidebar-open aria-label="Open navigation">☰</button>
+        <div>
+          <span class="admin-breadcrumb">O32 / <b data-breadcrumb>OVERVIEW</b></span>
+          <h1 data-view-title>Command overview</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="admin-button ghost" type="button" data-export-backup><span>Export backup</span><b>↓</b></button>
+          <a class="admin-button ghost" href="../index.html" target="_blank" rel="noopener"><span>View website</span><b>↗</b></a>
+          <button class="admin-button primary" type="button" data-primary-action><span>Create new</span><b>＋</b></button>
+        </div>
+      </header>
+
+      <section class="admin-content" data-admin-content>
+        <div class="admin-loading"><span></span><p>Loading society systems…</p></div>
+      </section>
+    </div>
+  </div>
+
+  <dialog class="editor-dialog" data-editor-dialog>
+    <form method="dialog" class="editor-shell" data-editor-form>
+      <header class="editor-head">
+        <div><span class="admin-kicker" data-editor-kicker>CONTENT RECORD</span><h2 data-editor-title>Create record</h2></div>
+        <button type="button" class="dialog-close" data-editor-close aria-label="Close">×</button>
+      </header>
+      <div class="editor-body" data-editor-fields></div>
+      <footer class="editor-actions">
+        <button type="button" class="admin-button ghost danger" data-delete-record hidden><span>Delete</span></button>
+        <span class="editor-spacer"></span>
+        <button type="button" class="admin-button ghost" data-editor-cancel><span>Cancel</span></button>
+        <button type="submit" class="admin-button primary"><span>Save changes</span><b>✓</b></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="confirm-dialog" data-confirm-dialog>
+    <div class="confirm-card">
+      <span class="admin-kicker">CONFIRM ACTION</span>
+      <h2 data-confirm-title>Delete this record?</h2>
+      <p data-confirm-copy>This cannot be undone.</p>
+      <div><button class="admin-button ghost" type="button" data-confirm-cancel>Cancel</button><button class="admin-button primary danger-fill" type="button" data-confirm-accept>Delete permanently</button></div>
+    </div>
+  </dialog>
+
+  <div class="admin-toast-region" data-admin-toasts aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

@@ -1,49 +1,25 @@
 <p align="center">
-  <img src="assets/images/logo-mark.svg" alt="Oberlin 3-2 Engineering Society" width="150">
+  <img src="src/assets/images/logo-mark.svg" alt="Oberlin 3-2 Engineering Society" width="150">
 </p>
 
 <h1 align="center">Oberlin 3-2 Engineering Society</h1>
-
 <p align="center"><strong>Connect. Prepare. Build.</strong></p>
 
-<p align="center">
-  The source for the Oberlin 3-2 Engineering Society website, a student-built home for current and prospective 3-2 students and anyone interested in engineering at Oberlin.
-</p>
+A custom, responsive website for Oberlin’s student-led engineering community. It connects current and prospective 3-2 students with project teams, academic planning resources, leadership opportunities, panels, mentorship, events, plus a clearly labeled future engineering challenge concept.
 
-## Website
+## What is included
 
-The site is a custom static build with no framework or package dependency. It is designed to load quickly, work well on phones, remain easy for future student leaders to maintain, and deploy automatically through GitHub Pages.
-
-### Included pages
-
-- Home
-- About
-- The 3-2 pathway
-- Projects
-- Events
-- Resources
-- Join
-- Contact
-- Privacy
-- Custom 404 page
-
-### Included functionality
-
-- Responsive desktop and mobile navigation
-- Accessible keyboard navigation and focus states
-- Reduced-motion support
-- Searchable and filterable resources
-- Filterable project ideas
-- Expandable FAQ sections
-- Google Form join flow and QR code
-- Instagram, email, and recruitment calls to action
-- Search-engine metadata, social sharing image, sitemap, robots file, and web manifest
-- Automated GitHub Pages build, validation, and deployment
-- Custom-domain configuration for `oberlin32engineeringsociety.com`
+- Fifteen public pages: home, about, 3-2 pathway, projects, competition, leadership, events, opportunities, resources, impact, join, contact, media kit, privacy, and a custom 404 page
+- Searchable project, event, opportunity, and resource content
+- Responsive navigation, global search, filters, dialogs, forms, motion, reduced-motion support, and keyboard focus states
+- Versioned JSON content fallbacks so the public site works without a database
+- Optional Supabase content system with authentication, row-level security, media storage, public submissions, and an administrative command center; the public site remains fully functional without it
+- PWA manifest, service worker, icons, Open Graph art, structured data, sitemap, robots file, and custom-domain configuration
+- Automated build, validation, and GitHub Pages deployment
 
 ## Local development
 
-The only requirement is Python 3.10 or newer.
+Requirements: Python 3.10 or newer and Node.js 18 or newer. The release validator uses Node.js to syntax-check every deployable JavaScript file.
 
 ```bash
 python scripts/build.py
@@ -51,53 +27,50 @@ python scripts/check_site.py
 python -m http.server 8000 --directory site
 ```
 
-Then open `http://localhost:8000` in a browser.
+Open `http://localhost:8000`.
 
-## Updating content
+## Repository structure
 
-Most routine updates do not require changing page templates.
-
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
-| `content/site.json` | Club name, domain, email, social accounts, advisor, and global details |
-| `content/events.json` | Upcoming events and launch milestones |
-| `content/projects.json` | Project tracks and project ideas |
-| `content/resources.json` | Academic, career, building, and club resources |
-| `scripts/build.py` | Page content, templates, navigation, and generated files |
-| `assets/css/styles.css` | Visual design and responsive layout |
-| `assets/js/main.js` | Navigation, filtering, FAQ, animation, and interactions |
+| `src/pages/` | Public page bodies |
+| `src/partials/` | Shared navigation and footer |
+| `src/templates/` | Base document template |
+| `src/assets/` | CSS, JavaScript, logo, icons, and social artwork |
+| `src/admin/` | Optional content-management interface |
+| `content/` | Versioned public content and offline fallbacks |
+| `database/` | Supabase schema and starter content |
+| `scripts/build.py` | Produces the deployable `site/` directory |
+| `scripts/check_site.py` | Validates content, links, HTML, JavaScript, security, and release files |
+| `site/` | Generated GitHub Pages artifact |
 
-After an edit, rebuild and validate:
+## Routine content updates
+
+Most updates can be made in `content/*.json`. After editing:
 
 ```bash
 python scripts/build.py
 python scripts/check_site.py
 ```
 
-## Deployment
+The JSON files remain the public fallback even after Supabase is connected. See `docs/CONTENT_GUIDE.md` for field-level guidance.
 
-Every push to `main` runs `.github/workflows/deploy-pages.yml`. The workflow:
+## Administration
 
-1. Checks out the repository.
-2. Builds the site from the content files.
-3. Runs automated site checks.
-4. Uploads the generated `site/` directory.
-5. Publishes it with GitHub Pages.
+The public site is complete without Supabase. Connecting Supabase enables the secure `/admin/` command center and database-backed submissions. Follow `docs/ADMIN_SETUP.md`; never place a service secret, database password, or private student information in this repository.
 
-See [`docs/DOMAIN_SETUP.md`](docs/DOMAIN_SETUP.md) for the one-time GitHub Pages and DNS setup.
+## Deployment and domain
 
-## Project standards
+Every push to `main` builds, validates, and deploys the `site/` directory through GitHub Pages. The generated `CNAME` is configured for:
 
-- Keep dates and event statuses accurate.
-- Do not present tentative funding, partnerships, or events as confirmed.
-- Link back to official Oberlin sources for formal 3-2 requirements.
-- Keep membership language open to all Oberlin students interested in engineering.
-- Never commit passwords, private keys, form response exports, or student contact lists.
+`oberlin32engineeringsociety.com`
 
-## Disclaimer
+See `docs/DOMAIN_SETUP.md` for the one-time DNS and Pages settings.
 
-The Oberlin 3-2 Engineering Society is a student-led proposed organization. This repository and website are not official Oberlin College publications. Formal 3-2 requirements should always be verified with the program director and the relevant partner institution.
+## Accuracy and status
+
+The site distinguishes planned programs from confirmed dates and avoids presenting tentative funding, partnerships, rooms, speakers, or awards as finalized. Formal 3-2 requirements should always be checked against Oberlin College and the relevant engineering institution.
 
 ## License
 
-Code is available under the [MIT License](LICENSE). Club names, logos, and original brand assets remain associated with the Oberlin 3-2 Engineering Society and should not be used to imply endorsement or affiliation without permission.
+The code is available under the MIT License. The society name, logo, and original brand assets may not be used to imply endorsement or affiliation without permission.

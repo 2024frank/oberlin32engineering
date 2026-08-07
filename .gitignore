@@ -1,8 +1,14 @@
-.DS_Store
-Thumbs.db
 __pycache__/
 *.py[cod]
-.venv/
+.DS_Store
 .env
 .env.*
+!.env.example
+.vscode/
+.idea/
+node_modules/
+screenshots/
+scrollshots/
 *.log
+
+release-previews/

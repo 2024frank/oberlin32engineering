@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 180" role="img" aria-labelledby="title desc">
+  <title id="title">Oberlin 3-2 Engineering Society</title>
+  <desc id="desc">The society emblem beside the organization name.</desc>
+  <image href="logo-mark.svg" x="0" y="0" width="180" height="180"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="205" y="83" font-size="75" font-weight="900" letter-spacing="-3" fill="#f8f2e8">OBERLIN <tspan fill="#f0b429">3-2</tspan></text>
+    <rect x="205" y="101" width="620" height="53" rx="4" fill="#f8f2e8"/>
+    <text x="225" y="139" font-size="31" font-weight="800" letter-spacing="2.5" fill="#0a0d12">ENGINEERING SOCIETY</text>
+  </g>
+</svg>

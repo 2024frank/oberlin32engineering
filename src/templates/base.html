@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080b10">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <meta name="author" content="Oberlin 3-2 Engineering Society">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{CANONICAL}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Oberlin 3-2 Engineering Society">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:image" content="https://oberlin32engineeringsociety.com/assets/images/og-cover.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TITLE}}">
+  <meta name="twitter:description" content="{{DESCRIPTION}}">
+  <meta name="twitter:image" content="https://oberlin32engineeringsociety.com/assets/images/og-cover.png">
+  <title>{{TITLE}}</title>
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+  <link rel="manifest" href="site.webmanifest?v={{ASSET_REV}}">
+  <link rel="alternate" type="application/rss+xml" title="Oberlin 3-2 Engineering Society news" href="feed.xml">
+  <link rel="preload" href="assets/images/logo-mark.svg" as="image" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js')</script>
+  <link rel="stylesheet" href="assets/css/site.css?v={{ASSET_REV}}">
+  <script src="assets/js/runtime-config.js?v={{ASSET_REV}}" defer></script>
+  <script src="assets/js/data-service.js?v={{ASSET_REV}}" defer></script>
+  <script src="assets/js/site.js?v={{ASSET_REV}}" defer></script>
+  <script src="assets/js/pages.js?v={{ASSET_REV}}" defer></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Oberlin 3-2 Engineering Society",
+    "url": "https://oberlin32engineeringsociety.com",
+    "logo": "https://oberlin32engineeringsociety.com/assets/images/logo-mark.svg",
+    "foundingDate": "2026",
+    "sameAs": ["https://www.instagram.com/oberlin32engineering/"],
+    "description": "A student-led engineering community in formation at Oberlin College, connecting students through projects, mentorship, resources, panels, and shared opportunity."
+  }
+  </script>
+</head>
+<body class="{{BODY_CLASS}}" data-page="{{PAGE_ID}}">
+  <noscript><div class="noscript-banner">This website works best with JavaScript enabled. Core pages and links remain available.</div></noscript>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
+  <div class="page-noise" aria-hidden="true"></div>
+  <canvas class="engineering-canvas" data-engineering-canvas aria-hidden="true"></canvas>
+  {{HEADER}}
+  <main id="main-content">
+    {{MAIN}}
+  </main>
+  {{FOOTER}}
+
+  <dialog class="search-dialog" data-search-dialog aria-labelledby="search-title">
+    <div class="search-shell">
+      <div class="search-heading">
+        <div>
+          <span class="micro-label">SITE INDEX</span>
+          <h2 id="search-title">Find anything.</h2>
+        </div>
+        <button class="icon-button" type="button" data-search-close aria-label="Close search">×</button>
+      </div>
+      <label class="search-field">
+        <span class="sr-only">Search the website</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input type="search" data-global-search placeholder="Projects, pathway, leadership, resources…" autocomplete="off">
+        <kbd>ESC</kbd>
+      </label>
+      <div class="search-results" data-search-results>
+        <p class="search-hint">Start typing to search the project board, programs, events, resources, and leadership.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast-region" aria-live="polite" aria-atomic="true" data-toast-region></div>
+  <script>if ('serviceWorker' in navigator && location.protocol === 'https:') { window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {})); }</script>
+</body>
+</html>

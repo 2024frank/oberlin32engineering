@@ -1,37 +1,30 @@
-# Publish the prepared repository to GitHub
+# Publish to GitHub
 
-The website has already been built and committed locally. The configured remote is:
+The intended repository is:
 
-`https://github.com/2024frank/oberlin32engineering.git`
+`https://github.com/2024frank/oberlin32engineering`
 
-Never send a GitHub password, personal access token, recovery code, or private SSH key to another person or paste one into a chat.
-
-## Easiest method: GitHub Desktop
-
-1. Download and extract the **git-ready** website archive.
-2. Open GitHub Desktop and sign in to the GitHub account that owns `2024frank/oberlin32engineering`.
-3. Choose **File → Add Local Repository**.
-4. Select the extracted `oberlin32engineering-final` folder.
-5. Confirm that the current branch is `main`.
-6. Click **Push origin**.
-7. Open the repository on GitHub and confirm that the files and the first commit are visible.
-8. Open **Actions** and confirm that the Pages deployment workflow runs.
-
-## Terminal method
-
-From the extracted git-ready folder:
+## First publication
 
 ```bash
-git status
-git remote -v
+git init
+git branch -M main
+git remote add origin https://github.com/2024frank/oberlin32engineering.git
+git add .
+git commit -m "Launch Oberlin 3-2 Engineering Society website"
 git push -u origin main
 ```
 
-Authenticate through GitHub's supported browser or credential-manager flow when prompted. GitHub account passwords are not accepted for Git operations over HTTPS.
+Use a credential manager, GitHub CLI, or a short-lived fine-grained token. Never place a token in a remote URL, source file, shell script, screenshot, issue, or chat message.
 
-## After the push
+## Normal updates
 
-1. Go to **Settings → Pages** in the repository.
-2. Choose **GitHub Actions** under Build and deployment.
-3. Confirm that the workflow publishes successfully.
-4. Follow [`DOMAIN_SETUP.md`](DOMAIN_SETUP.md) to connect `oberlin32engineeringsociety.com` and enable HTTPS.
+```bash
+python scripts/build.py
+python scripts/check_site.py
+git add .
+git commit -m "Describe the update"
+git push
+```
+
+A successful push to `main` runs the Pages workflow automatically.

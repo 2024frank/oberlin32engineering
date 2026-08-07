@@ -1,0 +1,42 @@
+[
+  {
+    "id": "project-brief-template",
+    "title": "Project Brief Template",
+    "category": "Projects",
+    "description": "A practical structure for defining the problem, users, scope, constraints, evidence, roles, budget, and next review.",
+    "url": "assets/downloads/project-brief-template.md",
+    "format": "Markdown",
+    "published": true,
+    "sort_order": 1
+  },
+  {
+    "id": "design-review-template",
+    "title": "Design Review Checklist",
+    "category": "Projects",
+    "description": "Questions teams should answer before major spending, fabrication, or software architecture decisions.",
+    "url": "assets/downloads/design-review-checklist.md",
+    "format": "Markdown",
+    "published": true,
+    "sort_order": 2
+  },
+  {
+    "id": "leadership-handoff-template",
+    "title": "Leadership Handoff Template",
+    "category": "Governance",
+    "description": "A term-end handoff format covering responsibilities, calendars, contacts, budgets, files, unfinished work, and lessons.",
+    "url": "assets/downloads/leadership-handoff-template.md",
+    "format": "Markdown",
+    "published": true,
+    "sort_order": 3
+  },
+  {
+    "id": "pathway-question-sheet",
+    "title": "3-2 Advising Question Sheet",
+    "category": "3-2 Planning",
+    "description": "A question list students can take to official advising conversations when comparing plans and partner institutions.",
+    "url": "assets/downloads/3-2-advising-questions.md",
+    "format": "Markdown",
+    "published": true,
+    "sort_order": 4
+  }
+]

@@ -1,0 +1,96 @@
+{
+  "id": "future-concept",
+  "year": "",
+  "title": "Oberlin Engineering Challenge",
+  "eyebrow": "Future flagship concept",
+  "theme": "Engineering for a More Connected World",
+  "tagline": "Design it. Build it. Defend it.",
+  "description": "A proposed public challenge where interdisciplinary student teams could take a real problem from evidence to prototype, then explain and test important decisions before the Oberlin community.",
+  "status": "Planning stage",
+  "season": "Date to be announced",
+  "registration_open": false,
+  "registration_deadline": "",
+  "event_date": "",
+  "venue": "To be announced",
+  "hero_url": "",
+  "prize_pool": "Any awards or project support will be announced only after resources are confirmed",
+  "rules_url": "",
+  "results_published": false,
+  "published": true,
+  "tracks": [
+    {
+      "title": "Robotics + Intelligent Systems",
+      "description": "Machines that sense, decide, move, assist, or collaborate.",
+      "number": "01"
+    },
+    {
+      "title": "Climate + Community",
+      "description": "Engineering responses to environmental and community needs.",
+      "number": "02"
+    },
+    {
+      "title": "Built World + Mechanics",
+      "description": "Physical systems, structures, devices, manufacturing, and motion.",
+      "number": "03"
+    },
+    {
+      "title": "Open Innovation",
+      "description": "Strong ideas that cross categories and create their own lane.",
+      "number": "04"
+    }
+  ],
+  "stages": [
+    {
+      "title": "Frame the problem",
+      "description": "Teams identify a real user, need, constraint, or system worth understanding.",
+      "number": "01"
+    },
+    {
+      "title": "Propose the build",
+      "description": "Teams define scope, evidence, technical approach, milestones, and risks.",
+      "number": "02"
+    },
+    {
+      "title": "Design reviews",
+      "description": "Mentors and reviewers challenge assumptions before teams invest deeply in the wrong direction.",
+      "number": "03"
+    },
+    {
+      "title": "Build + test",
+      "description": "Teams iterate, document failures, measure performance, and improve the prototype.",
+      "number": "04"
+    },
+    {
+      "title": "Public defense",
+      "description": "Finalists demonstrate the work and defend their choices before judges and the community.",
+      "number": "05"
+    }
+  ],
+  "criteria": [
+    {
+      "title": "Problem understanding",
+      "weight": "20%",
+      "description": "Evidence that the team understands the people, context, constraints, and stakes."
+    },
+    {
+      "title": "Engineering quality",
+      "weight": "30%",
+      "description": "Sound technical decisions, system integration, safety, rigor, and execution."
+    },
+    {
+      "title": "Testing + evidence",
+      "weight": "20%",
+      "description": "Clear metrics, thoughtful experiments, honest limitations, and learning through iteration."
+    },
+    {
+      "title": "Impact + responsibility",
+      "weight": "15%",
+      "description": "A credible path to usefulness with attention to ethics, access, cost, and consequences."
+    },
+    {
+      "title": "Communication",
+      "weight": "15%",
+      "description": "A precise explanation, compelling demonstration, and ability to defend decisions."
+    }
+  ]
+}

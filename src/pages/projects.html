@@ -1,0 +1,111 @@
+<section class="page-hero projects-hero">
+  <div class="page-hero-grid" aria-hidden="true"></div>
+  <div class="container page-hero-layout">
+    <div class="reveal">
+      <span class="eyebrow">PROJECT BOARD + ARCHIVE</span>
+      <h1>Build something<br>that can be <em>tested.</em></h1>
+    </div>
+    <div class="page-hero-side reveal reveal-delay-1">
+      <p>Join an open brief, lead a team, or bring a better problem. Every project moves through scope, review, prototype, evidence, and public documentation.</p>
+      <a class="button button-gold" href="#submit">Propose a project <span>↓</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="project-control-section">
+  <div class="container">
+    <div class="project-board-summary reveal">
+      <div><strong data-project-count>6</strong><span>active briefs</span></div>
+      <div><strong data-open-role-count>20+</strong><span>ways to contribute</span></div>
+      <div><strong>05</strong><span>build stages</span></div>
+      <div><strong>∞</strong><span>disciplines welcome</span></div>
+    </div>
+    <div class="project-toolbar reveal">
+      <div class="filter-group" role="group" aria-label="Filter projects by category">
+        <button class="filter-chip active" type="button" data-project-filter="all">All projects</button>
+        <button class="filter-chip" type="button" data-project-filter="robotics">Robotics</button>
+        <button class="filter-chip" type="button" data-project-filter="climate">Climate</button>
+        <button class="filter-chip" type="button" data-project-filter="design">Design</button>
+        <button class="filter-chip" type="button" data-project-filter="software">Software</button>
+      </div>
+      <label class="inline-search"><span class="sr-only">Search projects</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-project-search placeholder="Search skills, roles, or projects"></label>
+    </div>
+  </div>
+</section>
+
+<section class="section project-board-section">
+  <div class="container">
+    <div class="project-board" data-project-board aria-live="polite">
+      <div class="skeleton-card large"></div><div class="skeleton-card large"></div><div class="skeleton-card large"></div>
+    </div>
+    <div class="empty-state" data-project-empty hidden><span>NO MATCH</span><h2>No projects match that search.</h2><p>Try another category, remove a keyword, or propose the project you expected to find.</p><button class="button button-outline" type="button" data-project-reset>Reset filters</button></div>
+  </div>
+</section>
+
+<section class="section section-ivory project-updates-section" id="build-log">
+  <div class="container">
+    <div class="section-heading heading-row reveal">
+      <div><span class="eyebrow dark">LIVE BUILD LOG</span><h2>Progress should leave<br><em>a public trail.</em></h2></div>
+      <p>Teams publish short milestone notes so members can see what changed, where help is needed, and what the next design decision will be.</p>
+    </div>
+    <div class="project-update-grid" data-project-updates aria-live="polite">
+      <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section project-method">
+  <div class="container">
+    <div class="section-heading heading-row reveal">
+      <div><span class="eyebrow">THE BUILD SYSTEM</span><h2>Projects need more<br>than a good idea.</h2></div>
+      <p>Each team follows the same backbone while choosing methods that fit the problem. The point is not bureaucracy. It is stronger decisions, fewer invisible assumptions, and a record future teams can use.</p>
+    </div>
+    <div class="build-stage-grid">
+      <article class="reveal"><span>01</span><h3>Frame</h3><p>Define the user, context, need, constraints, and what evidence would change the direction.</p></article>
+      <article class="reveal reveal-delay-1"><span>02</span><h3>Scope</h3><p>Choose a finish line that is ambitious enough to matter and small enough to reach this term.</p></article>
+      <article class="reveal reveal-delay-2"><span>03</span><h3>Review</h3><p>Present the approach before major spending or construction. Invite technical and user criticism early.</p></article>
+      <article class="reveal"><span>04</span><h3>Build + test</h3><p>Prototype, measure, break, learn, revise, and make the evidence visible.</p></article>
+      <article class="reveal reveal-delay-1"><span>05</span><h3>Document + show</h3><p>Publish the work, explain limitations, preserve files, and demonstrate the system in public.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-ivory project-standards">
+  <div class="container project-standards-grid">
+    <div class="reveal"><span class="eyebrow dark">WHAT STRONG PROJECTS SHARE</span><h2>Good engineering is<br><em>legible.</em></h2></div>
+    <div class="standards-list">
+      <article class="reveal"><span>USER</span><div><h3>A specific need</h3><p>The project can name who benefits, what changes, and how the team learned about the problem.</p></div></article>
+      <article class="reveal"><span>TEST</span><div><h3>A measurable claim</h3><p>Teams define success before the final demonstration and report results without hiding weak evidence.</p></div></article>
+      <article class="reveal"><span>SYSTEM</span><div><h3>Integrated decisions</h3><p>Mechanical, electrical, software, cost, safety, ethics, and usability choices are treated as one system.</p></div></article>
+      <article class="reveal"><span>RECORD</span><div><h3>A useful archive</h3><p>Another student should be able to understand the design, reproduce key work, and continue from the documented next step.</p></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="section proposal-section" id="submit">
+  <div class="container proposal-grid">
+    <div class="proposal-copy reveal">
+      <span class="eyebrow">PROPOSE THE NEXT BUILD</span>
+      <h2>Bring us a problem,<br><em>not a polished pitch.</em></h2>
+      <p>You can submit a rough idea, a community need, a technical experiment, or a project already in progress. The projects team will help sharpen scope, identify collaborators, and decide the right next step.</p>
+      <div class="proposal-notes"><span>No prior project experience required</span><span>Interdisciplinary teams encouraged</span><span>Community partnerships welcome</span></div>
+    </div>
+    <form class="public-form reveal reveal-delay-1" data-submission-form data-submission-type="project_proposal">
+      <div class="form-row"><label>Full name<input name="full_name" required autocomplete="name"></label><label>Oberlin email<input name="email" type="email" required autocomplete="email"></label></div>
+      <label>Working project title<input name="project_title" required placeholder="It can change later"></label>
+      <label>What problem, question, or opportunity are you interested in?<textarea name="problem" rows="5" required placeholder="Describe what you have noticed and why it matters."></textarea></label>
+      <div class="form-row"><label>Current stage<select name="stage"><option>Rough idea</option><option>Problem researched</option><option>Team forming</option><option>Prototype started</option><option>Existing project seeking support</option></select></label><label>What help do you need most?<select name="support"><option>Finding collaborators</option><option>Scoping the project</option><option>Technical mentorship</option><option>Materials or funding</option><option>Community partner</option><option>Testing and documentation</option></select></label></div>
+      <label>Skills or disciplines that may be useful<input name="skills" placeholder="Examples: CAD, Python, sensors, user research"></label>
+      <label class="checkbox-row"><input type="checkbox" name="permission" required><span>I agree that the society may contact me about this proposal.</span></label>
+      <button class="button button-primary" type="submit">Submit project idea <span>↗</span></button>
+      <p class="form-status" data-form-status aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<dialog class="project-dialog" data-project-dialog aria-labelledby="project-dialog-title">
+  <div class="project-dialog-shell">
+    <button class="icon-button dialog-close" type="button" data-project-dialog-close aria-label="Close project details">×</button>
+    <div data-project-dialog-content></div>
+  </div>
+</dialog>

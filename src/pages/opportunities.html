@@ -1,0 +1,55 @@
+<section class="page-hero opportunities-hero">
+  <div class="page-hero-grid" aria-hidden="true"></div>
+  <div class="container page-hero-layout">
+    <div class="reveal"><span class="eyebrow">OPPORTUNITY BOARD</span><h1>Find the next place<br>to <em>grow.</em></h1></div>
+    <div class="page-hero-side reveal reveal-delay-1"><p>Leadership roles, project openings, research, internships, competitions, grants, workshops, and ways to contribute to the society.</p><a class="button button-gold" href="#board">Browse openings <span>↓</span></a></div>
+  </div>
+</section>
+
+<section class="section opportunity-principles">
+  <div class="container opportunity-principle-grid">
+    <article class="reveal"><span>01</span><h3>High signal</h3><p>Opportunities should be relevant to engineering-minded students and explain why they are worth attention.</p></article>
+    <article class="reveal reveal-delay-1"><span>02</span><h3>Clear action</h3><p>Every listing should show the role, deadline or timing, location, requirements, and the next step.</p></article>
+    <article class="reveal reveal-delay-2"><span>03</span><h3>Shared access</h3><p>Useful information should not remain trapped in private conversations or reach only students who already know where to look.</p></article>
+  </div>
+</section>
+
+<section class="section section-ivory opportunity-board-section" id="board">
+  <div class="container">
+    <div class="section-heading heading-row reveal"><div><span class="eyebrow dark">CURRENT OPENINGS</span><h2>Step into the work<br><em>already moving.</em></h2></div><p>The founding board is publishing society opportunities first. External research, internship, fellowship, and competition listings can be added and managed through the admin dashboard.</p></div>
+    <div class="project-toolbar reveal">
+      <div class="filter-group" role="group" aria-label="Filter opportunities"><button class="filter-chip dark-chip active" data-opportunity-filter="all" type="button">All</button><button class="filter-chip dark-chip" data-opportunity-filter="leadership" type="button">Leadership</button><button class="filter-chip dark-chip" data-opportunity-filter="projects" type="button">Projects</button><button class="filter-chip dark-chip" data-opportunity-filter="competition" type="button">Competition</button><button class="filter-chip dark-chip" data-opportunity-filter="career" type="button">Career</button></div>
+      <label class="inline-search light-search"><span class="sr-only">Search opportunities</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-opportunity-search placeholder="Search the board"></label>
+    </div>
+    <div class="opportunity-grid" data-opportunity-grid></div>
+    <div class="empty-state dark-empty" data-opportunity-empty hidden><span>NO MATCH</span><h2>No opportunities match that filter.</h2><button class="button button-primary" type="button" data-opportunity-reset>Reset filters</button></div>
+  </div>
+</section>
+
+<section class="section opportunity-map-section">
+  <div class="container opportunity-map-grid">
+    <div class="reveal"><span class="eyebrow">WAYS TO GROW THROUGH THE SOCIETY</span><h2>There is more than<br><em>one way in.</em></h2></div>
+    <div class="opportunity-map reveal reveal-delay-1">
+      <article><span>LEAD</span><h3>Own a system</h3><p>Board roles, committees, project leadership, competition planning, and event ownership.</p><a href="leadership.html#open-roles">Leadership openings →</a></article>
+      <article><span>BUILD</span><h3>Join a technical team</h3><p>Hardware, software, research, mechanics, design, testing, documentation, and communication roles.</p><a href="projects.html">Project board →</a></article>
+      <article><span>LEARN</span><h3>Develop a skill</h3><p>Workshops, mentorship, design reviews, speakers, peer learning, and experience through real project constraints.</p><a href="events.html">Programs + events →</a></article>
+      <article><span>CONNECT</span><h3>Find the next institution</h3><p>Partner-school insight, alumni, research, internships, professionals, and community organizations.</p><a href="resources.html">Resource hub →</a></article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-ivory submit-opportunity-section">
+  <div class="container proposal-grid">
+    <div class="proposal-copy reveal"><span class="eyebrow dark">SHARE AN OPPORTUNITY</span><h2>Put useful information<br><em>where students can find it.</em></h2><p>Faculty, alumni, campus offices, employers, labs, organizations, and students can suggest relevant opportunities for review. Submitted listings are not automatically published.</p></div>
+    <form class="public-form light-form reveal reveal-delay-1" data-submission-form data-submission-type="opportunity_submission">
+      <div class="form-row"><label>Your name<input name="full_name" required></label><label>Email<input name="email" type="email" required></label></div>
+      <label>Opportunity title<input name="title" required></label>
+      <div class="form-row"><label>Organization<input name="organization" required></label><label>Type<select name="type"><option>Internship</option><option>Research</option><option>Fellowship</option><option>Competition</option><option>Workshop</option><option>Grant or funding</option><option>Volunteer</option><option>Other</option></select></label></div>
+      <label>Why is it relevant to Oberlin engineering students?<textarea name="description" rows="4" required></textarea></label>
+      <div class="form-row"><label>Deadline or timing<input name="deadline_label" placeholder="Example: October 15 or rolling"></label><label>Location<input name="location" placeholder="On campus, Cleveland, remote…"></label></div>
+      <label>Official link<input name="url" type="url" required></label>
+      <button class="button button-primary" type="submit">Submit for review <span>↗</span></button>
+      <p class="form-status" data-form-status aria-live="polite"></p>
+    </form>
+  </div>
+</section>
