@@ -205,10 +205,18 @@ def check_json(errors: list[str]) -> None:
         if not isinstance(value, expected_type):
             fail(errors, f"{path.relative_to(ROOT)} must contain {expected_type.__name__}")
 
-    for filename in ["projects.json", "leaders.json", "events.json", "resources.json", "partners.json"]:
+    # A founding society legitimately has no projects yet. An empty board with a
+    # truthful empty state beats inventing work that does not exist, so projects
+    # are allowed to be empty; the rest still have to be real.
+    for filename in ["leaders.json", "events.json", "resources.json", "partners.json"]:
         records = loaded.get(filename)
         if not isinstance(records, list) or not records:
             fail(errors, f"content/{filename} must contain at least one honest public record")
+
+    for filename in ["projects.json", "project_updates.json"]:
+        records = loaded.get(filename)
+        if records is not None and not isinstance(records, list):
+            fail(errors, f"content/{filename} must be a list")
             continue
         ids = [str(item.get("id", "")) for item in records if isinstance(item, dict)]
         if any(not value for value in ids):
