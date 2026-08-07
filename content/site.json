@@ -1,0 +1,17 @@
+{
+  "name": "Oberlin 3-2 Engineering Society",
+  "short_name": "Oberlin 3-2",
+  "domain": "https://oberlin32engineeringsociety.com",
+  "join_url": "https://forms.gle/6pPoj3hqQMJADLjZ6",
+  "instagram_url": "https://www.instagram.com/oberlin32engineering/",
+  "instagram_handle": "@oberlin32engineering",
+  "contact_email": "fkusiapp@oberlin.edu",
+  "status": "Proposed student organization",
+  "launch_term": "Fall 2026",
+  "founder": "Kusi Appiah",
+  "advisor": "Samantha",
+  "tagline": "Connect. Prepare. Build.",
+  "description": "A student-built home for engineering at Oberlin, connecting current and prospective 3-2 students with community, resources, mentorship, projects, and opportunity.",
+  "github_repo": "2024frank/oberlin32engineering",
+  "founded": "2026"
+}

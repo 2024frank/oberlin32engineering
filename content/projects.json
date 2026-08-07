@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "environmental-sensing",
+    "title": "Environmental sensing network",
+    "category": "hardware",
+    "discipline": "Sensors · Embedded systems · Data",
+    "summary": "Design a low-cost network that measures environmental conditions and turns raw readings into useful campus or community insight.",
+    "challenge": "How can a small team collect reliable data, communicate it clearly, and maintain the system over time?",
+    "skills": ["ESP32", "Sensors", "Python", "Data visualization"],
+    "status": "Possible launch project"
+  },
+  {
+    "slug": "assistive-design",
+    "title": "Assistive design studio",
+    "category": "design",
+    "discipline": "Human-centered design · Mechanics · Prototyping",
+    "summary": "Work with a real user or community partner to design a practical tool that improves access, comfort, or independence.",
+    "challenge": "How do we build with people rather than simply building for them?",
+    "skills": ["CAD", "Rapid prototyping", "User research", "Testing"],
+    "status": "Project direction"
+  },
+  {
+    "slug": "autonomous-systems",
+    "title": "Small autonomous system",
+    "category": "robotics",
+    "discipline": "Robotics · Controls · Computer vision",
+    "summary": "Build a compact robot that can sense its surroundings, make decisions, and complete a clearly defined task.",
+    "challenge": "How can software, electronics, and mechanics be integrated into one dependable system?",
+    "skills": ["C/C++", "Control systems", "Computer vision", "Mechanical design"],
+    "status": "Project direction"
+  },
+  {
+    "slug": "campus-energy",
+    "title": "Campus energy story",
+    "category": "data",
+    "discipline": "Energy · Data · Public communication",
+    "summary": "Translate building or energy data into an interactive experience that helps people understand consumption and conservation.",
+    "challenge": "How can technical data motivate better decisions without oversimplifying the system?",
+    "skills": ["Data analysis", "Web development", "Visualization", "Sustainability"],
+    "status": "Project direction"
+  },
+  {
+    "slug": "creative-technology",
+    "title": "Creative technology installation",
+    "category": "creative",
+    "discipline": "Interactive media · Electronics · Art",
+    "summary": "Create a responsive installation that combines sensors, light, sound, or movement with Oberlin's creative culture.",
+    "challenge": "What becomes possible when technical practice and artistic inquiry share the same build process?",
+    "skills": ["Microcontrollers", "Fabrication", "Interactive media", "Sound or lighting"],
+    "status": "Project direction"
+  },
+  {
+    "slug": "student-tools",
+    "title": "Tools for student life",
+    "category": "software",
+    "discipline": "Software · Product design · Campus systems",
+    "summary": "Build a focused digital tool that removes friction from a real student experience, then test whether it actually helps.",
+    "challenge": "Can a small product solve one important problem extremely well?",
+    "skills": ["JavaScript", "Product design", "APIs", "User testing"],
+    "status": "Project direction"
+  }
+]

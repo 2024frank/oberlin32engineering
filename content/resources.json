@@ -1,0 +1,86 @@
+[
+  {
+    "group": "3-2 planning",
+    "title": "Oberlin 3-2 Engineering Program",
+    "source": "Official Oberlin",
+    "summary": "Program overview, current partner institutions, and the structure of the five-year path.",
+    "url": "https://www.oberlin.edu/arts-and-sciences/departments/engineering"
+  },
+  {
+    "group": "3-2 planning",
+    "title": "3-2 Engineering Advising Guide",
+    "source": "Official Oberlin",
+    "summary": "Advising context, questions the program explores, and guidance for students considering the pathway.",
+    "url": "https://www.oberlin.edu/aarc/advising-guides-major/3-2-engineering-program"
+  },
+  {
+    "group": "academic planning",
+    "title": "Oberlin Course Catalog",
+    "source": "Official Oberlin",
+    "summary": "Current course descriptions, academic requirements, and program information used for long-range planning.",
+    "url": "https://catalog.oberlin.edu/"
+  },
+  {
+    "group": "academic planning",
+    "title": "Academic Calendar",
+    "source": "Official Oberlin",
+    "summary": "Semester dates and deadlines that affect registration, add and drop, breaks, and academic planning.",
+    "url": "https://www.oberlin.edu/registrar/academic-calendar"
+  },
+  {
+    "group": "careers",
+    "title": "Career Exploration and Development",
+    "source": "Official Oberlin",
+    "summary": "Career advising, internships, resumes, interviews, networking, and experiential learning support.",
+    "url": "https://www.oberlin.edu/career"
+  },
+  {
+    "group": "campus opportunities",
+    "title": "Oberlin Events Calendar",
+    "source": "Official Oberlin",
+    "summary": "Campus events, lectures, workshops, fairs, and opportunities that may be useful to engineering-minded students.",
+    "url": "https://calendar.oberlin.edu/"
+  },
+  {
+    "group": "club operations",
+    "title": "Student Organization Handbook",
+    "source": "Official Oberlin",
+    "summary": "Requirements for advisors, founders, officers, chartering, funding, and responsible organization management.",
+    "url": "https://www.oberlin.edu/media/34958/download?inline="
+  },
+  {
+    "group": "club operations",
+    "title": "Student Organizations and Chartering",
+    "source": "Official Oberlin",
+    "summary": "The current campus entry point for student organization information and charter guidance.",
+    "url": "https://www.oberlin.edu/student-involvement/student-organizations-contact-list"
+  },
+  {
+    "group": "partner institutions",
+    "title": "California Institute of Technology",
+    "source": "Partner institution",
+    "summary": "Official website for one of Oberlin's current 3-2 engineering partner institutions.",
+    "url": "https://www.caltech.edu/"
+  },
+  {
+    "group": "partner institutions",
+    "title": "Case Western Reserve University",
+    "source": "Partner institution",
+    "summary": "Official website for one of Oberlin's current 3-2 engineering partner institutions.",
+    "url": "https://case.edu/"
+  },
+  {
+    "group": "partner institutions",
+    "title": "Columbia University",
+    "source": "Partner institution",
+    "summary": "Official website for one of Oberlin's current 3-2 engineering partner institutions.",
+    "url": "https://www.columbia.edu/"
+  },
+  {
+    "group": "partner institutions",
+    "title": "Washington University in St. Louis",
+    "source": "Partner institution",
+    "summary": "Official website for one of Oberlin's current 3-2 engineering partner institutions.",
+    "url": "https://wustl.edu/"
+  }
+]

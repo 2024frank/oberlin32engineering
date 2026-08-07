@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Founding team planning session",
+    "phase": "Now",
+    "timing": "Before Fall 2026 launch",
+    "description": "Confirm the charter team, leadership interests, operating roles, table plan, and first-semester priorities.",
+    "status": "Recruiting"
+  },
+  {
+    "title": "Student organization fair table",
+    "phase": "Launch",
+    "timing": "Fall opening, date pending",
+    "description": "Meet new and returning students, explain the society in twenty seconds, and invite them to the first community night.",
+    "status": "Planning"
+  },
+  {
+    "title": "Engineering kickoff and pizza night",
+    "phase": "Connect",
+    "timing": "Early Fall 2026",
+    "description": "Meet engineering-minded students, learn what the society is building, and propose the first projects and programs.",
+    "status": "Planned"
+  },
+  {
+    "title": "3-2 pathways panel",
+    "phase": "Prepare",
+    "timing": "Fall 2026",
+    "description": "Bring students, faculty, alumni, and program experience into one practical conversation about planning the 3-2 journey.",
+    "status": "Planned"
+  },
+  {
+    "title": "Project pitch night",
+    "phase": "Build",
+    "timing": "Fall 2026",
+    "description": "Pitch problems worth solving, form interdisciplinary teams, define scope, and select projects that can be finished well.",
+    "status": "Planned"
+  },
+  {
+    "title": "Engineering showcase",
+    "phase": "Share",
+    "timing": "End of semester",
+    "description": "Demonstrate what teams built, explain what failed, document what was learned, and invite the next group to continue the work.",
+    "status": "Planned"
+  }
+]
