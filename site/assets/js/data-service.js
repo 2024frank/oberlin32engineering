@@ -67,21 +67,29 @@
   async function get(table, options = {}) {
     if (!tableFallbacks[table]) return [];
     if (useDatabase) {
+      /* The database is the source of truth, so an empty result means empty.
+       *
+       * This used to fall through to the bundled JSON whenever the query came
+       * back with no rows, which meant an officer who deleted every record saw
+       * the original seeded content reappear on the public site. The bundled
+       * files are a fallback for the database being unreachable, nothing more,
+       * so only a thrown request reaches them now. */
       try {
         const rows = await fetchSupabase(table, options);
         if (table === 'site_settings') {
           const record = Array.isArray(rows) ? rows[0] : rows;
-          if (record?.settings) return record.settings;
-        } else if (table === 'competition_editions') {
-          const records = Array.isArray(rows) ? rows : [];
-          if (records.length) return records.sort((a, b) => String(b.year || '').localeCompare(String(a.year || '')))[0];
-        } else if (Array.isArray(rows) && rows.length) {
-          return sorters[table] ? rows.sort(sorters[table]) : rows;
-        } else if (rows && !Array.isArray(rows)) {
-          return rows;
+          return record?.settings || {};
         }
+        if (table === 'competition_editions') {
+          const records = Array.isArray(rows) ? rows : [];
+          return records.length
+            ? records.sort((a, b) => String(b.year || '').localeCompare(String(a.year || '')))[0]
+            : null;
+        }
+        if (Array.isArray(rows)) return sorters[table] ? rows.sort(sorters[table]) : rows;
+        return rows;
       } catch (error) {
-        console.warn(`[O32] Using versioned fallback for ${table}:`, error.message);
+        console.warn(`[O32] Database unreachable for ${table}, using bundled copy:`, error.message);
       }
     }
 

@@ -31,7 +31,7 @@
 
   function projectCard(item) {
     const categories = [item.category, ...(item.skills || [])].filter(Boolean).join('|').toLowerCase();
-    const image = item.cover_url ? `<div class="project-card__image"><img src="${esc(safeUrl(item.cover_url))}" alt="" loading="lazy"></div>` : '';
+    const image = item.cover_url ? `<div class="project-card__image"><img src="${esc(safeUrl(item.cover_url))}" alt="" loading="eager" decoding="async"></div>` : '';
     const skills = (item.skills || []).slice(0, 5).map((skill) => `<li>${esc(skill)}</li>`).join('');
     const roles = (item.open_roles || []).map((role) => `<li>${esc(role)}</li>`).join('');
     return `<article class="card project-card" data-filter-value="${esc(categories)}">
@@ -80,7 +80,10 @@
   }
 
   function leaderCard(item) {
-    const avatar = item.photo_url ? `<img src="${esc(safeUrl(item.photo_url))}" alt="${esc(item.name)}" loading="lazy">` : esc(initials(item.name || item.role));
+    // Not lazy. These cards are injected after page load, and the browser's
+    // lazy-load check can miss an image that is already in view by the time it
+    // arrives, leaving an uploaded portrait permanently blank.
+    const avatar = item.photo_url ? `<img src="${esc(safeUrl(item.photo_url))}" alt="${esc(item.name)}" loading="eager" decoding="async">` : esc(initials(item.name || item.role));
     const action = item.open_seat ? '<a class="text-link" href="join?interest=leadership">Express interest →</a>' : (item.email ? `<a class="text-link" href="mailto:${esc(item.email)}">Email →</a>` : '');
     return `<article class="card leader-card" data-filter-value="${item.open_seat ? 'open' : 'current'}">
       <div class="leader-card__avatar">${avatar}</div>

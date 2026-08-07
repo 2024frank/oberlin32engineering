@@ -125,6 +125,16 @@
         target.dataset.activeFilter = button.dataset.filter || 'all';
         applyFilters(target);
       }));
+
+      /* A category list is a claim that those categories exist. With an empty
+       * grid it advertises a body of work that is not there, so it stays hidden
+       * until the grid actually has something to filter. The grids are filled
+       * asynchronously, hence the observer rather than a one-time check. */
+      const syncVisibility = () => {
+        group.hidden = !target.querySelector('[data-filter-value]');
+      };
+      syncVisibility();
+      new MutationObserver(syncVisibility).observe(target, { childList: true });
     });
   }
 
