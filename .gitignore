@@ -12,3 +12,5 @@ scrollshots/
 *.log
 
 release-previews/
+
+.vercel
