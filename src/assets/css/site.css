@@ -1789,3 +1789,11 @@ figcaption { color: var(--ink-3); }
 @media (max-width: 520px) {
   .competition-visual, .governance-diagram, .gov-ring { max-width: 100%; overflow: hidden; }
 }
+
+/* Ornament missed in the first pass: a CRT scanline overlay on the competition
+   hero and a fake node-orbit diagram on the join hero. */
+.competition-scanlines, .competition-hero-art, .join-hero-art,
+.join-map, .join-map-core, .join-map-node, .join-paths { display: none !important; }
+.join-hero, .competition-hero { min-height: 0; padding: clamp(34px, 4vw, 56px) 0 0; overflow: visible; }
+.join-hero-grid, .competition-hero-inner { grid-template-columns: 1fr; }
+.compact-page-hero .page-hero-figure { margin-top: clamp(24px, 3vw, 36px); }

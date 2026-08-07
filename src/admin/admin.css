@@ -107,3 +107,9 @@ body { background: #fff; }
 .nav-section-label, .sidebar-user small, .toolbar .search-control span { color: var(--soft); }
 .editor-field small, .panel-head span, .metric-card span { color: var(--soft); }
 .admin-toast { color: var(--ink); }
+
+/* The auth screen and the dashboard are toggled with the `hidden` attribute,
+   but .admin-app / .auth-screen declare an explicit display, which outranks the
+   UA `[hidden] { display: none }` rule. The dashboard sidebar therefore drew on
+   top of the sign-in screen. */
+[hidden] { display: none !important; }

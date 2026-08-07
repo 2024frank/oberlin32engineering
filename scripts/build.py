@@ -326,6 +326,14 @@ def stamp_admin_assets(revision: str) -> None:
         lambda m: f'{m.group(1)}="{m.group(2)}?v={revision}"',
         markup,
     )
+    # runtime-config.js is shared with the public site, which is served
+    # immutable for a year. Without a cache key the admin kept booting an
+    # old config and reported CONFIG_REQUIRED after Supabase was connected.
+    markup = re.sub(
+        r'src="(\.\./assets/js/[a-z-]+\.js)(?:\?v=[^"]*)?"',
+        lambda m: f'src="{m.group(1)}?v={revision}"',
+        markup,
+    )
     index.write_text(markup, encoding="utf-8")
 
 
