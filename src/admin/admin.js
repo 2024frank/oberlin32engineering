@@ -67,70 +67,136 @@
   const image = (name, label, options = {}) => ({ name, label, type: 'image', full: true, ...options });
   const select = (name, label, options = [], extra = {}) => ({ name, label, type: 'select', options, ...extra });
 
+  /* Twelve collections rendered from one template were indistinguishable: the
+   * only wayfinding cue was which sidebar row happened to be highlighted. Each
+   * one now carries a line icon and an accent hue, used in the sidebar, the
+   * page head, and as the row marker for records with no photograph. Line
+   * drawings rather than emoji, so they inherit colour and stay legible small. */
+  const ICONS = {
+    dashboard: '<path d="M4 13h7V4H4zM13 8h7V4h-7zM13 20h7v-9h-7zM4 20h7v-5H4z"/>',
+    submissions: '<path d="M3 8l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/>',
+    projects: '<path d="M4 4h16v16H4z"/><path d="M4 10h16M10 10v10"/>',
+    project_updates: '<path d="M9 6h11M9 12h11M9 18h7"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/>',
+    events: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    leaders: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/>',
+    resources: '<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.5-2.5a4 4 0 1 0-5.7-5.7l-1.2 1.2"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.5 2.5a4 4 0 1 0 5.7 5.7l1.2-1.2"/>',
+    opportunities: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>',
+    news_posts: '<rect x="3" y="5" width="13" height="15" rx="1.5"/><path d="M16 9h5v9a2 2 0 0 1-2 2M6 9h7M6 13h7M6 17h4"/>',
+    partner_schools: '<path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/>',
+    competition_editions: '<circle cx="12" cy="9" r="5"/><path d="M8.8 13.2 7 21l5-2.7L17 21l-1.8-7.8"/>',
+    impact: '<path d="M3 20h18"/><path d="M7 20v-5M12 20v-9M17 20v-13"/>',
+    documents: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+    sponsors: '<path d="M20.6 12.4 12 21l-8.6-8.6V3.8H12z"/><circle cx="7.6" cy="7.6" r="1.4"/>',
+    site_settings: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/>',
+    members: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.2 2.7-5.4 6-5.4s6 2.2 6 5.4"/><path d="M16 5.4a3.2 3.2 0 0 1 0 6.2M17.5 13.9c2.1.6 3.5 2.4 3.5 4.6"/>',
+    broadcasts: '<path d="M4 9v6h4l6 4V5L8 9z"/><path d="M17.5 8.5a5 5 0 0 1 0 7"/>',
+    media: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="m3 17 5-4.5 4 3.5 3-2.5 6 5"/>',
+    content_audit: '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/>',
+    edit: '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 6.5l3 3"/>',
+    duplicate: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/>',
+    reviewed: '<path d="m5 13 4 4L19 7"/>',
+    archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>'
+  };
+  const ACCENTS = {
+    projects: 210, project_updates: 196, events: 24, leaders: 340, resources: 168,
+    opportunities: 262, news_posts: 44, partner_schools: 232, competition_editions: 288,
+    impact: 152, documents: 12, sponsors: 96
+  };
+  function iconMarkup(key, extraClass = '') {
+    const path = ICONS[key];
+    if (!path) return '';
+    return `<svg class="icon ${extraClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  }
+
   const collections = {
     projects: {
       label: 'Projects', singular: 'project', titleField: 'title', subtitleField: 'status', imageField: 'cover_url', order: 'sort_order.asc,title.asc',
       description: 'Publish honest project proposals and active work. Use the status field to distinguish an idea from a staffed project.',
-      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Project title',{required:true}), text('kicker','Short label'), area('summary','Card summary',{required:true,rows:3}), area('description','Full brief',{required:true,rows:7}), text('category','Category',{required:true}), select('status','Status',['Idea under review','Open for interest','Scoping','Active','Paused','Complete']), text('year','Term or year'), number('progress','Progress',{min:0,max:100}), check('featured','Featured'), check('published','Published'), array('skills','Useful skills'), array('open_roles','Open roles'), array('team_names','Team members'), select('accent','Accent',['maroon','gold','ivory']), image('cover_url','Cover image'), area('impact','Purpose or intended impact',{rows:3}), text('project_url','Project URL'), text('github_url','GitHub URL'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Project title',{required:true}), text('kicker','Short label'), area('summary','Card summary',{required:true,rows:3}), area('description','Full brief',{required:true,rows:7}), text('category','Category',{required:true}), select('status','Project stage',['Idea under review','Open for interest','Scoping','Active','Paused','Complete'],{help:'Where the work itself stands. Separate from whether the record is visible.'}), text('year','Term or year'), number('progress','Progress',{min:0,max:100}), check('featured','Featured'), check('published','Visible on the public site'), array('skills','Useful skills'), array('open_roles','Open roles'), array('team_names','Team members'), select('accent','Accent',['maroon','gold','ivory']), image('cover_url','Cover image'), area('impact','Purpose or intended impact',{rows:3}), text('project_url','Project URL'), text('github_url','GitHub URL'), number('sort_order','Sort order',{min:0})]
     },
     project_updates: {
       label: 'Project updates', singular: 'project update', titleField: 'title', subtitleField: 'milestone', imageField: 'image_url', order: 'published_at.desc,title.asc',
       description: 'Record dated decisions, tests, setbacks, and milestones for real project work.',
-      fields: [text('id','Record ID',{required:true}), text('project_id','Project ID',{required:true}), text('title','Title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('body','Update',{required:true,rows:8}), text('milestone','Milestone label'), date('published_at','Publication date'), image('image_url','Image'), check('published','Published')]
+      fields: [text('id','Record ID',{required:true}), text('project_id','Project ID',{required:true}), text('title','Title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('body','Update',{required:true,rows:8}), text('milestone','Milestone label'), date('published_at','Publication date'), image('image_url','Image'), check('published','Visible on the public site')]
     },
     events: {
       label: 'Events', singular: 'event', titleField: 'title', subtitleField: 'date_label', imageField: 'cover_url', order: 'start_at.asc,title.asc',
       description: 'Publish dates only after they are confirmed. Planned formats may remain visible with a clear status.',
-      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Event title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('description','Description',{rows:6}), text('event_type','Event type'), select('status','Status',['Planned','Scheduling','Registration open','Confirmed','Completed','Cancelled']), text('date_label','Public date label',{required:true}), datetime('start_at','Start time'), datetime('end_at','End time'), text('location','Location'), text('registration_url','Registration URL'), image('cover_url','Event image'), check('featured','Featured'), check('published','Published')]
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Event title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('description','Description',{rows:6}), select('event_type','Event type',['Meetup','Workshop','Build night','Speaker','Info session','Social','Tour','Other']), select('status','Event stage',['Planned','Scheduling','Registration open','Confirmed','Completed','Cancelled'],{help:'Where the event itself stands. Separate from whether the record is visible.'}), text('date_label','Public date label',{required:true}), datetime('start_at','Start time'), datetime('end_at','End time'), text('location','Location'), text('registration_url','Registration URL'), image('cover_url','Event image'), check('featured','Featured'), check('published','Visible on the public site')]
     },
     leaders: {
       label: 'Leadership', singular: 'leadership record', titleField: 'name', subtitleField: 'role', imageField: 'photo_url', order: 'sort_order.asc,name.asc',
       description: 'Show named organizers and specific open roles. Do not publish placeholder people.',
-      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('role','Role',{required:true}), text('term','Term'), text('class_year','Class year'), text('major','Major or pathway'), area('bio','Biography or role description',{rows:5}), image('photo_url','Portrait'), text('linkedin_url','LinkedIn URL'), text('email','Email'), check('current','Current'), check('advisor','Advisor'), check('open_seat','Open role'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('role','Role',{required:true}), text('term','Term'), text('class_year','Class year'), text('major','Major or pathway'), area('bio','Biography or role description',{rows:5}), image('photo_url','Portrait'), text('linkedin_url','LinkedIn URL'), text('email','Email'), check('current','Current'), check('advisor','Advisor'), check('open_seat','Open role'), check('published','Visible on the public site'), number('sort_order','Sort order',{min:0})]
     },
     resources: {
       label: 'Resources', singular: 'resource', titleField: 'title', subtitleField: 'category', order: 'pinned.desc,sort_order.asc,title.asc',
       description: 'Keep official links current and record the date each resource was checked.',
-      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), area('description','Description',{rows:4}), text('category','Category',{required:true}), text('source','Source'), text('url','URL',{required:true}), date('reviewed_at','Last checked'), check('pinned','Pinned'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), area('description','Description',{rows:4}), text('category','Category',{required:true}), text('source','Source'), text('url','URL',{required:true}), date('reviewed_at','Last checked'), check('pinned','Pinned'), check('published','Visible on the public site'), number('sort_order','Sort order',{min:0})]
     },
     opportunities: {
       label: 'Opportunities', singular: 'opportunity', titleField: 'title', subtitleField: 'type', order: 'featured.desc,deadline.asc,title.asc',
       description: 'Publish current openings with a direct source and a clear deadline or rolling-review label.',
-      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('organization','Organization'), text('type','Type'), area('description','Description',{required:true,rows:5}), text('deadline_label','Deadline label'), date('deadline','Deadline'), text('location','Location'), text('url','Application URL'), check('featured','Featured'), check('published','Published')]
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('organization','Organization'), text('type','Type'), area('description','Description',{required:true,rows:5}), text('deadline_label','Deadline label'), date('deadline','Deadline'), text('location','Location'), text('url','Application URL'), check('featured','Featured'), check('published','Visible on the public site')]
     },
     news_posts: {
       label: 'News', singular: 'news post', titleField: 'title', subtitleField: 'published_at', imageField: 'cover_url', order: 'published_at.desc,title.asc',
       description: 'Publish concise announcements and records of what the society actually did.',
-      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Title',{required:true}), area('excerpt','Excerpt',{required:true,rows:3}), area('body','Body',{required:true,rows:10}), text('author','Author'), date('published_at','Publication date'), image('cover_url','Cover image'), check('featured','Featured'), check('published','Published')]
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Title',{required:true}), area('excerpt','Excerpt',{required:true,rows:3}), area('body','Body',{required:true,rows:10}), text('author','Author'), date('published_at','Publication date'), image('cover_url','Cover image'), check('featured','Featured'), check('published','Visible on the public site')]
     },
     partner_schools: {
       label: 'Partner schools', singular: 'partner-school card', titleField: 'name', subtitleField: 'location', order: 'sort_order.asc,name.asc',
       description: 'Maintain links to official partner-school information. Recheck details before each advising cycle.',
-      fields: [text('id','Record ID',{required:true}), text('name','Institution name',{required:true}), text('short_name','Short name'), text('location','Location'), text('region_code','State code'), text('url','Official URL',{required:true}), area('description','Current summary',{rows:5}), json('questions','Questions students should ask',{help:'JSON array of strings.'}), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('name','Institution name',{required:true}), text('short_name','Short name'), text('location','Location'), text('region_code','State code'), text('url','Official URL',{required:true}), area('description','Current summary',{rows:5}), json('questions','Questions students should ask',{help:'JSON array of strings.'}), check('published','Visible on the public site'), number('sort_order','Sort order',{min:0})]
     },
     competition_editions: {
       label: 'Future showcase', singular: 'showcase concept', titleField: 'title', subtitleField: 'status', imageField: 'hero_url', order: 'year.desc',
       description: 'Keep this as a proposal until a venue, team, budget, approval path, and date are confirmed.',
-      fields: [text('id','Record ID',{required:true}), text('year','Year or stage'), text('title','Title',{required:true}), text('eyebrow','Label'), text('theme','Theme'), text('tagline','Tagline'), area('description','Description',{required:true,rows:7}), text('status','Status'), text('season','Season'), check('registration_open','Registration open'), date('registration_deadline','Registration deadline'), date('event_date','Event date'), text('venue','Venue'), image('hero_url','Hero image'), text('prize_pool','Awards statement'), text('rules_url','Rules URL'), check('results_published','Results published'), check('published','Published'), json('tracks','Tracks'), json('stages','Stages'), json('criteria','Review criteria')]
+      fields: [text('id','Record ID',{required:true}), text('year','Year or stage'), text('title','Title',{required:true}), text('eyebrow','Label'), text('theme','Theme'), text('tagline','Tagline'), area('description','Description',{required:true,rows:7}), select('status','Showcase stage',['Idea under evaluation','Scoping','Seeking approval','Approved','Scheduled','Complete','Shelved']), text('season','Season'), check('registration_open','Registration open'), date('registration_deadline','Registration deadline'), date('event_date','Event date'), text('venue','Venue'), image('hero_url','Hero image'), text('prize_pool','Awards statement'), text('rules_url','Rules URL'), check('results_published','Results published'), check('published','Visible on the public site'), json('tracks','Tracks'), json('stages','Stages'), json('criteria','Review criteria')]
     },
     impact: {
       label: 'Founding roadmap', singular: 'roadmap', titleField: 'current_term', subtitleField: 'operating_stage', order: 'updated_at.desc',
       description: 'Track concrete commitments and outcomes. Publish numbers only after they can be supported.',
-      fields: [text('id','Record ID',{required:true}), text('founded','Founded'), text('current_term','Current term',{required:true}), text('operating_stage','Operating stage'), json('public_metrics','Public metrics'), json('milestones','Milestones'), json('reports','Reports'), check('published','Published')]
+      fields: [text('id','Record ID',{required:true}), text('founded','Founded'), text('current_term','Current term',{required:true}), text('operating_stage','Operating stage'), json('public_metrics','Public metrics'), json('milestones','Milestones'), json('reports','Reports'), check('published','Visible on the public site')]
     },
     documents: {
       label: 'Documents', singular: 'document', titleField: 'title', subtitleField: 'category', order: 'sort_order.asc,title.asc',
       description: 'Publish useful permanent files such as planning sheets, reports, or governance documents.',
-      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('category','Category'), area('description','Description',{rows:4}), text('url','URL',{required:true}), text('format','Format'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('category','Category'), area('description','Description',{rows:4}), text('url','URL',{required:true}), text('format','Format'), check('published','Visible on the public site'), number('sort_order','Sort order',{min:0})]
     },
     sponsors: {
       label: 'Sponsors and collaborators', singular: 'supporter', titleField: 'name', subtitleField: 'tier', imageField: 'logo_url', order: 'sort_order.asc,name.asc',
       description: 'Publish only confirmed relationships and describe the support accurately.',
-      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('tier','Relationship type'), image('logo_url','Logo'), text('url','URL'), area('description','Description',{rows:4}), check('active','Active'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('tier','Relationship type'), image('logo_url','Logo'), text('url','URL'), area('description','Description',{rows:4}), check('active','Active'), check('published','Visible on the public site'), number('sort_order','Sort order',{min:0})]
     }
   };
 
-  const siteFields = [text('name','Organization name',{required:true}), text('short_name','Short name'), text('domain','Canonical domain'), text('founded','Founded'), text('tagline','Tagline'), text('hero_title','Homepage title'), area('hero_description','Homepage description',{rows:4}), text('join_url','Join page URL'), text('instagram_url','Instagram URL'), text('instagram_handle','Instagram handle'), text('contact_email','Contact email'), text('founder','Founder'), text('advisor','Advisor status'), area('announcement','Announcement text',{rows:2}), text('announcement_link','Announcement link'), text('status','Organization status'), text('launch_term','Current term')];
+  /* Eighteen fields in one undivided column with a single Save button gave no
+   * sense of what belonged with what. Grouped into the four things an officer
+   * actually comes here to change. Advisor and organization status were free
+   * text, which invited a different phrasing every time they were touched. */
+  const SITE_SECTIONS = [
+    { title: 'Identity', copy: 'How the society names itself across the site.', fields: [
+      text('name','Organization name',{required:true}), text('short_name','Short name'),
+      text('domain','Canonical domain'), text('founded','Founded'), text('tagline','Tagline'),
+      text('launch_term','Current term'),
+      select('status','Organization status',['Founding stage','Recruiting','Active','On hiatus','Closed']),
+    ]},
+    { title: 'Homepage', copy: 'The opening lines and the link the join buttons point at.', fields: [
+      text('hero_title','Homepage title'), area('hero_description','Homepage description',{rows:4}),
+      text('join_url','Join page URL'),
+    ]},
+    { title: 'Contact and social', copy: 'Where the public reaches the society.', fields: [
+      text('contact_email','Contact email'), text('instagram_url','Instagram URL'),
+      text('instagram_handle','Instagram handle'), text('founder','Founder'),
+      select('advisor','Advisor status',['Not yet confirmed','Being identified','In conversation','Confirmed']),
+    ]},
+    { title: 'Announcement bar', copy: 'The strip across the top of every public page. Leave the text empty to hide it.', fields: [
+      area('announcement','Announcement text',{rows:2}), text('announcement_link','Announcement link'),
+    ]},
+  ];
+  const siteFields = SITE_SECTIONS.flatMap((section) => section.fields);
 
   function toast(message, type = 'success') {
     const region = $('[data-toasts]');
@@ -285,32 +351,80 @@
 
   function titleFor(definition, record) { return record?.[definition.titleField] || record?.id || 'Untitled'; }
   function subtitleFor(definition, record) { return record?.[definition.subtitleField] || record?.category || record?.type || ''; }
-  function statusMarkup(record) { const published = record.published !== false; return `<span class="status ${published ? '' : 'draft'}">${published ? 'Published' : 'Draft'}</span>`; }
-
-  function viewHead(definition) {
-    return `<div class="view-head"><div><p class="eyebrow">Public content</p><h2>${escapeHTML(definition.label)}</h2><p>${escapeHTML(definition.description)}</p></div><button class="button primary" type="button" data-create>Create ${escapeHTML(definition.singular)}</button></div>`;
+  /* The pill answers "can the public see this", so it says so. The word Status
+   * now belongs solely to the stage field inside the editor. */
+  function statusMarkup(record) {
+    const published = record.published !== false;
+    return `<span class="status ${published ? '' : 'draft'}">${published ? 'Public' : 'Hidden'}</span>`;
   }
 
-  function tableMarkup(definition, records) {
-    if (!records.length) return `<div class="empty"><div><h3>No ${escapeHTML(definition.label.toLowerCase())} yet</h3><p>Create the first record. Keep it as a draft until the information is ready for the public site.</p><button class="button primary" type="button" data-create>Create ${escapeHTML(definition.singular)}</button></div></div>`;
-    return `<div class="table-wrap"><table><thead><tr><th>Record</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>${records.map((record) => {
-      const title = titleFor(definition, record); const subtitle = subtitleFor(definition, record); const imageUrl = definition.imageField ? record[definition.imageField] : '';
-      const thumb = imageUrl ? `<img src="${escapeHTML(imageUrl)}" alt="">` : `<span>${escapeHTML(initials(title))}</span>`;
-      return `<tr><td><div class="record-title">${thumb}<div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(subtitle)}</small></div></div></td><td>${statusMarkup(record)}</td><td>${escapeHTML(formatDate(record.updated_at || record.created_at))}</td><td><div class="row-actions"><button type="button" data-edit="${escapeHTML(record.id)}" aria-label="Edit ${escapeHTML(title)}">✎</button><button type="button" data-copy="${escapeHTML(record.id)}" aria-label="Duplicate ${escapeHTML(title)}">⧉</button><button type="button" data-remove="${escapeHTML(record.id)}" aria-label="Delete ${escapeHTML(title)}">×</button></div></td></tr>`;
+  /* Nearly every seeded record shared one absolute date, which told an officer
+   * nothing. Recency is what the column is for, so recent edits read as elapsed
+   * time and anything older falls back to the date. */
+  function relativeDate(value) {
+    if (!value) return 'Not set';
+    const then = new Date(value).getTime();
+    if (Number.isNaN(then)) return formatDate(value);
+    const seconds = Math.round((Date.now() - then) / 1000);
+    if (seconds < 0) return formatDate(value);
+    if (seconds < 90) return 'Just now';
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    const days = Math.round(hours / 24);
+    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    return formatDate(value);
+  }
+
+  /* Only Leadership holds people, so only Leadership gets initials. Everywhere
+   * else a monogram was noise: Founding roadmap rendered a bare "2". The
+   * collection's own icon carries more meaning in the same square. */
+  function rowMarker(view, definition, record, title) {
+    const imageUrl = definition.imageField ? record[definition.imageField] : '';
+    if (imageUrl) return `<img src="${escapeHTML(imageUrl)}" alt="">`;
+    if (view === 'leaders') return `<span class="marker">${escapeHTML(initials(title))}</span>`;
+    return `<span class="marker marker--icon">${iconMarkup(view)}</span>`;
+  }
+
+  /* One Create button, in the topbar, where it stays put as the officer scrolls.
+   * The head used to render a second identical one directly beneath it.
+   *
+   * The editorial policy line ("Do not publish placeholder people") used to sit
+   * here permanently in prime space, which reads as the product distrusting the
+   * person using it. It is onboarding, so it collapses. */
+  function viewHead(view, definition, count) {
+    const noun = count === 1 ? definition.singular : `${definition.singular}s`;
+    return `<div class="view-head view-head--collection" style="--accent-h:${ACCENTS[view] ?? 340}">
+      <span class="view-head__icon">${iconMarkup(view)}</span>
+      <div><h2>${escapeHTML(definition.label)}</h2><p class="view-head__count">${count} ${escapeHTML(noun)}</p></div>
+      <details class="guideline"><summary>Editing guidance</summary><p>${escapeHTML(definition.description)}</p></details>
+    </div>`;
+  }
+
+  function tableMarkup(view, definition, records) {
+    if (!records.length) {
+      return `<div class="empty"><div>${iconMarkup(view, 'empty__icon')}<h3>No ${escapeHTML(definition.label.toLowerCase())} yet</h3><p>Create the first record. Keep it hidden until the information is ready for the public site.</p><button class="button primary" type="button" data-create>Create ${escapeHTML(definition.singular)}</button></div></div>`;
+    }
+    return `<div class="table-wrap"><table><thead><tr><th>Record</th><th>Visibility</th><th>Updated</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${records.map((record) => {
+      const title = titleFor(definition, record);
+      const subtitle = subtitleFor(definition, record);
+      const stamp = record.updated_at || record.created_at;
+      return `<tr><td><div class="record-title">${rowMarker(view, definition, record, title)}<div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(subtitle)}</small></div></div></td><td>${statusMarkup(record)}</td><td><time title="${escapeHTML(formatDate(stamp, true))}">${escapeHTML(relativeDate(stamp))}</time></td><td><div class="row-actions"><button type="button" data-edit="${escapeHTML(record.id)}" title="Edit" aria-label="Edit ${escapeHTML(title)}">${iconMarkup('edit')}<span>Edit</span></button><button type="button" data-copy="${escapeHTML(record.id)}" title="Duplicate" aria-label="Duplicate ${escapeHTML(title)}">${iconMarkup('duplicate')}<span>Copy</span></button><button class="danger" type="button" data-remove="${escapeHTML(record.id)}" title="Delete" aria-label="Delete ${escapeHTML(title)}">${iconMarkup('trash')}<span>Delete</span></button></div></td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
   async function renderCollection(view) {
     const definition = collections[view];
     activeRecords = await rows(view, definition.order || 'updated_at.desc');
-    content.innerHTML = `${viewHead(definition)}<div class="toolbar"><label><span class="sr-only">Search</span><input type="search" data-search placeholder="Search ${escapeHTML(definition.label.toLowerCase())}"></label><select data-filter><option value="all">All records</option><option value="published">Published</option><option value="draft">Drafts</option><option value="featured">Featured</option></select></div><div data-results>${tableMarkup(definition, activeRecords)}</div>`;
+    content.innerHTML = `${viewHead(view, definition, activeRecords.length)}<div class="toolbar"><label><span class="sr-only">Search</span><input type="search" data-search placeholder="Search ${escapeHTML(definition.label.toLowerCase())}"></label><select data-filter><option value="all">All records</option><option value="published">Public</option><option value="draft">Hidden</option><option value="featured">Featured</option></select></div><div data-results>${tableMarkup(view, definition, activeRecords)}</div>`;
     const refresh = () => {
       const query = String($('[data-search]')?.value || '').trim().toLowerCase(); const filter = $('[data-filter]')?.value || 'all';
       const filtered = activeRecords.filter((record) => {
         const status = filter === 'all' || (filter === 'published' && record.published !== false) || (filter === 'draft' && record.published === false) || (filter === 'featured' && record.featured);
         return status && (!query || JSON.stringify(record).toLowerCase().includes(query));
       });
-      $('[data-results]').innerHTML = tableMarkup(definition, filtered); bindRecordActions(view);
+      $('[data-results]').innerHTML = tableMarkup(view, definition, filtered); bindRecordActions(view);
     };
     $('[data-search]')?.addEventListener('input', refresh); $('[data-filter]')?.addEventListener('change', refresh); bindRecordActions(view);
   }
@@ -354,14 +468,23 @@
     // Record ID and URL slug are machine values. Asking a person to invent a
     // primary key before they can name their project is the system's problem
     // leaking into the interface, so both are generated on save. The slug stays
-    // editable on an existing record because changing it breaks a public URL.
+    // editable on an existing record because changing it breaks a public URL,
+    // but it belongs at the bottom rather than above the title.
     const isNew = forceNew || !record.id;
     const visible = definition.fields.filter((field) => {
       if (field.name === 'id') return false;
       if (field.name === 'slug' && isNew) return false;
       return true;
     });
-    editorFields.innerHTML = visible.map((field) => fieldMarkup(field, record)).join('');
+    // The first field is the one the officer is here to fill in, and the one an
+    // empty-form save should point at. Previously that was Record ID, so the
+    // browser sent them to a plumbing field to explain what was missing.
+    const titleIndex = visible.findIndex((field) => field.name === definition.titleField);
+    if (titleIndex > 0) visible.unshift(...visible.splice(titleIndex, 1));
+    const slugField = visible.find((field) => field.name === 'slug');
+    const body = visible.filter((field) => field.name !== 'slug');
+    editorFields.innerHTML = body.map((field) => fieldMarkup(field, record)).join('')
+      + (slugField ? `<details class="advanced"><summary>Advanced</summary><div class="advanced__fields">${fieldMarkup({ ...slugField, help: 'Changing this breaks any existing link to the public page.' }, record)}</div></details>` : '');
     deleteRecord.hidden = forceNew || !record.id;
     deleteRecord.onclick = () => confirmAction(`Delete ${titleFor(definition, record)}?`, 'This cannot be undone.', async () => { await deleteTableRecord(view, record.id); editorDialog.close(); toast('Record deleted.'); await renderCollection(view); });
     $$('[data-upload]', editorFields).forEach((input) => input.addEventListener('change', async () => {
@@ -370,6 +493,11 @@
       catch (error) { toast(error.message, 'error'); }
     }));
     editorDialog.showModal();
+    // A dialog reopened on a long form keeps the previous scroll position, so
+    // the officer landed mid-form with the record's title above the fold.
+    editorFields.scrollTop = 0;
+    editorDialog.scrollTop = 0;
+    $('.editor__shell', editorDialog)?.scrollTo({ top: 0 });
   }
 
 
@@ -417,21 +545,61 @@
     return record;
   }
 
+  /* A badge is a request for attention. Showing "0" made the sidebar look like
+   * there was always something waiting, which trains people to ignore it. */
+  function setBadge(count) {
+    const badge = $('[data-new-count]');
+    if (!badge) return;
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+
+  /* The overview used to open with a motivational line and a policy paragraph,
+   * then show four counters that mostly read 0 with nothing to click and no
+   * hint about what to do; the audit log, the one thing that answers "what
+   * changed while I was away", sat at the bottom. It now leads with the state
+   * of the site, every counter is a link into the collection it counts, a
+   * counter at zero says what to do about it, and recent changes come first.
+   * The Common tasks grid is gone: it was the third copy of the same six
+   * collection names, after the sidebar and the create buttons. */
   async function renderDashboard() {
-    const names = ['projects','project_updates','leaders','events','resources','submissions','content_audit'];
+    const names = ['projects','leaders','events','resources','submissions','content_audit'];
     const values = await Promise.all(names.map((name) => rows(name, name === 'submissions' || name === 'content_audit' ? 'created_at.desc' : 'updated_at.desc').catch(() => [])));
-    const [projects, updates, leaders, events, resources, submissions, audit] = values; const fresh = submissions.filter((item) => item.status === 'new');
-    $('[data-new-count]').textContent = String(fresh.length);
-    const firstName = profile?.full_name?.split(/\s+/)[0] || 'officer';
-    content.innerHTML = `<section class="hero-panel"><div><p class="eyebrow">Current responsibility</p><h2>Keep the site true, ${escapeHTML(firstName)}.</h2><p>Publish only confirmed dates, named people, supportable outcomes, and project status that matches the work happening now.</p></div><div class="hero-panel__aside"><button class="button secondary" type="button" data-quick="projects">Add a project</button></div></section><div class="metric-grid"><article class="metric"><span>Published projects</span><strong>${projects.filter((item) => item.published !== false).length}</strong></article><article class="metric"><span>Named leaders</span><strong>${leaders.filter((item) => item.current && !item.open_seat).length}</strong></article><article class="metric"><span>Scheduled events</span><strong>${events.filter((item) => item.start_at).length}</strong></article><article class="metric"><span>New submissions</span><strong>${fresh.length}</strong></article></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Recent submissions</h3><p>Membership, project, event, and contact responses.</p></div></header><div class="activity-list">${submissions.slice(0,6).map((item) => `<div class="activity"><span>${escapeHTML(String(item.type || 'S').slice(0,1).toUpperCase())}</span><div><strong>${escapeHTML(item.full_name || item.email || 'Visitor')}</strong><small>${escapeHTML(pretty(item.type || 'submission'))}</small></div><time>${escapeHTML(formatDate(item.created_at))}</time></div>`).join('') || '<div class="activity"><span>✓</span><div><strong>No submissions yet</strong><small>New forms will appear here.</small></div></div>'}</div></section><section class="panel"><header class="panel__head"><div><h3>Common tasks</h3><p>Open a focused editor rather than changing raw files.</p></div></header><div class="quick-grid">${[['projects','Project'],['events','Event'],['leaders','Leadership'],['resources','Resource'],['news_posts','News post'],['opportunities','Opportunity']].map(([view,label]) => `<button type="button" data-quick="${view}"><strong>${label}</strong><small>Create a new record</small></button>`).join('')}</div></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Recent changes</h3><p>The database audit log records content edits for board handoff.</p></div></header><div class="activity-list">${audit.slice(0,6).map((item) => `<div class="activity"><span>${escapeHTML(String(item.action || 'U').slice(0,1))}</span><div><strong>${escapeHTML(item.snapshot?.title || item.snapshot?.name || item.record_id || 'Record')}</strong><small>${escapeHTML(pretty(item.table_name || 'content'))}</small></div><time>${escapeHTML(formatDate(item.created_at,true))}</time></div>`).join('') || '<div class="activity"><span>≡</span><div><strong>No changes recorded</strong><small>The log starts after the database schema is installed.</small></div></div>'}</div></section>`;
-    $$('[data-quick]', content).forEach((button) => button.addEventListener('click', () => openEditor(button.dataset.quick)));
+    const [projects, leaders, events, resources, submissions, audit] = values;
+    const fresh = submissions.filter((item) => item.status === 'new');
+    setBadge(fresh.length);
+
+    const cards = [
+      { view: 'projects', label: 'Published projects', value: projects.filter((item) => item.published !== false).length, empty: 'Nothing on the public projects page yet' },
+      { view: 'leaders', label: 'Named officers', value: leaders.filter((item) => item.current && !item.open_seat).length, empty: 'Every seat still reads as open' },
+      { view: 'events', label: 'Events with a date', value: events.filter((item) => item.start_at).length, empty: 'No confirmed date is published' },
+      { view: 'submissions', label: 'New submissions', value: fresh.length, empty: 'Nothing is waiting on you' },
+      { view: 'resources', label: 'Published resources', value: resources.filter((item) => item.published !== false).length, empty: 'No links published yet' },
+    ];
+
+    content.innerHTML = `
+      <div class="metric-grid">${cards.map((card) => `
+        <button class="metric" type="button" data-goto="${escapeHTML(card.view)}" style="--accent-h:${ACCENTS[card.view] ?? 210}">
+          <span class="metric__icon">${iconMarkup(card.view)}</span>
+          <span class="metric__label">${escapeHTML(card.label)}</span>
+          <strong>${card.value}</strong>
+          ${card.value === 0 ? `<small class="metric__hint">${escapeHTML(card.empty)}</small>` : '<small class="metric__hint">Open</small>'}
+        </button>`).join('')}</div>
+
+      <section class="panel"><header class="panel__head"><div><h3>Recent changes</h3><p>What has been edited, and by which part of the site.</p></div><button class="link-button" type="button" data-goto="content_audit">See all</button></header>
+        <div class="activity-list">${audit.slice(0, 6).map((item) => `<div class="activity"><span class="marker marker--icon">${iconMarkup(item.table_name in collections ? item.table_name : 'content_audit')}</span><div><strong>${escapeHTML(auditVerb(item.action))} ${escapeHTML(auditRecordName(item))}</strong><small>${escapeHTML(pretty(item.table_name || 'content'))}</small></div><time title="${escapeHTML(formatDate(item.created_at, true))}">${escapeHTML(relativeDate(item.created_at))}</time></div>`).join('') || '<div class="activity activity--empty"><div><strong>No changes recorded yet</strong><small>Every edit you make from here will be listed.</small></div></div>'}</div></section>
+
+      <section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Recent submissions</h3><p>Membership, project, event, and contact responses.</p></div>${submissions.length ? '<button class="link-button" type="button" data-goto="submissions">See all</button>' : ''}</header>
+        <div class="activity-list">${submissions.slice(0, 6).map((item) => `<div class="activity"><span class="marker marker--icon">${iconMarkup('submissions')}</span><div><strong>${escapeHTML(item.full_name || item.email || 'Visitor')}</strong><small>${escapeHTML(pretty(item.type || 'submission'))}</small></div><time title="${escapeHTML(formatDate(item.created_at, true))}">${escapeHTML(relativeDate(item.created_at))}</time></div>`).join('') || '<div class="activity activity--empty"><div><strong>No submissions yet</strong><small>Anything sent through a public form arrives here.</small></div></div>'}</div></section>`;
+
+    $$('[data-goto]', content).forEach((button) => button.addEventListener('click', () => switchView(button.dataset.goto)));
   }
 
   async function renderSubmissions() {
-    const submissions = await rows('submissions','created_at.desc'); $('[data-new-count]').textContent = String(submissions.filter((item) => item.status === 'new').length);
+    const submissions = await rows('submissions','created_at.desc'); setBadge(submissions.filter((item) => item.status === 'new').length);
     content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Inbox</p><h2>Public submissions</h2><p>Review what students sent, mark it handled, or archive it. Network hashes are used only for abuse prevention and are not shown here.</p></div></div><div class="submission-list">${submissions.map((item) => {
       const payload = item.payload || {}; const lead = payload.message || payload.motivation || payload.problem || payload.first_test || '';
-      return `<article class="submission"><div><div class="submission__meta"><span>${escapeHTML(pretty(item.type))}</span><span>${escapeHTML(item.status)}</span><span>${escapeHTML(formatDate(item.created_at,true))}</span><span>${escapeHTML(item.email)}</span></div><h3>${escapeHTML(item.full_name || item.email)}</h3><p>${escapeHTML(lead)}</p><div class="submission-data">${Object.entries(payload).filter(([key]) => !['full_name','email'].includes(key)).map(([key,value]) => `<div><b>${escapeHTML(pretty(key))}</b><span>${escapeHTML(Array.isArray(value) ? value.join(', ') : value)}</span></div>`).join('')}</div></div><div class="row-actions"><button type="button" data-status="reviewed" data-id="${escapeHTML(item.id)}" title="Mark reviewed">✓</button><button type="button" data-status="archived" data-id="${escapeHTML(item.id)}" title="Archive">↧</button><button type="button" data-delete-submission="${escapeHTML(item.id)}" title="Delete">×</button></div></article>`;
+      return `<article class="submission"><div><div class="submission__meta"><span>${escapeHTML(pretty(item.type))}</span><span>${escapeHTML(item.status)}</span><span>${escapeHTML(formatDate(item.created_at,true))}</span><span>${escapeHTML(item.email)}</span></div><h3>${escapeHTML(item.full_name || item.email)}</h3><p>${escapeHTML(lead)}</p><div class="submission-data">${Object.entries(payload).filter(([key]) => !['full_name','email'].includes(key)).map(([key,value]) => `<div><b>${escapeHTML(pretty(key))}</b><span>${escapeHTML(Array.isArray(value) ? value.join(', ') : value)}</span></div>`).join('')}</div></div><div class="row-actions"><button type="button" data-status="reviewed" data-id="${escapeHTML(item.id)}" title="Mark reviewed">${iconMarkup('reviewed')}<span>Reviewed</span></button><button type="button" data-status="archived" data-id="${escapeHTML(item.id)}" title="Archive">${iconMarkup('archive')}<span>Archive</span></button><button class="danger" type="button" data-delete-submission="${escapeHTML(item.id)}" title="Delete">${iconMarkup('trash')}<span>Delete</span></button></div></article>`;
     }).join('') || '<div class="empty"><div><h3>No submissions yet</h3><p>Working public forms will place new entries here.</p></div></div>'}</div>`;
     $$('[data-status]',content).forEach((button) => button.addEventListener('click', async () => { await saveRecord('submissions',{status:button.dataset.status},button.dataset.id); toast('Submission updated.'); await renderSubmissions(); }));
     $$('[data-delete-submission]',content).forEach((button) => button.addEventListener('click', () => confirmAction('Delete this submission?','This permanently removes the entry.',async()=>{await deleteTableRecord('submissions',button.dataset.deleteSubmission);toast('Submission deleted.');await renderSubmissions();})));
@@ -439,20 +607,123 @@
 
   async function renderSiteSettings() {
     const settingsRows = await rows('site_settings','updated_at.desc'); const settings = settingsRows?.[0]?.settings || {};
-    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Configuration</p><h2>Site settings</h2><p>These values control contact links, the announcement, and homepage identity. Page copy remains versioned in GitHub.</p></div></div><form class="panel" data-settings-form><div class="editor__fields">${siteFields.map((field)=>fieldMarkup(field,settings)).join('')}</div><div style="display:flex;justify-content:flex-end;padding:1rem;border-top:1px solid var(--line)"><button class="button primary" type="submit">Save settings</button></div></form>`;
+    content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:262"><span class="view-head__icon">${iconMarkup('site_settings')}</span><div><h2>Site settings</h2><p class="view-head__count">${siteFields.length} values used across the public site</p></div><details class="guideline"><summary>Editing guidance</summary><p>These values control contact links, the announcement, and homepage identity. Page copy remains versioned in GitHub.</p></details></div><form data-settings-form>${SITE_SECTIONS.map((section) => `<section class="panel settings-section"><header class="panel__head"><div><h3>${escapeHTML(section.title)}</h3><p>${escapeHTML(section.copy)}</p></div></header><div class="editor__fields">${section.fields.map((field) => fieldMarkup(field, settings)).join('')}</div></section>`).join('')}<div class="settings-save"><button class="button primary" type="submit">Save settings</button></div></form>`;
     $('[data-settings-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);const next={};siteFields.forEach((field)=>{next[field.name]=String(data.get(field.name)||'').trim();});await request('/rest/v1/site_settings?on_conflict=id',{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:'main',settings:next,published:true})});toast('Site settings saved.');});
   }
 
+  /* The library listed camera-roll filenames with a single Copy URL action: no
+   * rename, no delete, and no alt text, which is an accessibility gap the
+   * moment one of these images lands on a public page. Each card now edits its
+   * own name and description, and can be removed from storage and the index. */
   async function renderMedia() {
     const media = await rows('media','created_at.desc').catch(()=>[]);
-    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Assets</p><h2>Media library</h2><p>Upload public images and PDFs. Record the original source and license separately when the file is not created by the society.</p></div></div><div class="media-uploader"><label><span><strong>Upload files</strong><small> JPG, PNG, WebP, GIF, or PDF. Maximum 15 MB each.</small></span><input type="file" data-media-upload accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple></label></div><div class="media-grid">${media.map((item)=>`<article class="media-card">${String(item.mime_type||'').startsWith('image/')?`<img src="${escapeHTML(item.public_url)}" alt="">`:'<div class="media-card__file">FILE</div>'}<div><strong title="${escapeHTML(item.file_name)}">${escapeHTML(item.file_name)}</strong><small>${escapeHTML(formatDate(item.created_at))}</small><button class="link-button" type="button" data-copy-url="${escapeHTML(item.public_url)}">Copy URL</button></div></article>`).join('')||'<div class="empty"><div><h3>No uploaded media</h3><p>The versioned site images remain available in the repository.</p></div></div>'}</div>`;
-    $('[data-media-upload]')?.addEventListener('change',async(event)=>{const files=[...(event.target.files||[])];for(const file of files){try{await uploadFile(file,'media');toast(`${file.name} uploaded.`);}catch(error){toast(`${file.name}: ${error.message}`,'error');}}await renderMedia();});
-    $$('[data-copy-url]',content).forEach((button)=>button.addEventListener('click',async()=>{await navigator.clipboard.writeText(button.dataset.copyUrl);toast('URL copied.');}));
+    const usage = await collectMediaUsage().catch(() => new Map());
+    content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:196"><span class="view-head__icon">${iconMarkup('media')}</span><div><h2>Media library</h2><p class="view-head__count">${media.length} file${media.length === 1 ? '' : 's'}</p></div><details class="guideline"><summary>Editing guidance</summary><p>Upload public images and PDFs. Record the original source and license separately when the file is not created by the society.</p></details></div>
+      <div class="media-uploader"><label><input type="file" data-media-upload accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple><span class="media-uploader__face">${iconMarkup('media')}<strong>Choose files to upload</strong><small>JPG, PNG, WebP, GIF, or PDF. Maximum 15 MB each.</small></span></label></div>
+      <div class="media-grid">${media.map((item) => {
+        const used = usage.get(item.public_url) || [];
+        const name = item.title || item.file_name;
+        return `<article class="media-card" data-media-card="${escapeHTML(item.id)}">
+          ${String(item.mime_type || '').startsWith('image/') ? `<img src="${escapeHTML(item.public_url)}" alt="${escapeHTML(item.alt_text || '')}">` : `<div class="media-card__file">${iconMarkup('documents')}</div>`}
+          <div class="media-card__body">
+            <strong title="${escapeHTML(item.file_name)}">${escapeHTML(name)}</strong>
+            <small>${escapeHTML(relativeDate(item.created_at))} · ${escapeHTML(formatBytes(item.size_bytes))}</small>
+            <small class="media-card__usage">${used.length ? `Used in ${escapeHTML(used.join(', '))}` : 'Not used on any page yet'}</small>
+            <div class="media-card__actions">
+              <button class="link-button" type="button" data-copy-url="${escapeHTML(item.public_url)}">Copy URL</button>
+              <button class="link-button" type="button" data-media-edit="${escapeHTML(item.id)}">Rename</button>
+              <button class="link-button danger" type="button" data-media-delete="${escapeHTML(item.id)}">Delete</button>
+            </div>
+            <form class="media-card__form" data-media-form="${escapeHTML(item.id)}" hidden>
+              <label><span>Name</span><input type="text" name="title" maxlength="140" value="${escapeHTML(name)}"></label>
+              <label><span>Alt text</span><input type="text" name="alt_text" maxlength="240" value="${escapeHTML(item.alt_text || '')}" placeholder="What the image shows"></label>
+              <div><button class="button primary button--small" type="submit">Save</button><button class="link-button" type="button" data-media-cancel="${escapeHTML(item.id)}">Cancel</button></div>
+            </form>
+          </div>
+        </article>`;
+      }).join('') || `<div class="empty"><div>${iconMarkup('media','empty__icon')}<h3>No uploaded media</h3><p>The versioned site images remain available in the repository.</p></div></div>`}</div>`;
+
+    $('[data-media-upload]')?.addEventListener('change', async (event) => {
+      const files = [...(event.target.files || [])];
+      for (const file of files) {
+        try { await uploadFile(file, 'media'); toast(`${file.name} uploaded.`); }
+        catch (error) { toast(`${file.name}: ${error.message}`, 'error'); }
+      }
+      await renderMedia();
+    });
+    $$('[data-copy-url]', content).forEach((button) => button.addEventListener('click', async () => { await navigator.clipboard.writeText(button.dataset.copyUrl); toast('URL copied.'); }));
+    $$('[data-media-edit]', content).forEach((button) => button.addEventListener('click', () => { $(`[data-media-form="${CSS.escape(button.dataset.mediaEdit)}"]`).hidden = false; }));
+    $$('[data-media-cancel]', content).forEach((button) => button.addEventListener('click', () => { $(`[data-media-form="${CSS.escape(button.dataset.mediaCancel)}"]`).hidden = true; }));
+    $$('[data-media-form]', content).forEach((form) => form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      try {
+        await saveRecord('media', { title: String(data.get('title') || '').trim(), alt_text: String(data.get('alt_text') || '').trim() }, form.dataset.mediaForm);
+        toast('File details saved.');
+        await renderMedia();
+      } catch (error) { toast(error.message, 'error'); }
+    }));
+    $$('[data-media-delete]', content).forEach((button) => button.addEventListener('click', () => {
+      const record = media.find((item) => String(item.id) === button.dataset.mediaDelete);
+      if (!record) return;
+      const used = usage.get(record.public_url) || [];
+      confirmAction(
+        `Delete ${record.title || record.file_name}?`,
+        used.length
+          ? `This file is currently used in ${used.join(', ')}. Deleting it will leave a broken image there.`
+          : 'This removes the file from storage. Anything already pointing at its URL will break.',
+        async () => {
+          await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${record.storage_path.split('/').map(encodeURIComponent).join('/')}`, { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+          await deleteTableRecord('media', record.id);
+          toast('File deleted.');
+          await renderMedia();
+        }
+      );
+    }));
+  }
+
+  function formatBytes(bytes) {
+    const size = Number(bytes || 0);
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  /* "Where is this used" answered by scanning the collections that hold an
+   * image field, so deleting a file in use warns instead of silently breaking
+   * a public page. */
+  async function collectMediaUsage() {
+    const withImages = Object.entries(collections).filter(([, definition]) => definition.imageField);
+    const found = new Map();
+    const results = await Promise.all(withImages.map(([view]) => rows(view).catch(() => [])));
+    withImages.forEach(([view, definition], index) => {
+      for (const record of results[index] || []) {
+        const url = record[definition.imageField];
+        if (!url) continue;
+        const list = found.get(url) || [];
+        if (!list.includes(definition.label)) list.push(definition.label);
+        found.set(url, list);
+      }
+    });
+    return found;
+  }
+
+  /* The log stores the Postgres verb. Officers think in Added and Edited. */
+  const AUDIT_VERBS = { INSERT: 'Added', UPDATE: 'Edited', DELETE: 'Removed', TRUNCATE: 'Cleared' };
+  function auditVerb(action) {
+    return AUDIT_VERBS[String(action || '').toUpperCase()] || pretty(action || 'Changed');
+  }
+  /* Singleton tables keep one row under a fixed key. Printing "main" as if it
+   * were a record name means nothing to a reader; the collection is the name. */
+  function auditRecordName(item) {
+    const label = item.snapshot?.title || item.snapshot?.name || item.record_id || '';
+    if (!label || /^(main|default|singleton)$/i.test(label)) return pretty(item.table_name || 'record');
+    return label;
   }
 
   async function renderAudit() {
     const audit = await rows('content_audit','created_at.desc');
-    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Accountability</p><h2>Change history</h2><p>Content changes are recorded automatically. This view is read-only.</p></div></div><div class="table-wrap"><table><thead><tr><th>Action</th><th>Record</th><th>Collection</th><th>Date</th></tr></thead><tbody>${audit.map((item)=>`<tr><td>${escapeHTML(item.action)}</td><td>${escapeHTML(item.snapshot?.title||item.snapshot?.name||item.record_id||'Record')}</td><td>${escapeHTML(pretty(item.table_name))}</td><td>${escapeHTML(formatDate(item.created_at,true))}</td></tr>`).join('')||'<tr><td colspan="4">No changes have been recorded.</td></tr>'}</tbody></table></div>`;
+    content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:210"><span class="view-head__icon">${iconMarkup('content_audit')}</span><div><h2>Change history</h2><p class="view-head__count">${audit.length} recorded change${audit.length === 1 ? '' : 's'}</p></div><details class="guideline"><summary>What this is</summary><p>Every content edit is recorded automatically for board handoff. This view is read-only.</p></details></div><div class="table-wrap"><table><thead><tr><th>Change</th><th>Record</th><th>Collection</th><th>When</th></tr></thead><tbody>${audit.map((item)=>`<tr><td><span class="verb verb--${escapeHTML(String(item.action||'').toLowerCase())}">${escapeHTML(auditVerb(item.action))}</span></td><td>${escapeHTML(auditRecordName(item))}</td><td>${escapeHTML(pretty(item.table_name))}</td><td><time title="${escapeHTML(formatDate(item.created_at,true))}">${escapeHTML(relativeDate(item.created_at))}</time></td></tr>`).join('')||'<tr><td colspan="4">No changes have been recorded.</td></tr>'}</tbody></table></div>`;
   }
 
   async function renderMembers() {
@@ -462,8 +733,8 @@
     content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Access</p><h2>Officers and roles</h2><p>Create a role before inviting someone into it. Seat limits count current profiles and pending invitations.</p></div></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Invite an officer</h3><p>The recipient receives a temporary setup code.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-invite-form><label>Full name<input type="text" name="full_name" maxlength="120"></label><label>Email<input type="email" name="email" required></label><label>Role<select name="role_id" required><option value="">Choose a role</option>${roles.filter((role)=>role.active).map((role)=>`<option value="${escapeHTML(role.id)}">${escapeHTML(role.label)} · ${role.seats} seat${role.seats===1?'':'s'}</option>`).join('')}</select></label><label>Optional note<textarea name="message" rows="3" maxlength="800"></textarea></label><button class="button primary" type="submit">Send setup code</button><p class="form-message" data-invite-message></p></form></section><section class="panel"><header class="panel__head"><div><h3>Create a role</h3><p>Use officer titles that describe the actual responsibility.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-role-form><label>Role name<input type="text" name="label" required maxlength="100"></label><label>Description<textarea name="description" rows="3" maxlength="600"></textarea></label><label>Access<select name="access_level"><option value="editor">Editor</option><option value="admin">Administrator</option></select></label><label>Seats<input type="number" name="seats" value="1" min="1" max="50"></label><button class="button primary" type="submit">Create role</button></form></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Current officers</h3><p>${members.length} profile${members.length===1?'':'s'}</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Name</th><th>Email</th><th>Officer role</th><th>Access</th></tr></thead><tbody>${members.map((member)=>`<tr><td>${escapeHTML(member.full_name||'Not set')}</td><td>${escapeHTML(member.email)}</td><td>${escapeHTML(roleMap.get(member.society_role_id)||'Not assigned')}</td><td>${escapeHTML(member.role)}</td></tr>`).join('')||'<tr><td colspan="4">No officer profiles.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Invitations</h3><p>Pending and historical invitation records.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Sent</th><th></th></tr></thead><tbody>${invitations.map((invite)=>`<tr><td>${escapeHTML(invite.full_name||invite.email)}<br><small>${escapeHTML(invite.email)}</small></td><td>${escapeHTML(roleMap.get(invite.role_id)||'Role removed')}</td><td>${escapeHTML(invite.status)}</td><td>${escapeHTML(formatDate(invite.sent_at,true))}</td><td>${invite.status==='sent'?`<button class="link-button" type="button" data-revoke="${escapeHTML(invite.id)}">Revoke</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">No invitations.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Role definitions</h3><p>Deactivate roles that should no longer accept invitations.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Role</th><th>Access</th><th>Seats</th><th>Status</th><th></th></tr></thead><tbody>${roles.map((role)=>`<tr><td><strong>${escapeHTML(role.label)}</strong><br><small>${escapeHTML(role.description||'')}</small></td><td>${escapeHTML(role.access_level)}</td><td>${role.seats}</td><td>${role.active?'Active':'Inactive'}</td><td>${role.active?`<button class="link-button" type="button" data-deactivate-role="${escapeHTML(role.id)}">Deactivate</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
     $('[data-invite-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));const message=$('[data-invite-message]');message.textContent='Sending…';try{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'invite',...data})});message.textContent='Setup code sent.';message.classList.add('success');event.currentTarget.reset();toast('Officer invitation sent.');await renderMembers();}catch(error){message.textContent=error.message;}});
     $('[data-role-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));data.seats=Number(data.seats||1);try{await apiCall('/api/roles',{method:'POST',body:JSON.stringify(data)});toast('Role created.');await renderMembers();}catch(error){toast(error.message,'error');}});
-    $$('[data-revoke]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Revoke this invitation?','The existing one-time code will no longer be treated as a pending invitation record.',async()=>{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'revoke',id:button.dataset.revoke})});toast('Invitation revoked.');await renderMembers();})));
-    $$('[data-deactivate-role]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Deactivate this role?','Existing officer profiles remain. The role will disappear from new invitations.',async()=>{await apiCall('/api/roles',{method:'DELETE',body:JSON.stringify({id:button.dataset.deactivateRole})});toast('Role deactivated.');await renderMembers();})));
+    $$('[data-revoke]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Revoke this invitation?','The existing one-time code will no longer be treated as a pending invitation record.',async()=>{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'revoke',id:button.dataset.revoke})});toast('Invitation revoked.');await renderMembers();},'Revoke')));
+    $$('[data-deactivate-role]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Deactivate this role?','Existing officer profiles remain. The role will disappear from new invitations.',async()=>{await apiCall('/api/roles',{method:'DELETE',body:JSON.stringify({id:button.dataset.deactivateRole})});toast('Role deactivated.');await renderMembers();},'Deactivate')));
   }
 
   /* Newsletters. A draft can be tested against your own address, sent now, or
@@ -576,7 +847,8 @@
     $('[data-broadcast-send]')?.addEventListener('click', () => confirmAction(
       `Send "${editing.subject}" now?`,
       `This goes to ${audienceSize} ${audienceSize === 1 ? 'person' : 'people'} and cannot be recalled.`,
-      async () => { await driveSend(editing.id, say); await renderBroadcasts(); }
+      async () => { await driveSend(editing.id, say); await renderBroadcasts(); },
+      'Send now'
     ));
 
     $$('[data-open-broadcast]', content).forEach((button) => button.addEventListener('click', async () => {
@@ -607,9 +879,27 @@
     } catch(error){content.innerHTML=`<div class="empty"><div><h3>This section could not load</h3><p>${escapeHTML(error.message)}</p><button class="button secondary" type="button" data-retry>Try again</button></div></div>`;$('[data-retry]')?.addEventListener('click',()=>switchView(view));}
   }
 
-  function confirmAction(title,copy,action){pendingConfirm=action;$('[data-confirm-title]').textContent=title;$('[data-confirm-copy]').textContent=copy;confirmDialog.showModal();}
+  /* The accept button used to read "Confirm" for everything, so the dialog for
+   * deleting a record looked identical to the one for archiving a submission.
+   * Naming the action is the last chance to notice you are on the wrong one. */
+  function confirmAction(title, copy, action, acceptLabel = 'Delete') {
+    pendingConfirm = action;
+    $('[data-confirm-title]').textContent = title;
+    $('[data-confirm-copy]').textContent = copy;
+    $('[data-confirm-accept]').textContent = acceptLabel;
+    confirmDialog.showModal();
+  }
 
   function bindShell() {
+    // Icons live in JS beside the collection definitions rather than being
+    // duplicated into the static markup, so a new collection gets its sidebar
+    // icon by existing.
+    $$('[data-view]').forEach((button) => {
+      const view = button.dataset.view;
+      if (!ICONS[view]) return;
+      button.insertAdjacentHTML('afterbegin', iconMarkup(view));
+      if (ACCENTS[view] !== undefined) button.style.setProperty('--accent-h', ACCENTS[view]);
+    });
     $$('[data-view]').forEach((button)=>button.addEventListener('click',()=>switchView(button.dataset.view)));
     $('[data-open-sidebar]')?.addEventListener('click',()=>document.body.classList.add('sidebar-open'));
     $('[data-close-sidebar]')?.addEventListener('click',()=>document.body.classList.remove('sidebar-open'));

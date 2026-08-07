@@ -70,9 +70,9 @@ a { color: inherit; }
 .sidebar__close { display: none; background: transparent; border-color: rgba(255,255,255,.15); color: white; }
 .sidebar nav { flex: 1; display: grid; align-content: start; gap: .15rem; padding: 1rem .75rem; }
 .sidebar nav p { margin: 1rem .65rem .35rem; color: rgba(255,255,255,.42); font-size: .65rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.sidebar nav button { display: flex; align-items: center; justify-content: space-between; min-height: 39px; padding: .58rem .7rem; border: 0; border-radius: .5rem; background: transparent; color: rgba(255,255,255,.74); text-align: left; cursor: pointer; }
+.sidebar nav button { display: flex; align-items: center; gap: .6rem; min-height: 39px; padding: .58rem .7rem; border: 0; border-radius: .5rem; background: transparent; color: rgba(255,255,255,.74); text-align: left; cursor: pointer; }
 .sidebar nav button:hover, .sidebar nav button.active { background: rgba(255,255,255,.1); color: white; }
-.sidebar nav button span { min-width: 1.5rem; padding: .1rem .35rem; border-radius: 99px; background: var(--gold); color: #21170a; font-size: .68rem; text-align: center; }
+.sidebar nav button > span { min-width: 1.5rem; margin-left: auto; padding: .1rem .35rem; border-radius: 99px; background: var(--gold); color: #21170a; font-size: .68rem; text-align: center; }
 .sidebar__user { display: grid; grid-template-columns: 36px 1fr 40px; align-items: center; gap: .65rem; padding: 1rem; border-top: 1px solid rgba(255,255,255,.1); }
 .sidebar__user > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--gold); color: #231805; font-size: .75rem; font-weight: 900; }
 .sidebar__user div { display: grid; min-width: 0; }
@@ -235,3 +235,177 @@ tr:last-child td { border-bottom: 0; }
 .panel form label { display: grid; gap: .38rem; font-size: .82rem; font-weight: 750; }
 .panel form input, .panel form textarea, .panel form select { width: 100%; border: 1px solid #cfd4db; border-radius: .6rem; padding: .75rem .82rem; background: white; color: var(--ink); outline: 0; }
 .panel form input:focus, .panel form textarea:focus, .panel form select:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(120,23,49,.11); }
+
+
+/* ---------------------------------------------------------------------------
+   Collection identity, row safety, and form grouping.
+
+   Twelve list pages rendered from one template were indistinguishable: the only
+   cue for where you were was which sidebar row happened to be highlighted. Each
+   collection now carries a line icon and an accent hue, and the row actions are
+   labelled rather than being three unlabelled glyphs with delete at the end.
+   --------------------------------------------------------------------------- */
+
+.icon { width: 1.15rem; height: 1.15rem; flex: 0 0 auto; }
+.sidebar nav button .icon { opacity: .62; }
+.sidebar nav button:hover .icon, .sidebar nav button.active .icon { opacity: 1; color: hsl(var(--accent-h, 40) 70% 72%); }
+
+.view-head--collection {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .9rem;
+  padding: 0 0 1.1rem;
+}
+.view-head__icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: .7rem;
+  color: hsl(var(--accent-h, 340) 55% 34%);
+  background: hsl(var(--accent-h, 340) 62% 95%);
+}
+.view-head__icon .icon { width: 1.35rem; height: 1.35rem; }
+.view-head__count { margin: .1rem 0 0 !important; color: var(--muted); font-size: .85rem; }
+
+/* Editorial policy used to sit permanently under every page title, in prime
+   space, telling the officer what not to publish. It is onboarding, so it
+   folds away. */
+.guideline { justify-self: end; max-width: 30rem; font-size: .82rem; }
+.guideline summary { color: var(--maroon); font-weight: 700; cursor: pointer; list-style: none; }
+.guideline summary::-webkit-details-marker { display: none; }
+.guideline summary::before { content: "?"; display: inline-grid; place-items: center; width: 1.15rem; height: 1.15rem; margin-right: .4rem; border: 1px solid currentColor; border-radius: 50%; font-size: .72rem; }
+.guideline p { margin: .6rem 0 0 !important; padding: .75rem .85rem; border-radius: .6rem; background: white; border: 1px solid var(--line); color: var(--muted); line-height: 1.55; }
+
+.marker--icon { color: hsl(var(--accent-h, 340) 45% 40%); }
+.record-title .marker--icon .icon { width: 1.25rem; height: 1.25rem; }
+.empty__icon { width: 2rem; height: 2rem; margin: 0 auto .75rem; color: var(--muted); opacity: .6; }
+
+/* Delete used to be a bare glyph the same colour and size as Duplicate, sitting
+   at the far right of the row where a fast click lands. It is now named and
+   coloured, and set apart from the two safe actions. */
+.row-actions { display: flex; justify-content: flex-end; align-items: center; gap: .4rem; }
+.row-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  width: auto;
+  height: 32px;
+  padding: 0 .6rem;
+  border: 1px solid var(--line);
+  border-radius: .5rem;
+  background: white;
+  color: var(--ink);
+  font-size: .78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.row-actions button:hover { border-color: #b9c0c9; background: #f7f8fa; }
+.row-actions .icon { width: .95rem; height: .95rem; }
+.row-actions button.danger {
+  margin-left: .5rem;
+  border-color: #f0c7c4;
+  background: #fff7f6;
+  color: var(--danger);
+}
+.row-actions button.danger:hover { border-color: var(--danger); background: #ffece9; }
+.link-button.danger { color: var(--danger); }
+
+.verb { display: inline-block; padding: .2rem .5rem; border-radius: .4rem; background: #eef1f4; color: var(--ink); font-size: .76rem; font-weight: 700; }
+.verb--insert { background: #e8f4ec; color: var(--success); }
+.verb--delete { background: #fdecea; color: var(--danger); }
+
+/* Overview. Every counter opens the collection it counts, and a counter at zero
+   says what that means instead of leaving a bare 0 on the page. */
+.metric-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+button.metric {
+  display: grid;
+  gap: .1rem;
+  padding: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: .85rem;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, transform .15s ease;
+}
+button.metric:hover { border-color: hsl(var(--accent-h, 210) 45% 62%); transform: translateY(-1px); }
+.metric__icon { display: grid; place-items: center; width: 2rem; height: 2rem; margin-bottom: .5rem; border-radius: .55rem; color: hsl(var(--accent-h, 210) 50% 34%); background: hsl(var(--accent-h, 210) 60% 95%); }
+.metric__label { display: block; color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+button.metric strong { display: block; margin-top: .2rem; font-size: 2rem; line-height: 1.1; letter-spacing: -.05em; }
+.metric__hint { display: block; margin-top: .15rem; color: var(--muted); font-size: .76rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+/* Eighteen settings in one column with one Save gave no sense of grouping. */
+.settings-section { margin-bottom: 1rem; }
+.settings-section .editor__fields { background: white; }
+.settings-save { display: flex; justify-content: flex-end; padding-bottom: 2rem; }
+
+/* The slug is the one machine field an officer may still need, so it stays
+   reachable without sitting above the record's own title. */
+.advanced { grid-column: 1 / -1; padding-top: .4rem; border-top: 1px solid var(--line); }
+.advanced summary { color: var(--muted); font-size: .8rem; font-weight: 700; cursor: pointer; }
+.advanced__fields { display: grid; gap: 1rem; padding-top: .9rem; }
+
+/* Media library: a real name, alt text, and a way to remove a file. */
+.media-uploader { padding: 0; border-style: dashed; }
+.media-uploader label { position: relative; display: block; padding: 1.4rem; cursor: pointer; }
+.media-uploader input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; opacity: 0; cursor: pointer; }
+.media-uploader__face { display: grid; justify-items: center; gap: .2rem; text-align: center; color: var(--muted); }
+.media-uploader__face .icon { width: 1.6rem; height: 1.6rem; margin-bottom: .3rem; }
+.media-uploader__face strong { color: var(--ink); }
+.media-uploader label:hover .media-uploader__face strong { color: var(--maroon); }
+.media-card__body { display: grid; gap: .15rem; padding: .75rem; }
+.media-card__usage { white-space: normal !important; line-height: 1.4; }
+.media-card__actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .45rem; font-size: .82rem; }
+.media-card__form { display: grid; gap: .6rem; margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--line); }
+.media-card__form label { display: grid; gap: .25rem; font-size: .74rem; font-weight: 750; }
+.media-card__form input { width: 100%; border: 1px solid #cfd4db; border-radius: .5rem; padding: .5rem .6rem; }
+.media-card__form div { display: flex; align-items: center; gap: .7rem; }
+.button--small { min-height: 34px; padding: .4rem .75rem; font-size: .85rem; }
+
+/* A student officer editing between classes is on a phone. Dense action rows
+   and two-column forms were laid out for a desktop only. */
+@media (max-width: 720px) {
+  .view-head--collection { grid-template-columns: auto minmax(0, 1fr); }
+  .guideline { grid-column: 1 / -1; justify-self: start; max-width: none; }
+  .row-actions { flex-wrap: wrap; justify-content: flex-start; }
+  .row-actions button.danger { margin-left: 0; }
+  .settings-section .editor__fields { grid-template-columns: 1fr; }
+  .media-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .row-actions button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+  .row-actions button { width: 36px; height: 36px; justify-content: center; padding: 0; }
+  .row-actions .icon { width: 1.05rem; height: 1.05rem; }
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* An empty-state row has no marker, so it must not sit in the marker column. */
+.activity--empty { grid-template-columns: minmax(0, 1fr); }
+.activity--empty strong, .activity--empty small { white-space: normal; }
+
+/* On a phone the table pushed Visibility and the row actions off the right
+   edge, so editing or deleting meant discovering a sideways scroll first. A
+   student officer making a quick change between classes is exactly this case,
+   so each row becomes a self-contained card with its actions in reach. */
+@media (max-width: 720px) {
+  .table-wrap { overflow-x: visible; border: 0; background: none; }
+  .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
+  .table-wrap thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .table-wrap tr {
+    margin-bottom: .7rem;
+    padding: .9rem;
+    border: 1px solid var(--line);
+    border-radius: .75rem;
+    background: white;
+  }
+  .table-wrap td { padding: 0; border: 0; }
+  .table-wrap td + td { margin-top: .55rem; }
+  .record-title { min-width: 0; }
+  .record-title strong, .record-title small { max-width: none; white-space: normal; }
+  /* Visibility and Updated read as one quiet line above the actions. */
+  .table-wrap td:nth-child(2), .table-wrap td:nth-child(3) { display: inline-block; width: auto; margin-right: .7rem; color: var(--muted); font-size: .8rem; }
+  .table-wrap td:last-child { margin-top: .7rem; padding-top: .7rem; border-top: 1px solid #edf0f3; }
+  .row-actions { justify-content: flex-start; }
+}

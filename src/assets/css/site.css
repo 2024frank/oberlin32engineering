@@ -583,3 +583,4 @@ p { color: var(--ink-650); }
    they became a third child of a two-column grid and the note wrapped onto a
    new row underneath the copy. */
 .page-hero__side { display: grid; gap: 1rem; align-content: start; min-width: 0; }
+.section-more { margin: 1.25rem 0 0; }

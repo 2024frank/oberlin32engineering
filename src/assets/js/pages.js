@@ -110,7 +110,8 @@
     if (!root) return [];
     try {
       const data = await window.O32Data.get(table);
-      const rows = Array.isArray(data) ? data : (data ? [data] : []);
+      let rows = Array.isArray(data) ? data : (data ? [data] : []);
+      if (options.filter) rows = rows.filter(options.filter);
       const limited = options.limit ? rows.slice(0, options.limit) : rows;
       root.innerHTML = limited.length ? limited.map(renderer).join('') : empty(options.emptyTitle || 'Nothing published yet', options.emptyCopy || 'Check back after the organizing team confirms the details.');
       window.O32Site?.applyFilters?.(root);
@@ -167,6 +168,14 @@
       renderList('[data-resource-grid]', 'resources', resourceCard, { emptyTitle: 'Resources are being checked', emptyCopy: 'Only verified links will be published here.' }),
       renderList('[data-opportunity-grid]', 'opportunities', opportunityCard),
       renderList('[data-leader-grid]', 'leaders', leaderCard),
+      // The homepage shows the people, not the vacancies: an unfilled seat is
+      // useful on the leadership page and confusing as an introduction.
+      renderList('[data-home-leaders]', 'leaders', leaderCard, {
+        filter: (item) => !item.open_seat && item.name && item.name !== 'Open position',
+        limit: 2,
+        emptyTitle: 'The founding team is forming',
+        emptyCopy: 'Officer records appear here once roles are confirmed.'
+      }),
       renderList('[data-partner-grid]', 'partner_schools', partnerCard),
       renderList('[data-news-grid]', 'news_posts', newsCard, { limit: 6 })
     ]);
