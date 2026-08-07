@@ -188,7 +188,7 @@ async function main() {
       return response(404, { code: 'PGRST202', message: 'Could not find the function allow_account_email in the schema cache' });
     }
     if (value.endsWith('/auth/v1/admin/generate_link')) {
-      return response(200, { properties: { email_otp: '123456' }, user: { id: 'new-user', user_metadata: {} } });
+      return response(200, { properties: { email_otp: '123456', action_link: 'https://example.supabase.co/auth/v1/verify?token=stub' }, user: { id: 'new-user', user_metadata: {} } });
     }
     if (value === 'https://api.resend.com/emails') return response(200, { id: 'invite-mail' });
     if (value.includes('/rest/v1/invitations?email=')) return response(200, []);

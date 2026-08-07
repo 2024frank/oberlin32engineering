@@ -1,1 +1,1 @@
-window.O32_CONFIG = {"supabaseUrl":"https://tpsawnzhhyeddqiefxfp.supabase.co","supabaseAnonKey":"","storageBucket":"society-media","portalEnabled":true,"useDatabase":true,"contentVersion":"2026-08-07-rebuild"};
+window.O32_CONFIG = {"supabaseUrl":"","supabaseAnonKey":"","storageBucket":"society-media","portalEnabled":false,"useDatabase":false,"contentVersion":"2026-08-07-rebuild"};

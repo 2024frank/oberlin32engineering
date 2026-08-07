@@ -50,14 +50,23 @@ function codeEmail(name, code) {
   });
 }
 
-function invitationCodeEmail(name, role, code, note) {
+function invitationEmail(name, role, description, link, note, inviter) {
   const safeName = L.escapeHtml(name);
   const safeRole = L.escapeHtml(role);
-  const safeCode = L.escapeHtml(code);
+  const duties = description ? `<p>${L.escapeHtml(description)}</p>` : '';
   const extra = note ? `<p>${L.escapeHtml(note)}</p>` : '';
+  const from = inviter ? `<p>${L.escapeHtml(inviter)}</p>` : '';
   return L.wrapEmail({
-    bodyHtml: `<p>Hi ${safeName},</p><p>You have been invited to help the Oberlin 3-2 Engineering Society as <strong>${safeRole}</strong>.</p>${extra}<p>Enter this one-time code in the officer portal, then choose a password:</p><p style="font:700 28px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;color:#7b1230;margin:22px 0">${safeCode}</p><p>The code is temporary. If you were not expecting this invitation, you can ignore the message.</p>`
-  });
+    bodyHtml:
+      `<p>Hi ${safeName},</p>` +
+      `<p>Welcome to the Oberlin 3-2 Engineering Society. You are joining the organizing team as <strong>${safeRole}</strong>.</p>` +
+      duties +
+      extra +
+      `<p>Set up your account and choose a password to get started. The link works once and lasts an hour.</p>`,
+    actionUrl: link,
+    actionLabel: 'Set up your account',
+    footerNote: 'Oberlin 3-2 Engineering Society, Oberlin College'
+  }).replace('</div></body>', (from ? from : '') + '</div></body>');
 }
 
 async function seatUsage(roleId, email) {
@@ -287,7 +296,7 @@ module.exports = async (req, res) => {
       if (!L.isEmail(email)) return L.send(res, 400, { error: 'Enter a valid email address.' });
       if (!roleId) return L.send(res, 400, { error: 'Choose a role first.' });
 
-      const roles = await L.sb(`/rest/v1/society_roles?id=eq.${encodeURIComponent(roleId)}&select=id,label,access_level,seats,active`);
+      const roles = await L.sb(`/rest/v1/society_roles?id=eq.${encodeURIComponent(roleId)}&select=id,label,description,access_level,seats,active`);
       const role = Array.isArray(roles) ? roles[0] : null;
       if (!role) return L.send(res, 400, { error: 'That role no longer exists.' });
       if (!role.active) return L.send(res, 400, { error: `${role.label} is not currently active.` });
@@ -303,7 +312,7 @@ module.exports = async (req, res) => {
         access = await L.generateAccess('recovery', email, RESET_REDIRECT);
         reused = true;
       }
-      if (!access.code || !access.user?.id) return L.send(res, 502, { error: 'Supabase did not return a complete account setup code.' });
+      if (!access.link || !access.user?.id) return L.send(res, 502, { error: 'Supabase did not return a complete account setup code.' });
 
       const name = fullName || access.user.user_metadata?.full_name || email.split('@')[0];
       let resendId = null;
@@ -311,10 +320,10 @@ module.exports = async (req, res) => {
       try {
         const sent = await L.sendEmail({
           to: email,
-          subject: `Your Oberlin 3-2 officer code for ${role.label}`,
+          subject: `Welcome to the society as ${role.label}`,
           tag: reused ? 'invite-existing' : 'invite',
           replyTo: admin.email || undefined,
-          html: invitationCodeEmail(name, role.label, access.code, note)
+          html: invitationEmail(name, role.label, role.description, access.link, note, admin && (admin.full_name || admin.email))
         });
         resendId = sent?.id || null;
       } catch (error) {
