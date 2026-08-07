@@ -1,76 +1,89 @@
-<p align="center">
-  <img src="src/assets/images/logo-mark.svg" alt="Oberlin 3-2 Engineering Society" width="150">
-</p>
+# Oberlin 3-2 Engineering Society website
 
-<h1 align="center">Oberlin 3-2 Engineering Society</h1>
-<p align="center"><strong>Connect. Prepare. Build.</strong></p>
+This repository contains the public website, officer portal, versioned content, serverless API routes, and Supabase schema for the Oberlin 3-2 Engineering Society.
 
-A custom, responsive website for Oberlin’s student-led engineering community. It connects current and prospective 3-2 students with project teams, academic planning resources, leadership opportunities, panels, mentorship, events, plus a clearly labeled future engineering challenge concept.
+The public site is intentionally honest about the organization’s current stage. Proposed projects are labeled as proposals, planned events are not presented as confirmed dates, and the 3-2 guide points students to official sources rather than replacing academic advising.
 
-## What is included
+## Architecture
 
-- Fifteen public pages: home, about, 3-2 pathway, projects, competition, leadership, events, opportunities, resources, impact, join, contact, media kit, privacy, and a custom 404 page
-- Searchable project, event, opportunity, and resource content
-- Responsive navigation, global search, filters, dialogs, forms, motion, reduced-motion support, and keyboard focus states
-- Versioned JSON content fallbacks so the public site works without a database
-- Optional Supabase content system with authentication, row-level security, media storage, public submissions, and an administrative command center; the public site remains fully functional without it
-- PWA manifest, service worker, icons, Open Graph art, structured data, sitemap, robots file, and custom-domain configuration
-- Automated build, validation, and GitHub Pages deployment
+- `src/pages/`: page bodies for the public website
+- `src/partials/` and `src/templates/`: shared public layout
+- `src/assets/`: public CSS, JavaScript, logos, and licensed photographs
+- `src/admin/`: the officer portal
+- `content/`: versioned fallback content and image-license records
+- `api/`: serverless endpoints for public forms, officer invitations, and roles
+- `database/`: Supabase schema, membership tables, migration, and generated seed data
+- `scripts/`: build, seed-generation, and validation tools
+- `site/`: generated deployment output; do not edit it by hand
 
-## Local development
+The site uses plain HTML, CSS, JavaScript, Python build scripts, Supabase, and Resend. There is no package-install step and no frontend framework dependency.
 
-Requirements: Python 3.10 or newer and Node.js 18 or newer. The release validator uses Node.js to syntax-check every deployable JavaScript file.
-
-```bash
-python scripts/build.py
-python scripts/check_site.py
-python -m http.server 8000 --directory site
-```
-
-Open `http://localhost:8000`.
-
-## Repository structure
-
-| Path | Purpose |
-| --- | --- |
-| `src/pages/` | Public page bodies |
-| `src/partials/` | Shared navigation and footer |
-| `src/templates/` | Base document template |
-| `src/assets/` | CSS, JavaScript, logo, icons, and social artwork |
-| `src/admin/` | Optional content-management interface |
-| `content/` | Versioned public content and offline fallbacks |
-| `database/` | Supabase schema and starter content |
-| `scripts/build.py` | Produces the deployable `site/` directory |
-| `scripts/check_site.py` | Validates content, links, HTML, JavaScript, security, and release files |
-| `site/` | Generated GitHub Pages artifact |
-
-## Routine content updates
-
-Most updates can be made in `content/*.json`. After editing:
+## Local build
 
 ```bash
-python scripts/build.py
-python scripts/check_site.py
+python3 scripts/generate_seed.py
+python3 scripts/build.py
+python3 scripts/check_site.py
+node scripts/test_api.js
 ```
 
-The JSON files remain the public fallback even after Supabase is connected. See `docs/CONTENT_GUIDE.md` for field-level guidance.
+Serve the generated site locally:
 
-## Administration
+```bash
+python3 -m http.server 8080 --directory site
+```
 
-The public site is complete without Supabase. Connecting Supabase enables the secure `/admin/` command center and database-backed submissions. Follow `docs/ADMIN_SETUP.md`; never place a service secret, database password, or private student information in this repository.
+Then open `http://localhost:8080`.
 
-## Deployment and domain
+## Environment variables
 
-Every push to `main` builds, validates, and deploys the `site/` directory through GitHub Pages. The generated `CNAME` is configured for:
+Public build configuration:
 
-`oberlin32engineeringsociety.com`
+- `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, or `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_STORAGE_BUCKET` (optional; keep `society-media` unless the storage policies are updated to match)
+- `NEXT_PUBLIC_ENABLE_PORTAL=true` only after the database migration and Auth redirect settings are ready
+- `NEXT_PUBLIC_USE_DATABASE=true` only after the migration and seed have been applied; this flag is ignored while the portal is disabled
 
-See `docs/DOMAIN_SETUP.md` for the one-time DNS and Pages settings.
+Server-only configuration:
 
-## Accuracy and status
+- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `CONTACT_EMAIL` (optional)
+- `SUBMISSION_SALT` (recommended random secret)
 
-The site distinguishes planned programs from confirmed dates and avoids presenting tentative funding, partnerships, rooms, speakers, or awards as finalized. Formal 3-2 requirements should always be checked against Oberlin College and the relevant engineering institution.
+Never place a service-role key or Resend API key in a public runtime file.
 
-## License
+## Database setup
 
-The code is available under the MIT License. The society name, logo, and original brand assets may not be used to imply endorsement or affiliation without permission.
+Run these files in the Supabase SQL editor in this order:
+
+1. `database/schema.sql`
+2. `database/members.sql`
+3. `database/migrations/2026-08-07-complete-site.sql`
+4. `database/seed.sql`
+
+See `docs/ADMIN_SETUP.md` for the first administrator, Auth settings, storage bucket, and deployment variables.
+
+## Content rules
+
+Every public record must use a status that matches reality:
+
+- **Idea under review**: no project team or commitment exists yet.
+- **Open for interest**: the society is collecting possible participants.
+- **Scoping**: a lead and interested group are defining the work.
+- **Active**: a real team, next task, and meeting rhythm exist.
+- **Complete**: the stated scope was finished and documented.
+
+Do not announce a date before a room and responsible organizer are confirmed. Do not call a conversation a partnership. Do not publish participation counts or impact claims without a record that supports them.
+
+## Photographs and licenses
+
+The versioned photographs currently used by the site are covered by the Unsplash License and are recorded in `content/photo_credits.json`. Keep that record whenever an image is added, replaced, or removed. For photographs of society activities, get permission before publishing identifiable people.
+
+## Forms and privacy
+
+Public forms submit to `/api/submit`. The endpoint validates allowed fields, enforces request-size limits, checks a honeypot and elapsed form time, and stores the submission through a server-only Supabase connection. After the migration is installed, persistent database rate limits use a one-way network-address hash. A compatibility path keeps validated forms working with the previous submissions table during deployment. The browser never receives the service-role key.
+
+See `SECURITY.md` for reporting and operational guidance.

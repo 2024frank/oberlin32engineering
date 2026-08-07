@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
-"""Build the Oberlin 3-2 Engineering Society static website.
+"""Build the versioned static source into the deployable site/ directory."""
 
-The build has no third-party Python dependencies. It renders page bodies into the
-shared template, copies content and assets, writes runtime configuration, and
-creates deployment files for GitHub Pages.
-"""
 from __future__ import annotations
 
 import hashlib
@@ -15,176 +11,84 @@ import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
+CONTENT = ROOT / "content"
 OUT = ROOT / "site"
-DOMAIN = "https://oberlin32engineeringsociety.com"
+DOMAIN = "https://www.oberlin32engineeringsociety.com"
 
 PAGES: dict[str, dict[str, str]] = {
     "index": {
         "title": "Oberlin 3-2 Engineering Society",
-        "description": "A student-led home for engineering-minded Obies to connect, prepare, build, and create visible impact.",
-        "page_id": "home",
-        "body_class": "home",
-        "path": "",
+        "description": "A student-led community for Oberlin students interested in engineering, the 3-2 pathway, and collaborative technical projects.",
     },
     "about": {
         "title": "About · Oberlin 3-2 Engineering Society",
-        "description": "Our mission, operating model, values, and plan for building a lasting engineering community at Oberlin.",
-        "page_id": "about",
-        "body_class": "inner-page",
-        "path": "about.html",
+        "description": "Why the Oberlin 3-2 Engineering Society is being formed, what it will focus on, and who it is for.",
     },
     "pathway": {
-        "title": "3-2 Pathway · Oberlin 3-2 Engineering Society",
-        "description": "A peer-built planning hub for understanding Oberlin's five-year 3-2 engineering pathway and asking better advising questions.",
-        "page_id": "pathway",
-        "body_class": "inner-page",
-        "path": "pathway.html",
+        "title": "Oberlin 3-2 Engineering Guide",
+        "description": "A practical student guide to planning Oberlin's 3-2 engineering pathway, using current official sources.",
     },
     "projects": {
-        "title": "Project Board · Oberlin 3-2 Engineering Society",
-        "description": "Explore open engineering projects, join a team, propose a problem, and follow work from brief to public demonstration.",
-        "page_id": "projects",
-        "body_class": "inner-page",
-        "path": "projects.html",
+        "title": "Project Proposals · Oberlin 3-2 Engineering Society",
+        "description": "Explore realistic first-year engineering project proposals and tell the society how you would like to contribute.",
     },
     "competition": {
-        "title": "Oberlin Engineering Challenge · Oberlin 3-2 Engineering Society",
-        "description": "A proposed future engineering challenge concept: its purpose, format, safeguards, and feasibility.",
-        "page_id": "competition",
-        "body_class": "inner-page competition-page",
-        "path": "competition.html",
+        "title": "Future Engineering Showcase Idea · Oberlin 3-2 Engineering Society",
+        "description": "An honest look at a possible future Oberlin engineering showcase and what would need to be in place first.",
     },
     "leadership": {
-        "title": "Leadership + Archive · Oberlin 3-2 Engineering Society",
-        "description": "Meet the organizing team, explore open roles, and follow the public archive of society leadership.",
-        "page_id": "leadership",
-        "body_class": "inner-page",
-        "path": "leadership.html",
+        "title": "Founding Leadership · Oberlin 3-2 Engineering Society",
+        "description": "Meet the founding organizer, review open student roles, and understand the expected responsibilities.",
     },
     "events": {
-        "title": "Events + News · Oberlin 3-2 Engineering Society",
-        "description": "Panels, project nights, design reviews, community gatherings, competition milestones, and society news.",
-        "page_id": "events",
-        "body_class": "inner-page",
-        "path": "events.html",
+        "title": "Events · Oberlin 3-2 Engineering Society",
+        "description": "Planned society meetups, project sessions, 3-2 conversations, and confirmed event details when available.",
     },
     "opportunities": {
         "title": "Opportunities · Oberlin 3-2 Engineering Society",
-        "description": "Leadership, project, internship, research, competition, mentorship, and partnership opportunities.",
-        "page_id": "opportunities",
-        "body_class": "inner-page",
-        "path": "opportunities.html",
+        "description": "Current society roles, project openings, and trusted external starting points for engineering opportunities.",
     },
     "resources": {
-        "title": "Resource Hub · Oberlin 3-2 Engineering Society",
-        "description": "Official 3-2 program links, academic planning resources, partner schools, careers, project tools, and shared knowledge.",
-        "page_id": "resources",
-        "body_class": "inner-page",
-        "path": "resources.html",
+        "title": "Engineering Resources · Oberlin 3-2 Engineering Society",
+        "description": "Verified official links for 3-2 planning, partner schools, internships, research, and technical learning.",
     },
     "impact": {
-        "title": "Impact + Archive · Oberlin 3-2 Engineering Society",
-        "description": "A transparent record of the society's projects, programs, leadership, milestones, annual reports, and public outcomes.",
-        "page_id": "impact",
-        "body_class": "inner-page",
-        "path": "impact.html",
+        "title": "Founding Roadmap · Oberlin 3-2 Engineering Society",
+        "description": "A public roadmap of the society's concrete founding commitments, current status, and future reports.",
     },
     "join": {
         "title": "Join · Oberlin 3-2 Engineering Society",
-        "description": "Join the community, take a leadership role, explore a project team, or help shape future programs.",
-        "page_id": "join",
-        "body_class": "inner-page",
-        "path": "join.html",
+        "description": "Join the Oberlin engineering community as a general member, project participant, volunteer, or founding leader.",
     },
     "contact": {
-        "title": "Contact + Partnerships · Oberlin 3-2 Engineering Society",
-        "description": "Contact the society about membership, projects, speakers, alumni involvement, sponsorships, and partnerships.",
-        "page_id": "contact",
-        "body_class": "inner-page",
-        "path": "contact.html",
+        "title": "Contact · Oberlin 3-2 Engineering Society",
+        "description": "Contact the student organizing team with questions, project ideas, event proposals, or practical offers of help.",
     },
     "media": {
-        "title": "Media Kit · Oberlin 3-2 Engineering Society",
-        "description": "Organization boilerplate, approved logos, brand colors, contact information, and media resources.",
-        "page_id": "media",
-        "body_class": "inner-page",
-        "path": "media.html",
+        "title": "Media Information · Oberlin 3-2 Engineering Society",
+        "description": "Accurate boilerplate, logo files, photo guidance, and contact information for the founding society.",
     },
     "privacy": {
         "title": "Privacy · Oberlin 3-2 Engineering Society",
-        "description": "Privacy information for forms, analytics, and content on the society website.",
-        "page_id": "privacy",
-        "body_class": "inner-page legal-page",
-        "path": "privacy.html",
+        "description": "How the society handles membership interest, project ideas, event preferences, and contact messages.",
     },
     "404": {
         "title": "Page Not Found · Oberlin 3-2 Engineering Society",
         "description": "The requested page could not be found.",
-        "page_id": "404",
-        "body_class": "inner-page error-page",
-        "path": "404.html",
+        "robots": "noindex, follow",
     },
 }
 
 
-def read(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
-
-
-def write(path: Path, text: str) -> None:
+def write(path: Path, value: str | bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-
-
-def asset_revision() -> str:
-    """Hash every deployable asset, including the admin.
-
-    src/admin was excluded, so editing admin.css never changed the revision.
-    A correct build shipped while browsers kept serving the cached stylesheet.
-    """
-    digest = hashlib.sha256()
-    for root in (SRC / "assets", SRC / "admin"):
-        for path in sorted(root.rglob("*")):
-            if path.is_file():
-                digest.update(path.relative_to(ROOT).as_posix().encode())
-                digest.update(path.read_bytes())
-    return digest.hexdigest()[:10]
-
-
-def clean_path(path: str) -> str:
-    """about.html -> about, index.html -> '' (the site root)."""
-    stem = path[:-5] if path.endswith(".html") else path
-    return "" if stem == "index" else stem
-
-
-def build_pages(revision: str) -> None:
-    base = read(SRC / "templates" / "base.html")
-    header = read(SRC / "partials" / "header.html")
-    footer = read(SRC / "partials" / "footer.html")
-
-    for stem, meta in PAGES.items():
-        source = SRC / "pages" / f"{stem}.html"
-        if not source.exists():
-            raise FileNotFoundError(f"Missing page body: {source}")
-        # Vercel serves these without the .html extension (cleanUrls), so the
-        # canonical, sitemap and feed must use the extensionless form.
-        canonical = f"{DOMAIN}/{clean_path(meta['path'])}"
-        rendered = (
-            base.replace("{{TITLE}}", meta["title"])
-            .replace("{{DESCRIPTION}}", meta["description"])
-            .replace("{{CANONICAL}}", canonical)
-            .replace("{{BODY_CLASS}}", meta["body_class"])
-            .replace("{{PAGE_ID}}", meta["page_id"])
-            .replace("{{ASSET_REV}}", revision)
-            .replace("{{HEADER}}", header)
-            .replace("{{MAIN}}", read(source))
-            .replace("{{FOOTER}}", footer)
-        )
-        write(OUT / f"{stem}.html", rendered)
+    if isinstance(value, bytes):
+        path.write_bytes(value)
+    else:
+        path.write_text(value, encoding="utf-8")
 
 
 def copy_tree(source: Path, target: Path) -> None:
@@ -192,107 +96,153 @@ def copy_tree(source: Path, target: Path) -> None:
         shutil.copytree(source, target, dirs_exist_ok=True)
 
 
+def asset_revision() -> str:
+    digest = hashlib.sha256()
+    roots = [SRC / "assets", SRC / "partials", SRC / "templates", SRC / "pages", CONTENT]
+    for root in roots:
+        if not root.exists():
+            continue
+        for path in sorted(item for item in root.rglob("*") if item.is_file()):
+            digest.update(path.relative_to(ROOT).as_posix().encode())
+            digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
+
+
+def page_url(page_id: str) -> str:
+    return DOMAIN + ("/" if page_id == "index" else f"/{page_id}")
+
+
+def build_pages(revision: str) -> None:
+    template = (SRC / "templates" / "base.html").read_text(encoding="utf-8")
+    header = (SRC / "partials" / "header.html").read_text(encoding="utf-8")
+    footer = (SRC / "partials" / "footer.html").read_text(encoding="utf-8")
+    for page_id, metadata in PAGES.items():
+        body = (SRC / "pages" / f"{page_id}.html").read_text(encoding="utf-8")
+        output = template
+        replacements = {
+            "{{TITLE}}": metadata["title"],
+            "{{DESCRIPTION}}": metadata["description"],
+            "{{ROBOTS}}": metadata.get("robots", "index, follow"),
+            "{{CANONICAL}}": page_url(page_id),
+            "{{ASSET_REV}}": revision,
+            "{{BODY_CLASS}}": f"page page--{page_id}",
+            "{{PAGE_ID}}": page_id,
+            "{{HEADER}}": header,
+            "{{MAIN}}": body,
+            "{{FOOTER}}": footer,
+        }
+        for token, value in replacements.items():
+            output = output.replace(token, value)
+        filename = "index.html" if page_id == "index" else f"{page_id}.html"
+        write(OUT / filename, output)
+
+
 def runtime_config() -> str:
-    config = {
-        "supabaseUrl": os.getenv("SUPABASE_URL", ""),
-        "supabaseAnonKey": os.getenv("SUPABASE_PUBLISHABLE_KEY") or os.getenv("SUPABASE_ANON_KEY", ""),
-        "contactEmail": os.getenv("CONTACT_EMAIL", "fkusiapp@oberlin.edu"),
-        "repository": os.getenv("GITHUB_REPOSITORY", "2024frank/oberlin32engineering"),
-        "storageBucket": os.getenv("SUPABASE_STORAGE_BUCKET", "society-media"),
-        "environment": os.getenv("SITE_ENV", "production"),
-        "buildTime": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    site_settings = json.loads((CONTENT / "site.json").read_text(encoding="utf-8"))
+    portal_enabled = (os.getenv("NEXT_PUBLIC_ENABLE_PORTAL") or "").strip().lower() == "true"
+    database_enabled = portal_enabled and (os.getenv("NEXT_PUBLIC_USE_DATABASE") or "").strip().lower() == "true"
+    public = {
+        # Keep the browser key out of the public build during the database cutover.
+        # Public forms use the server-only API and do not need these values.
+        "supabaseUrl": (os.getenv("NEXT_PUBLIC_SUPABASE_URL") or os.getenv("SUPABASE_URL") or "") if portal_enabled else "",
+        "supabaseAnonKey": (os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY") or os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY") or "") if portal_enabled else "",
+        "storageBucket": os.getenv("SUPABASE_STORAGE_BUCKET") or "society-media",
+        "portalEnabled": portal_enabled,
+        "useDatabase": database_enabled,
+        "contentVersion": site_settings.get("content_version", ""),
     }
-    payload = json.dumps(config, ensure_ascii=False, separators=(",", ":"))
-    return f"window.O32_CONFIG = Object.freeze({payload});\n"
+    return "window.O32_CONFIG = " + json.dumps(public, separators=(",", ":")) + ";\n"
 
 
 def generate_manifest() -> str:
-    return json.dumps(
-        {
-            "name": "Oberlin 3-2 Engineering Society",
-            "short_name": "Oberlin 3-2",
-            "description": "Connect. Prepare. Build.",
-            "start_url": "./index.html",
-            "scope": "./",
-            "display": "standalone",
-            "background_color": "#080b10",
-            "theme_color": "#080b10",
-            "icons": [
-                {"src": "assets/images/icon-192.png", "sizes": "192x192", "type": "image/png"},
-                {"src": "assets/images/icon-512.png", "sizes": "512x512", "type": "image/png"},
-                {"src": "assets/images/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
-            ],
-        },
-        indent=2,
-    ) + "\n"
+    manifest = {
+        "name": "Oberlin 3-2 Engineering Society",
+        "short_name": "Oberlin 3-2",
+        "description": "A student-led engineering community at Oberlin College.",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#f7f4ef",
+        "theme_color": "#8f1733",
+        "icons": [
+            {"src": "assets/images/icon-192.png", "sizes": "192x192", "type": "image/png"},
+            {"src": "assets/images/icon-512.png", "sizes": "512x512", "type": "image/png"},
+            {"src": "assets/images/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+        ],
+    }
+    return json.dumps(manifest, indent=2) + "\n"
 
 
 def generate_sitemap() -> str:
-    urls = []
-    for stem, meta in PAGES.items():
-        if stem in {"404", "privacy"}:
-            continue
-        priority = "1.0" if stem == "index" else ("0.9" if stem in {"projects", "competition", "join"} else "0.7")
-        location = f"{DOMAIN}/{clean_path(meta['path'])}"
-        urls.append(f"  <url><loc>{html.escape(location)}</loc><changefreq>weekly</changefreq><priority>{priority}</priority></url>")
-    return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" + "\n".join(urls) + "\n</urlset>\n"
+    public_ids = [page_id for page_id in PAGES if page_id != "404"]
+    entries = "".join(f"<url><loc>{html.escape(page_url(page_id))}</loc></url>" for page_id in public_ids)
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{entries}</urlset>\n'
+
+
+def xml_text(value: object) -> str:
+    return html.escape(str(value or ""), quote=True)
 
 
 def generate_rss() -> str:
-    posts = json.loads(read(ROOT / "content" / "news.json"))
-    posts = [post for post in posts if post.get("published", True)]
-    posts.sort(key=lambda item: item.get("published_at", ""), reverse=True)
+    news = json.loads((CONTENT / "news.json").read_text(encoding="utf-8"))
+    updates = json.loads((CONTENT / "project_updates.json").read_text(encoding="utf-8"))
+    records: list[dict] = []
+    for post in news:
+        if post.get("published", True):
+            records.append({
+                "title": post.get("title"),
+                "description": post.get("excerpt"),
+                "body": post.get("body"),
+                "date": post.get("published_at"),
+                "url": f"{DOMAIN}/events#news",
+            })
+    for update in updates:
+        if update.get("published", True):
+            records.append({
+                "title": update.get("title"),
+                "description": update.get("summary"),
+                "body": update.get("body"),
+                "date": update.get("published_at"),
+                "url": f"{DOMAIN}/projects#updates",
+            })
+    records.sort(key=lambda item: str(item.get("date") or ""), reverse=True)
     items = []
-    for post in posts[:20]:
-        title = html.escape(str(post.get("title", "Update")))
-        description = html.escape(str(post.get("excerpt", "")))
-        slug = quote(str(post.get("slug", post.get("id", "update"))))
-        link = f"{DOMAIN}/events.html?story={slug}#news"
-        date = post.get("published_at", "")
+    for record in records[:30]:
         try:
-            parsed = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
-            pubdate = parsed.strftime("%a, %d %b %Y %H:%M:%S +0000")
+            date = datetime.fromisoformat(str(record.get("date") or "")).replace(tzinfo=timezone.utc)
         except ValueError:
-            pubdate = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
-        body = html.escape(str(post.get("body", post.get("excerpt", ""))))
+            date = datetime.now(timezone.utc)
+        pubdate = date.strftime("%a, %d %b %Y %H:%M:%S +0000")
+        link = str(record["url"])
         items.append(
             "<item>"
-            f"<title>{title}</title><link>{html.escape(link)}</link><guid>{html.escape(link)}</guid>"
-            f"<pubDate>{pubdate}</pubDate><description>{description}</description>"
-            f"<content:encoded><![CDATA[<p>{body}</p>]]></content:encoded>"
+            f"<title>{xml_text(record['title'])}</title>"
+            f"<link>{xml_text(link)}</link><guid>{xml_text(link + '#' + safe_slug(str(record['title'])))}</guid>"
+            f"<pubDate>{pubdate}</pubDate>"
+            f"<description>{xml_text(record['description'])}</description>"
+            f"<content:encoded><![CDATA[<p>{html.escape(str(record.get('body') or ''))}</p>]]></content:encoded>"
             "</item>"
         )
     return (
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<rss version=\"2.0\" xmlns:content=\"http://purl.org/rss/1.0/modules/content/\">"
-        "<channel><title>Oberlin 3-2 Engineering Society</title>"
-        f"<link>{DOMAIN}</link><description>News, project updates, and society field notes.</description>"
-        + "".join(items)
-        + "</channel></rss>\n"
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">'
+        '<channel><title>Oberlin 3-2 Engineering Society</title>'
+        f'<link>{DOMAIN}</link><description>Confirmed news and project updates from the society.</description>'
+        + "".join(items) + "</channel></rss>\n"
     )
+
+
+def safe_slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")[:80]
 
 
 def generate_service_worker(revision: str) -> str:
     shell = [
-        "./",
-        "./index.html",
-        "./about.html",
-        "./pathway.html",
-        "./projects.html",
-        "./competition.html",
-        "./leadership.html",
-        "./events.html",
-        "./resources.html",
-        "./join.html",
-        "./assets/css/site.css",
-        "./assets/js/data-service.js",
-        "./assets/js/site.js",
-        "./assets/js/pages.js",
-        "./assets/images/logo-mark.svg",
-        "./content/site.json",
-        "./content/projects.json",
-        "./content/events.json",
-        "./content/leaders.json",
+        "./", "./index.html", "./about.html", "./pathway.html", "./projects.html",
+        "./events.html", "./resources.html", "./join.html", "./contact.html",
+        "./assets/css/site.css", "./assets/js/data-service.js", "./assets/js/site.js",
+        "./assets/js/pages.js", "./assets/images/logo-mark.svg", "./content/site.json",
+        "./content/projects.json", "./content/events.json", "./content/resources.json",
     ]
     return f"""const CACHE = 'o32-{revision}';
 const SHELL = {json.dumps(shell)};
@@ -306,12 +256,13 @@ self.addEventListener('fetch', (event) => {{
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
   if (event.request.destination === 'document') {{
     event.respondWith(fetch(event.request).then((response) => {{
-      const copy = response.clone(); caches.open(CACHE).then((cache) => cache.put(event.request, copy)); return response;
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
+      return response;
     }}).catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html'))));
     return;
   }}
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {{
-    if (response.ok) {{ const copy = response.clone(); caches.open(CACHE).then((cache) => cache.put(event.request, copy)); }}
+    if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
     return response;
   }})));
 }});
@@ -319,55 +270,35 @@ self.addEventListener('fetch', (event) => {{
 
 
 def stamp_admin_assets(revision: str) -> None:
-    """Version the admin's own CSS/JS URLs.
-
-    The admin is copied verbatim rather than templated, so its <link>/<script>
-    tags carried no cache key. Browsers held a stale admin.css across deploys
-    and kept rendering the previous theme even after a successful build.
-    """
-    index = OUT / "admin" / "index.html"
-    if not index.exists():
+    path = OUT / "admin" / "index.html"
+    if not path.exists():
         return
-    markup = index.read_text(encoding="utf-8")
-    markup = re.sub(
-        r'(href|src)="(admin\.(?:css|js))(?:\?v=[^"]*)?"',
-        lambda m: f'{m.group(1)}="{m.group(2)}?v={revision}"',
-        markup,
-    )
-    # runtime-config.js is shared with the public site, which is served
-    # immutable for a year. Without a cache key the admin kept booting an
-    # old config and reported CONFIG_REQUIRED after Supabase was connected.
-    markup = re.sub(
-        r'src="(\.\./assets/js/[a-z-]+\.js)(?:\?v=[^"]*)?"',
-        lambda m: f'src="{m.group(1)}?v={revision}"',
-        markup,
-    )
-    index.write_text(markup, encoding="utf-8")
+    markup = path.read_text(encoding="utf-8")
+    markup = re.sub(r'(href|src)="(admin\.(?:css|js))(?:\?v=[^"]*)?"', lambda match: f'{match.group(1)}="{match.group(2)}?v={revision}"', markup)
+    markup = re.sub(r'src="(\.\./assets/js/runtime-config\.js)(?:\?v=[^"]*)?"', lambda match: f'src="{match.group(1)}?v={revision}"', markup)
+    path.write_text(markup, encoding="utf-8")
 
 
 def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-
     revision = asset_revision()
     build_pages(revision)
     copy_tree(SRC / "assets", OUT / "assets")
-    copy_tree(ROOT / "content", OUT / "content")
+    copy_tree(CONTENT, OUT / "content")
     copy_tree(SRC / "admin", OUT / "admin")
     stamp_admin_assets(revision)
-
-    write(OUT / "assets" / "js" / "runtime-config.js", runtime_config())
+    write(OUT / "assets/js/runtime-config.js", runtime_config())
     write(OUT / "site.webmanifest", generate_manifest())
     write(OUT / "sitemap.xml", generate_sitemap())
     write(OUT / "feed.xml", generate_rss())
     write(OUT / "service-worker.js", generate_service_worker(revision))
-    write(OUT / "robots.txt", f"User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n")
+    write(OUT / "robots.txt", f"User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: {DOMAIN}/sitemap.xml\n")
     write(OUT / "CNAME", "oberlin32engineeringsociety.com\n")
     write(OUT / ".nojekyll", "")
-    write(OUT / "humans.txt", "Oberlin 3-2 Engineering Society\nFounded in 2026 at Oberlin College.\nBuilt for continuity.\n")
-    write(OUT / ".well-known" / "security.txt", "Contact: mailto:fkusiapp@oberlin.edu\nPreferred-Languages: en\nCanonical: https://oberlin32engineeringsociety.com/.well-known/security.txt\n")
-
+    write(OUT / "humans.txt", "Oberlin 3-2 Engineering Society\nStudent-led. Founding stage, 2026–27.\n")
+    write(OUT / ".well-known/security.txt", "Contact: mailto:fkusiapp@oberlin.edu\nPreferred-Languages: en\nCanonical: https://www.oberlin32engineeringsociety.com/.well-known/security.txt\n")
     print(f"Built {len(PAGES)} pages in {OUT} (asset revision {revision}).")
 
 

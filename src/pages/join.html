@@ -1,79 +1,53 @@
-<section class="join-hero">
-  <div class="join-hero-art" aria-hidden="true"></div>
-  <div class="container join-hero-grid">
-    <div class="reveal">
-<h1>There is a place<br>for how <em>you</em><br>want to contribute.</h1><p>Join as a member, builder, leader, mentor, organizer, or someone still exploring engineering. You do not need prior technical or leadership experience to begin.</p><div class="hero-actions"><a class="button button-gold" data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Choose your role in the form <span>↗</span></a><a class="button button-outline" href="#paths">Explore participation paths <span>↓</span></a></div></div>
-    <div class="join-map reveal reveal-delay-1"><div class="join-map-core"><img src="assets/images/logo-mark.svg" alt="" width="180" height="180"><span>YOU</span></div><div class="join-map-node join-node-a">MEMBER</div><div class="join-map-node join-node-b">BUILDER</div><div class="join-map-node join-node-c">LEADER</div><div class="join-map-node join-node-d">MENTOR</div><div class="join-map-node join-node-e">ORGANIZER</div><svg viewBox="0 0 500 500" aria-hidden="true"><circle cx="250" cy="250" r="170"/><circle cx="250" cy="250" r="110"/><path d="M250 80v90M420 250h-90M250 420v-90M80 250h90M130 130l65 65"/></svg></div>
+<section class="page-hero">
+  <div class="container page-hero__grid">
+    <div><span class="eyebrow">Join the society</span><h1>Tell us what you want to learn, build, or help organize.</h1><p class="page-hero__lead">You can join as a general member without taking a title. Choosing an interest below is not a binding commitment.</p></div>
+    <aside class="page-hero__aside"><strong>Who can join</strong><p>Current Oberlin students from any class year or field of study. You do not need engineering experience and you do not need to be officially committed to 3-2.</p></aside>
   </div>
-  <figure class="page-hero-figure">
-    <img src="assets/images/photos/team-laptops.jpg" width="1920" height="1281" loading="lazy" decoding="async"
-         alt="People working together around laptops at a shared table.">
-  </figure>
 </section>
 
-<section class="section section-ivory join-paths" id="paths">
+<section class="section">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">Ways to participate</span>
+      <h2>Start where your schedule allows.</h2>
+      <div class="timeline">
+        <article class="timeline__item"><div class="timeline__period">General member</div><div><h3>Receive updates and attend when you can</h3><p>Best for students who want community and information without a recurring responsibility.</p></div></article>
+        <article class="timeline__item"><div class="timeline__period">Project participant</div><div><h3>Contribute to a defined task</h3><p>Hardware, software, CAD, research, testing, writing, design, photography, and coordination all count.</p></div></article>
+        <article class="timeline__item"><div class="timeline__period">Founding organizer</div><div><h3>Help organize the group</h3><p>Take responsibility for meetings, projects, communications, finances, membership, or external relationships.</p></div></article>
+      </div>
+    </div>
+
+    <form class="form-shell" data-o32-form data-form-type="membership_interest">
+      <h2>Membership interest form</h2>
+      <p>We will use this information to contact you about the launch and match interests. You can update your preferences later.</p>
+      <div class="form-grid">
+        <label class="form-field"><span>Full name</span><input type="text" name="full_name" maxlength="120" autocomplete="name" required></label>
+        <label class="form-field"><span>Oberlin email</span><input type="email" name="email" maxlength="254" autocomplete="email" pattern="^[^@]+@oberlin\.edu$" title="Use your @oberlin.edu email address" required></label>
+        <label class="form-field"><span>Class year</span><select name="class_year" required><option value="">Choose one</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option><option>Other / not sure</option></select></label>
+        <label class="form-field"><span>Major or area you are exploring</span><input type="text" name="academic_interest" maxlength="160"></label>
+        <fieldset class="fieldset"><legend>What interests you?</legend><div class="choice-grid"><label class="choice"><input type="checkbox" name="interests" value="general membership"><span><strong>General membership</strong><small>Updates, meetings, and community</small></span></label><label class="choice"><input type="checkbox" name="interests" value="3-2 planning"><span><strong>3-2 planning</strong><small>Courses, partner schools, and transition questions</small></span></label><label class="choice"><input type="checkbox" name="interests" value="projects"><span><strong>Projects</strong><small>Build, test, document, or coordinate</small></span></label><label class="choice"><input type="checkbox" name="interests" value="leadership"><span><strong>Founding leadership</strong><small>Help organize the first year</small></span></label><label class="choice"><input type="checkbox" name="interests" value="events"><span><strong>Events</strong><small>Plan meetups, workshops, or speakers</small></span></label><label class="choice"><input type="checkbox" name="interests" value="communications"><span><strong>Communication and design</strong><small>Website, social media, photography, or writing</small></span></label></div></fieldset>
+        <label class="form-field"><span>Current experience</span><select name="experience"><option>New to engineering projects</option><option>Some class or personal project experience</option><option>Comfortable contributing independently</option><option>Comfortable mentoring or leading</option></select></label>
+        <label class="form-field"><span>Realistic availability</span><select name="availability"><option>Occasional events only</option><option>About 1 hour per week</option><option>About 2–3 hours per week</option><option>More for a defined project period</option></select></label>
+        <label class="form-field form-field--full"><span>What would make this society useful to you?</span><textarea name="motivation" maxlength="1800"></textarea></label>
+        <label class="form-field form-field--full"><span>Anything we should know about access, scheduling, or participation?</span><textarea name="access_needs" maxlength="1200"></textarea></label>
+        <label class="choice form-field--full"><input type="checkbox" name="consent" value="yes" required><span><strong>I agree to be contacted about society activities.</strong><small>You may ask us to update or delete your submission.</small></span></label>
+        <label class="honeypot" aria-hidden="true">Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label>
+        <div class="form-actions"><button class="button button--primary" type="submit">Submit interest</button><p class="form-status" data-form-status></p></div>
+        <p class="form-note">Do not include Social Security numbers, immigration documents, medical records, or other sensitive personal information.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="section section--soft">
   <div class="container">
-    <div class="section-heading heading-row reveal"><div><span class="eyebrow dark">WAYS TO PARTICIPATE</span><h2>Start where you are.<br><em>Grow into more.</em></h2></div><p>Participation is designed to be flexible. Members can attend events without joining a project, build without holding office, or grow from a small task into serious leadership.</p></div>
-    <div class="join-path-grid">
-      <article class="join-path reveal"><span>01</span><h3>Community member</h3><p>Attend events, meet people, use resources, join discussions, and stay connected to engineering opportunities.</p><ul><li>Low time commitment</li><li>No experience required</li><li>Best place to explore</li></ul></article>
-      <article class="join-path reveal reveal-delay-1"><span>02</span><h3>Project builder</h3><p>Join a technical or nontechnical role on a team and contribute to a prototype, research process, test plan, or public demonstration.</p><ul><li>Hands-on learning</li><li>Interdisciplinary teams</li><li>Portfolio-ready work</li></ul></article>
-      <article class="join-path reveal reveal-delay-2"><span>03</span><h3>Project lead</h3><p>Own scope, team rhythm, design reviews, documentation, and the path from idea to tested result.</p><ul><li>Technical leadership</li><li>Mentor support</li><li>Real responsibility</li></ul></article>
-      <article class="join-path reveal"><span>04</span><h3>Board or committee</h3><p>Build the organization's systems, events, partnerships, communications, finances, competition, and continuity.</p><ul><li>Organization leadership</li><li>Visible ownership</li><li>Long-term impact</li></ul></article>
-      <article class="join-path reveal reveal-delay-1"><span>05</span><h3>Mentor or speaker</h3><p>Share technical experience, career perspective, feedback, or a workshop with students.</p><ul><li>Faculty, alumni, professionals</li><li>Flexible engagement</li><li>Direct student impact</li></ul></article>
-      <article class="join-path reveal reveal-delay-2"><span>06</span><h3>Partner</h3><p>Support projects, sponsor materials, bring a community problem, collaborate on events, or help evaluate a future engineering challenge concept.</p><ul><li>Campus and community</li><li>Companies and labs</li><li>Mission-aligned support</li></ul></article>
-    </div>
-  </div>
-</section>
-
-<section class="section figure-band">
-  <div class="container figure-band-grid">
-    <figure>
-      <img src="assets/images/photos/inspecting-equipment.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="Inspecting a build.">
-    </figure>
-    <figure>
-      <img src="assets/images/photos/makerspace-sign.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="The way into a maker space.">
-    </figure>
-  </div>
-</section>
-
-
-
-<section class="section first-steps-section">
-  <div class="container first-steps-grid">
-    <div class="reveal"><span class="eyebrow">YOUR FIRST THREE STEPS</span><h2>From interest<br><em>to involvement.</em></h2></div>
-    <div class="step-stack">
-      <article class="reveal"><span>01</span><div><h3>Complete the interest form</h3><p>Choose the positions, project interests, programs, and level of involvement that fit you now.</p><a data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Open the form ↗</a></div></article>
-      <article class="reveal"><span>02</span><div><h3>Come to the first gathering</h3><p>Meet other students, hear the launch plan, explore projects, and help decide what the first semester should prioritize.</p><a href="events">See upcoming events →</a></div></article>
-      <article class="reveal"><span>03</span><div><h3>Take one concrete role</h3><p>Join a project, help at a table, organize a panel, own communications, research a resource, or contribute to the competition committee.</p><a href="opportunities">Browse current openings →</a></div></article>
-    </div>
-  </div>
-</section>
-
-<section class="section section-ivory what-you-get-section">
-  <div class="container">
-    <div class="section-heading split-heading reveal"><div><span class="eyebrow dark">WHAT MEMBERS SHOULD GAIN</span><h2>Community is the start.<br><em>Capability is the goal.</em></h2></div><p class="heading-copy">The society should make it easier to meet people and easier to become the engineer, collaborator, and leader you are trying to become.</p></div>
-    <div class="outcome-grid">
-      <article class="reveal"><strong>PEOPLE</strong><h3>A technical peer network</h3><p>Students across interests and class years who can collaborate, study, share advice, and make introductions.</p></article>
-      <article class="reveal reveal-delay-1"><strong>CLARITY</strong><h3>A better view of the path</h3><p>More informed questions about courses, partner schools, engineering fields, applications, and career direction.</p></article>
-      <article class="reveal reveal-delay-2"><strong>WORK</strong><h3>Projects you can explain</h3><p>Experience making decisions, integrating systems, testing claims, documenting results, and presenting in public.</p></article>
-      <article class="reveal"><strong>VOICE</strong><h3>Leadership with evidence</h3><p>Ownership of programs, budgets, teams, partnerships, communications, or organization systems that produced real outcomes.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="join-form-callout">
-  <div class="container join-form-callout-inner reveal"><div><span>READY TO BEGIN?</span><h2>Tell us what you want to build, learn, or lead.</h2><p>The founding-member form lets you choose multiple interests. Submitting it does not lock you into a position.</p></div><a class="button button-gold large-button" data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Open the interest form <span>↗</span></a></div>
-</section>
-
-<section class="section join-faq-section">
-  <div class="container faq-layout">
-    <div class="reveal"><span class="eyebrow">JOIN FAQ</span><h2>Good questions<br><em>before you commit.</em></h2></div>
-    <div class="accordion" data-accordion>
-      <details class="reveal"><summary>Do I have to be officially in the 3-2 program?<span>+</span></summary><div><p>No. The society is open to Oberlin students interested in engineering, design, technology, innovation, and building things. Some resources and programs specifically support the 3-2 pathway.</p></div></details>
-      <details class="reveal"><summary>Do I need engineering experience?<span>+</span></summary><div><p>No. Projects and programs should include meaningful entry points for beginners while also creating room for students with advanced skills.</p></div></details>
-      <details class="reveal"><summary>Can I join without holding a position?<span>+</span></summary><div><p>Yes. General membership, events, resources, study support, and community participation do not require a leadership role.</p></div></details>
-      <details class="reveal"><summary>How much time does a project take?<span>+</span></summary><div><p>It depends on the role and project. Teams will define expectations before members commit, and strong projects should offer both core and supporting roles.</p></div></details>
-      <details class="reveal"><summary>Can conservatory or non-STEM students join?<span>+</span></summary><div><p>Yes. Engineering projects need communication, design, ethics, art, music, policy, economics, storytelling, research, and community understanding alongside technical work.</p></div></details>
+    <div class="section-heading section-heading--stack"><span class="eyebrow">Common questions</span><h2>Before you submit.</h2></div>
+    <div class="faq">
+      <details><summary>Do I have to be in the 3-2 program?</summary><p>No. The society is for Oberlin students interested in engineering, projects, or the pathway, including students who are still exploring.</p></details>
+      <details><summary>Do I need prior technical experience?</summary><p>No. Project teams need beginners, researchers, organizers, writers, designers, photographers, and people willing to learn.</p></details>
+      <details><summary>Does choosing leadership mean I have accepted a role?</summary><p>No. It means you are open to a conversation about responsibilities, time, and the selection process.</p></details>
+      <details><summary>Will every proposed project happen?</summary><p>No. Projects will be selected based on student interest, available support, safety, cost, and whether the scope is realistic.</p></details>
+      <details><summary>When is the first meeting?</summary><p>The date and room are still being scheduled. Members on the launch list will receive the confirmed information.</p></details>
     </div>
   </div>
 </section>

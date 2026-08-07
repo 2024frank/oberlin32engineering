@@ -1,1 +1,142 @@
-[]
+[
+  {
+    "id": "campus-climate-sensor-network",
+    "slug": "campus-climate-sensor-network",
+    "title": "Campus Climate Sensor Network",
+    "kicker": "Proposed first project",
+    "summary": "Build a small set of low-cost nodes that measure temperature, humidity, and another carefully chosen environmental variable.",
+    "description": "The first version would use two or three sensor nodes, a documented calibration check, and a simple dashboard. The team would decide whether air quality, soil moisture, light, or another variable is useful and feasible. Deployment would happen only with permission from the relevant space owner.",
+    "category": "Embedded systems",
+    "status": "Open for interest",
+    "year": "2026–27",
+    "progress": 0,
+    "featured": true,
+    "published": true,
+    "skills": [
+      "ESP32",
+      "Sensors",
+      "Python",
+      "Data visualization",
+      "Enclosures"
+    ],
+    "open_roles": [
+      "Firmware learner or lead",
+      "Sensor testing and calibration",
+      "Dashboard and data work",
+      "Enclosure or mounting design",
+      "Documentation"
+    ],
+    "team_names": [],
+    "accent": "maroon",
+    "cover_url": "assets/images/photos/bench-multimeter.jpg",
+    "impact": "Give students a complete hardware-to-data project while producing measurements that can be checked, explained, and improved.",
+    "project_url": "",
+    "github_url": "",
+    "sort_order": 10
+  },
+  {
+    "id": "energy-use-visualizer",
+    "slug": "energy-use-visualizer",
+    "title": "Energy Use Visualizer",
+    "kicker": "Proposed first project",
+    "summary": "Create a physical or web-based display that makes an approved energy dataset easier to understand.",
+    "description": "The team would begin with a public or permissioned dataset, define one audience and one decision the display should support, then prototype a clear visualization. A physical version could use addressable lights or a small screen; a web version could focus on accessibility and mobile use.",
+    "category": "Data",
+    "status": "Open for interest",
+    "year": "2026–27",
+    "progress": 0,
+    "featured": true,
+    "published": true,
+    "skills": [
+      "JavaScript",
+      "Python",
+      "Data storytelling",
+      "LEDs",
+      "Accessibility"
+    ],
+    "open_roles": [
+      "Data source research",
+      "Web or display development",
+      "Visual and information design",
+      "User testing",
+      "Documentation"
+    ],
+    "team_names": [],
+    "accent": "gold",
+    "cover_url": "assets/images/photos/circuit-board-blue.jpg",
+    "impact": "Practice turning technical measurements into information that a non-specialist can interpret.",
+    "project_url": "",
+    "github_url": "",
+    "sort_order": 20
+  },
+  {
+    "id": "assistive-reminder-device",
+    "slug": "assistive-reminder-device",
+    "title": "Assistive Reminder Device",
+    "kicker": "Proposed first project",
+    "summary": "Prototype a simple, customizable reminder device using light, sound, vibration, or a large physical control.",
+    "description": "The project would start with interviews or published accessibility guidance rather than guessing at user needs. The first prototype should test one interaction, such as acknowledging a reminder with a large button, and should avoid medical claims or collection of sensitive health information.",
+    "category": "Accessibility",
+    "status": "Needs a project lead",
+    "year": "2026–27",
+    "progress": 0,
+    "featured": true,
+    "published": true,
+    "skills": [
+      "User research",
+      "Electronics",
+      "Interaction design",
+      "CAD",
+      "Testing"
+    ],
+    "open_roles": [
+      "Accessibility research",
+      "Electronics prototyping",
+      "Industrial or interaction design",
+      "Testing plan",
+      "Project lead"
+    ],
+    "team_names": [],
+    "accent": "ivory",
+    "cover_url": "assets/images/photos/audio-jack.jpg",
+    "impact": "Introduce human-centered engineering and accessibility without pretending a classroom prototype is a medical device.",
+    "project_url": "",
+    "github_url": "",
+    "sort_order": 30
+  },
+  {
+    "id": "robotics-starter-rover",
+    "slug": "robotics-starter-rover",
+    "title": "Robotics Starter Rover",
+    "kicker": "Proposed learning project",
+    "summary": "Build a small rover that can follow a line, avoid an obstacle, or complete another measurable beginner challenge.",
+    "description": "The team would choose one behavior, document the wiring and code, and create a starter guide another student can reproduce. Advanced features such as mapping or computer vision would be treated as later extensions, not requirements for the first build.",
+    "category": "Robotics",
+    "status": "Needs a project lead",
+    "year": "2026–27",
+    "progress": 0,
+    "featured": false,
+    "published": true,
+    "skills": [
+      "Microcontrollers",
+      "C/C++",
+      "Motors",
+      "CAD",
+      "Testing"
+    ],
+    "open_roles": [
+      "Mechanical assembly",
+      "Motor control",
+      "Sensor integration",
+      "Firmware",
+      "Beginner documentation"
+    ],
+    "team_names": [],
+    "accent": "maroon",
+    "cover_url": "assets/images/photos/board-in-clamps.jpg",
+    "impact": "Give new members a shared platform for learning mechanics, electronics, programming, and test design.",
+    "project_url": "",
+    "github_url": "",
+    "sort_order": 40
+  }
+]

@@ -34,6 +34,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Confirm generated seed is current
+        run: |
+          python scripts/generate_seed.py
+          git diff --exit-code -- database/seed.sql
+
       - name: Build static site
         env:
           SITE_ENV: production
@@ -41,12 +46,14 @@ jobs:
           SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           SUPABASE_STORAGE_BUCKET: ${{ vars.SUPABASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_ENABLE_PORTAL: ${{ vars.NEXT_PUBLIC_ENABLE_PORTAL }}
+          NEXT_PUBLIC_USE_DATABASE: ${{ vars.NEXT_PUBLIC_USE_DATABASE }}
         run: python scripts/build.py
 
       - name: Validate release
         run: |
           python scripts/check_site.py
-          for file in site/assets/js/*.js site/admin/*.js; do node --check "$file"; done
+          for file in api/*.js site/assets/js/*.js site/admin/*.js; do node --check "$file"; done
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

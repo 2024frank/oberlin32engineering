@@ -1,12 +1,17 @@
 # Contributing
 
-Thank you for helping build a durable engineering community at Oberlin.
+Use a focused branch and keep public claims factual. Before proposing a change:
 
-1. Create a branch for the change.
-2. Update source files in `src/` and structured content in `content/`.
-3. Run `python scripts/build.py`.
-4. Run `python scripts/check_site.py`.
-5. Confirm that planned activities are not described as confirmed unless the founding team has approved them.
-6. Open a pull request explaining the change and how it was tested.
+```bash
+python3 scripts/generate_seed.py
+python3 scripts/build.py
+python3 scripts/check_site.py
+```
 
-Do not commit personal student information, credentials, form response exports, or copyrighted media without permission.
+For content changes, follow `docs/CONTENT_GUIDE.md`. Proposed projects, planned events, open leadership roles, and confirmed outcomes must remain distinct.
+
+For images, add or update the matching record in `content/photo_credits.json`. Do not add an image from a search result without checking the original source and license.
+
+For database changes, add an idempotent migration. Do not weaken Row Level Security or expose service credentials to browser code.
+
+Pull requests should explain what changed, why it is accurate, what was tested, and whether a deployment or database migration is required.

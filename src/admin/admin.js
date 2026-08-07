@@ -6,27 +6,30 @@
   const API = String(config.supabaseUrl || '').replace(/\/$/, '');
   const ANON = config.supabaseAnonKey || '';
   const BUCKET = config.storageBucket || 'society-media';
-
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  const safeId = (value = '') => String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 72);
-  const initials = (value = '') => String(value).split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase() || 'O32';
-  const formatDate = (value) => {
-    if (!value) return 'Not recorded';
+  const safeId = (value = '') => String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 72);
+  const initials = (value = '') => String(value).split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase() || 'O3';
+  const formatDate = (value, withTime = false) => {
+    if (!value) return 'Not set';
     const raw = String(value);
     const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
     if (Number.isNaN(date.getTime())) return raw;
-    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}) }).format(date);
   };
+  const pretty = (value = '') => String(value).replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   const authScreen = $('[data-auth-screen]');
-  const adminApp = $('[data-admin-app]');
-  const configuredLogin = $('[data-configured-login]');
-  const setupState = $('[data-setup-state]');
+  const portal = $('[data-portal]');
+  const loginView = $('[data-login-view]');
+  const codeView = $('[data-code-view]');
+  const passwordView = $('[data-password-view]');
+  const configView = $('[data-config-view]');
   const loginForm = $('[data-login-form]');
-  const authMessage = $('[data-auth-message]');
-  const contentRoot = $('[data-admin-content]');
+  const codeForm = $('[data-code-form]');
+  const passwordForm = $('[data-password-form]');
+  const content = $('[data-content]');
   const viewTitle = $('[data-view-title]');
   const breadcrumb = $('[data-breadcrumb]');
   const primaryAction = $('[data-primary-action]');
@@ -35,7 +38,7 @@
   const editorFields = $('[data-editor-fields]');
   const editorTitle = $('[data-editor-title]');
   const editorKicker = $('[data-editor-kicker]');
-  const deleteButton = $('[data-delete-record]');
+  const deleteRecord = $('[data-delete-record]');
   const confirmDialog = $('[data-confirm-dialog]');
 
   let session = null;
@@ -49,171 +52,86 @@
   const area = (name, label, options = {}) => ({ name, label, type: 'textarea', full: true, ...options });
   const check = (name, label, options = {}) => ({ name, label, type: 'checkbox', ...options });
   const number = (name, label, options = {}) => ({ name, label, type: 'number', ...options });
-  const image = (name, label, options = {}) => ({ name, label, type: 'image', full: true, ...options });
+  const date = (name, label, options = {}) => ({ name, label, type: 'date', ...options });
+  const datetime = (name, label, options = {}) => ({ name, label, type: 'datetime-local', ...options });
   const array = (name, label, options = {}) => ({ name, label, type: 'array', full: true, ...options });
   const json = (name, label, options = {}) => ({ name, label, type: 'json', full: true, ...options });
+  const image = (name, label, options = {}) => ({ name, label, type: 'image', full: true, ...options });
+  const select = (name, label, options = [], extra = {}) => ({ name, label, type: 'select', options, ...extra });
 
   const collections = {
     projects: {
-      label: 'Projects', singular: 'project', description: 'Publish project briefs, featured builds, team openings, progress, links, and project imagery.',
-      titleField: 'title', subtitleField: 'status', imageField: 'cover_url', order: 'sort_order.asc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true, help: 'Stable machine ID. Use lowercase words separated by hyphens.' }),
-        text('slug', 'URL slug', { required: true }), text('title', 'Project title', { required: true }), text('kicker', 'Short label'),
-        area('summary', 'Card summary', { required: true, rows: 3 }), area('description', 'Full project brief', { required: true, rows: 7 }),
-        text('category', 'Category', { required: true }), text('status', 'Status', { required: true }), text('year', 'Project year or term'),
-        number('progress', 'Progress percentage', { min: 0, max: 100 }), check('featured', 'Feature this project'), check('published', 'Published'),
-        array('skills', 'Useful skills', { help: 'Comma-separated. Example: ESP32, CAD, Python' }),
-        array('open_roles', 'Open roles', { help: 'Comma-separated roles available on the team.' }), array('team_names', 'Team members'),
-        text('accent', 'Visual accent', { type: 'select', options: ['gold', 'maroon', 'ivory'] }),
-        image('cover_url', 'Project cover image'), area('impact', 'Intended impact', { rows: 3 }),
-        text('project_url', 'Project website URL'), text('github_url', 'Project repository URL'), number('sort_order', 'Sort order', { min: 0 })
-      ]
+      label: 'Projects', singular: 'project', titleField: 'title', subtitleField: 'status', imageField: 'cover_url', order: 'sort_order.asc,title.asc',
+      description: 'Publish honest project proposals and active work. Use the status field to distinguish an idea from a staffed project.',
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Project title',{required:true}), text('kicker','Short label'), area('summary','Card summary',{required:true,rows:3}), area('description','Full brief',{required:true,rows:7}), text('category','Category',{required:true}), select('status','Status',['Idea under review','Open for interest','Scoping','Active','Paused','Complete']), text('year','Term or year'), number('progress','Progress',{min:0,max:100}), check('featured','Featured'), check('published','Published'), array('skills','Useful skills'), array('open_roles','Open roles'), array('team_names','Team members'), select('accent','Accent',['maroon','gold','ivory']), image('cover_url','Cover image'), area('impact','Purpose or intended impact',{rows:3}), text('project_url','Project URL'), text('github_url','GitHub URL'), number('sort_order','Sort order',{min:0})]
     },
     project_updates: {
-      label: 'Project updates', singular: 'project update', description: 'Publish dated notes that show how project concepts, teams, tests, and decisions are changing.',
-      titleField: 'title', subtitleField: 'milestone', imageField: 'image_url', order: 'published_at.desc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('project_id', 'Project ID', { required: true, help: 'Must match an existing project record ID.' }),
-        text('title', 'Update title', { required: true }), area('summary', 'Short summary', { rows: 3, required: true }),
-        area('body', 'Full update', { rows: 8, required: true }), text('milestone', 'Milestone label'),
-        text('published_at', 'Publication date', { type: 'date' }), image('image_url', 'Update image'), check('published', 'Published')
-      ]
-    },
-    leaders: {
-      label: 'Leadership', singular: 'leader', description: 'Manage the organizing team, advisor, open positions, and the permanent leadership archive.',
-      titleField: 'name', subtitleField: 'role', imageField: 'photo_url', order: 'sort_order.asc,name.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('name', 'Name', { required: true }), text('role', 'Role', { required: true }),
-        text('term', 'Term', { required: true, placeholder: '2026–27' }), text('class_year', 'Class year'), text('major', 'Major or pathway'),
-        area('bio', 'Biography', { rows: 5 }), image('photo_url', 'Portrait'), text('linkedin_url', 'LinkedIn URL'), text('email', 'Email address'),
-        check('current', 'Current leadership'), check('advisor', 'Advisor'), check('open_seat', 'Open position'), check('published', 'Published'),
-        number('sort_order', 'Sort order', { min: 0 })
-      ]
+      label: 'Project updates', singular: 'project update', titleField: 'title', subtitleField: 'milestone', imageField: 'image_url', order: 'published_at.desc,title.asc',
+      description: 'Record dated decisions, tests, setbacks, and milestones for real project work.',
+      fields: [text('id','Record ID',{required:true}), text('project_id','Project ID',{required:true}), text('title','Title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('body','Update',{required:true,rows:8}), text('milestone','Milestone label'), date('published_at','Publication date'), image('image_url','Image'), check('published','Published')]
     },
     events: {
-      label: 'Events', singular: 'event', description: 'Manage the calendar, featured event, registration links, dates, locations, and event artwork.',
-      titleField: 'title', subtitleField: 'date_label', imageField: 'cover_url', order: 'start_at.asc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('slug', 'URL slug', { required: true }), text('title', 'Event title', { required: true }),
-        area('summary', 'Event summary', { rows: 3, required: true }), area('description', 'Full description', { rows: 6 }),
-        text('event_type', 'Event type', { required: true }), text('date_label', 'Public date label', { required: true }),
-        text('start_at', 'Start time', { type: 'datetime-local' }), text('end_at', 'End time', { type: 'datetime-local' }),
-        text('location', 'Location'), text('registration_url', 'Registration or detail URL'), image('cover_url', 'Event image'),
-        check('featured', 'Feature this event'), check('published', 'Published')
-      ]
+      label: 'Events', singular: 'event', titleField: 'title', subtitleField: 'date_label', imageField: 'cover_url', order: 'start_at.asc,title.asc',
+      description: 'Publish dates only after they are confirmed. Planned formats may remain visible with a clear status.',
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Event title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('description','Description',{rows:6}), text('event_type','Event type'), select('status','Status',['Planned','Scheduling','Registration open','Confirmed','Completed','Cancelled']), text('date_label','Public date label',{required:true}), datetime('start_at','Start time'), datetime('end_at','End time'), text('location','Location'), text('registration_url','Registration URL'), image('cover_url','Event image'), check('featured','Featured'), check('published','Published')]
     },
-    news_posts: {
-      label: 'News', singular: 'field note', description: 'Publish announcements, program news, and a permanent record of society decisions.',
-      titleField: 'title', subtitleField: 'published_at', imageField: 'cover_url', order: 'published_at.desc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('slug', 'URL slug', { required: true }), text('title', 'Headline', { required: true }),
-        area('excerpt', 'Short excerpt', { rows: 3, required: true }), area('body', 'Full article', { rows: 10, required: true }),
-        text('author', 'Author'), text('published_at', 'Publication date', { type: 'date' }), image('cover_url', 'Cover image'),
-        check('featured', 'Feature this update'), check('published', 'Published')
-      ]
+    leaders: {
+      label: 'Leadership', singular: 'leadership record', titleField: 'name', subtitleField: 'role', imageField: 'photo_url', order: 'sort_order.asc,name.asc',
+      description: 'Show named organizers and specific open roles. Do not publish placeholder people.',
+      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('role','Role',{required:true}), text('term','Term'), text('class_year','Class year'), text('major','Major or pathway'), area('bio','Biography or role description',{rows:5}), text('expected_time','Expected time'), image('photo_url','Portrait'), text('linkedin_url','LinkedIn URL'), text('email','Email'), check('current','Current'), check('advisor','Advisor'), check('open_seat','Open role'), check('published','Published'), number('sort_order','Sort order',{min:0})]
     },
     resources: {
-      label: 'Resources', singular: 'resource', description: 'Maintain official planning links, partner-school information, career tools, and society-created guides.',
-      titleField: 'title', subtitleField: 'category', order: 'sort_order.asc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('title', 'Resource title', { required: true }), area('description', 'Description', { rows: 4 }),
-        text('category', 'Category', { required: true }), text('source', 'Source'), text('url', 'Resource URL', { required: true }),
-        check('pinned', 'Pin this resource'), check('published', 'Published'), number('sort_order', 'Sort order', { min: 0 })
-      ]
+      label: 'Resources', singular: 'resource', titleField: 'title', subtitleField: 'category', order: 'pinned.desc,sort_order.asc,title.asc',
+      description: 'Keep official links current and record the date each resource was checked.',
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), area('description','Description',{rows:4}), text('category','Category',{required:true}), text('source','Source'), text('url','URL',{required:true}), date('reviewed_at','Last checked'), check('pinned','Pinned'), check('published','Published'), number('sort_order','Sort order',{min:0})]
     },
     opportunities: {
-      label: 'Opportunities', singular: 'opportunity', description: 'Publish leadership roles, project openings, competitions, internships, research, and partner opportunities.',
-      titleField: 'title', subtitleField: 'type', order: 'featured.desc,deadline.asc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('title', 'Opportunity title', { required: true }), text('organization', 'Organization'),
-        text('type', 'Type', { required: true }), area('description', 'Description', { rows: 5, required: true }),
-        text('deadline_label', 'Deadline label'), text('deadline', 'Deadline', { type: 'date' }), text('location', 'Location'),
-        text('url', 'Application or detail URL'), check('featured', 'Feature this opportunity'), check('published', 'Published')
-      ]
+      label: 'Opportunities', singular: 'opportunity', titleField: 'title', subtitleField: 'type', order: 'featured.desc,deadline.asc,title.asc',
+      description: 'Publish current openings with a direct source and a clear deadline or rolling-review label.',
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('organization','Organization'), text('type','Type'), area('description','Description',{required:true,rows:5}), text('deadline_label','Deadline label'), date('deadline','Deadline'), text('location','Location'), text('url','Application URL'), check('featured','Featured'), check('published','Published')]
     },
-    competition_editions: {
-      label: 'Engineering Challenge', singular: 'challenge edition', description: 'Develop and, only after approval, administer a future flagship challenge: publish confirmed editions, shape tracks and judging criteria, open registration, and preserve results.',
-      titleField: 'title', subtitleField: 'season', imageField: 'hero_url', order: 'year.desc',
-      fields: [
-        text('id', 'Edition ID', { required: true }), text('year', 'Year', { required: true }), text('title', 'Competition name', { required: true }),
-        text('eyebrow', 'Eyebrow'), text('theme', 'Theme', { required: true }), text('tagline', 'Tagline'),
-        area('description', 'Competition description', { rows: 7, required: true }), text('status', 'Status'), text('season', 'Season'),
-        check('registration_open', 'Registration open'), text('registration_deadline', 'Registration deadline', { type: 'date' }),
-        text('event_date', 'Event date', { type: 'date' }), text('venue', 'Venue'), image('hero_url', 'Hero image'),
-        text('prize_pool', 'Awards or prize statement'), text('rules_url', 'Official rules URL'), check('results_published', 'Results published'), check('published', 'Published'),
-        json('tracks', 'Competition tracks', { help: 'JSON array with number, title, and description.' }),
-        json('stages', 'Competition stages', { help: 'JSON array with number, title, and description.' }),
-        json('criteria', 'Judging criteria', { help: 'JSON array with title, weight, and description.' })
-      ]
-    },
-    sponsors: {
-      label: 'Partners + sponsors', singular: 'partner or sponsor', description: 'Manage only formally confirmed supporters, project contributors, co-sponsors, and community relationships.',
-      titleField: 'name', subtitleField: 'tier', imageField: 'logo_url', order: 'sort_order.asc,name.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('name', 'Partner name', { required: true }), text('tier', 'Partnership tier'),
-        image('logo_url', 'Logo'), text('url', 'Partner URL'), area('description', 'Partnership description', { rows: 4 }),
-        check('active', 'Active partner'), check('published', 'Published'), number('sort_order', 'Sort order', { min: 0 })
-      ]
+    news_posts: {
+      label: 'News', singular: 'news post', titleField: 'title', subtitleField: 'published_at', imageField: 'cover_url', order: 'published_at.desc,title.asc',
+      description: 'Publish concise announcements and records of what the society actually did.',
+      fields: [text('id','Record ID',{required:true}), text('slug','URL slug',{required:true}), text('title','Title',{required:true}), area('excerpt','Excerpt',{required:true,rows:3}), area('body','Body',{required:true,rows:10}), text('author','Author'), date('published_at','Publication date'), image('cover_url','Cover image'), check('featured','Featured'), check('published','Published')]
     },
     partner_schools: {
-      label: '3-2 partner schools', singular: 'partner-school card', description: 'Maintain the official partner-school reference cards shown in the pathway experience. These records are informational and separate from society sponsorships.',
-      titleField: 'name', subtitleField: 'location', order: 'sort_order.asc,name.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('name', 'Institution name', { required: true }), text('short_name', 'Short name', { required: true }),
-        text('location', 'Location'), text('region_code', 'Region code'), text('url', 'Official institution URL', { required: true }),
-        json('questions', 'Questions students should ask', { help: 'JSON array of question strings.' }), check('published', 'Published'),
-        number('sort_order', 'Sort order', { min: 0 })
-      ]
+      label: 'Partner schools', singular: 'partner-school card', titleField: 'name', subtitleField: 'location', order: 'sort_order.asc,name.asc',
+      description: 'Maintain links to official partner-school information. Recheck details before each advising cycle.',
+      fields: [text('id','Record ID',{required:true}), text('name','Institution name',{required:true}), text('short_name','Short name'), text('location','Location'), text('region_code','State code'), text('url','Official URL',{required:true}), area('description','Current summary',{rows:5}), json('questions','Questions students should ask',{help:'JSON array of strings.'}), check('published','Published'), number('sort_order','Sort order',{min:0})]
+    },
+    competition_editions: {
+      label: 'Future showcase', singular: 'showcase concept', titleField: 'title', subtitleField: 'status', imageField: 'hero_url', order: 'year.desc',
+      description: 'Keep this as a proposal until a venue, team, budget, approval path, and date are confirmed.',
+      fields: [text('id','Record ID',{required:true}), text('year','Year or stage'), text('title','Title',{required:true}), text('eyebrow','Label'), text('theme','Theme'), text('tagline','Tagline'), area('description','Description',{required:true,rows:7}), text('status','Status'), text('season','Season'), check('registration_open','Registration open'), date('registration_deadline','Registration deadline'), date('event_date','Event date'), text('venue','Venue'), image('hero_url','Hero image'), text('prize_pool','Awards statement'), text('rules_url','Rules URL'), check('results_published','Results published'), check('published','Published'), json('tracks','Tracks'), json('stages','Stages'), json('criteria','Review criteria')]
     },
     impact: {
-      label: 'Impact + reports', singular: 'impact record', description: 'Manage the public record of the society’s growth, milestones, annual reports, and evidence of work completed.',
-      titleField: 'current_term', subtitleField: 'operating_stage', order: 'updated_at.desc',
-      fields: [
-        text('id', 'Record ID', { required: true, help: 'Use main for the primary public impact record.' }), text('founded', 'Founded year'),
-        text('current_term', 'Current term', { required: true }), text('operating_stage', 'Operating stage'),
-        json('public_metrics', 'Public metrics', { help: 'JSON array with value, label, and note.' }),
-        json('milestones', 'Milestones', { help: 'JSON array with period, title, description, and status.' }),
-        json('reports', 'Annual reports', { help: 'JSON array with year, title, status, URL, and published.' }), check('published', 'Published')
-      ]
+      label: 'Founding roadmap', singular: 'roadmap', titleField: 'current_term', subtitleField: 'operating_stage', order: 'updated_at.desc',
+      description: 'Track concrete commitments and outcomes. Publish numbers only after they can be supported.',
+      fields: [text('id','Record ID',{required:true}), text('founded','Founded'), text('current_term','Current term',{required:true}), text('operating_stage','Operating stage'), json('public_metrics','Public metrics'), json('milestones','Milestones'), json('reports','Reports'), check('published','Published')]
     },
     documents: {
-      label: 'Documents', singular: 'document', description: 'Publish governance files, project templates, advising question sheets, annual reports, and other permanent society documents.',
-      titleField: 'title', subtitleField: 'category', order: 'sort_order.asc,title.asc',
-      fields: [
-        text('id', 'Record ID', { required: true }), text('title', 'Document title', { required: true }), text('category', 'Category'),
-        area('description', 'Description', { rows: 4 }), text('url', 'Document URL', { required: true }), text('format', 'Format'),
-        check('published', 'Published'), number('sort_order', 'Sort order', { min: 0 })
-      ]
+      label: 'Documents', singular: 'document', titleField: 'title', subtitleField: 'category', order: 'sort_order.asc,title.asc',
+      description: 'Publish useful permanent files such as planning sheets, reports, or governance documents.',
+      fields: [text('id','Record ID',{required:true}), text('title','Title',{required:true}), text('category','Category'), area('description','Description',{rows:4}), text('url','URL',{required:true}), text('format','Format'), check('published','Published'), number('sort_order','Sort order',{min:0})]
+    },
+    sponsors: {
+      label: 'Sponsors and collaborators', singular: 'supporter', titleField: 'name', subtitleField: 'tier', imageField: 'logo_url', order: 'sort_order.asc,name.asc',
+      description: 'Publish only confirmed relationships and describe the support accurately.',
+      fields: [text('id','Record ID',{required:true}), text('name','Name',{required:true}), text('tier','Relationship type'), image('logo_url','Logo'), text('url','URL'), area('description','Description',{rows:4}), check('active','Active'), check('published','Published'), number('sort_order','Sort order',{min:0})]
     }
   };
 
-  const siteFields = [
-    text('name', 'Organization name', { required: true }), text('short_name', 'Short name'), text('domain', 'Website domain'),
-    text('founded', 'Founded year'), text('tagline', 'Tagline'), text('hero_title', 'Hero title'), area('hero_description', 'Hero description', { rows: 4 }),
-    text('join_url', 'Membership form URL'), text('instagram_url', 'Instagram URL'), text('instagram_handle', 'Instagram handle'),
-    text('contact_email', 'Contact email'), text('founder', 'Founder'), text('advisor', 'Advisor'),
-    text('competition_name', 'Competition name'), text('competition_season', 'Competition season'),
-    area('announcement', 'Announcement bar message', { rows: 2 }), text('announcement_link', 'Announcement link'),
-    text('status', 'Organization status'), text('launch_term', 'Current term')
-  ];
+  const siteFields = [text('name','Organization name',{required:true}), text('short_name','Short name'), text('domain','Canonical domain'), text('founded','Founded'), text('tagline','Tagline'), text('hero_title','Homepage title'), area('hero_description','Homepage description',{rows:4}), text('join_url','Join page URL'), text('instagram_url','Instagram URL'), text('instagram_handle','Instagram handle'), text('contact_email','Contact email'), text('founder','Founder'), text('advisor','Advisor status'), area('announcement','Announcement text',{rows:2}), text('announcement_link','Announcement link'), text('status','Organization status'), text('launch_term','Current term')];
 
   function toast(message, type = 'success') {
-    const region = $('[data-admin-toasts]');
+    const region = $('[data-toasts]');
     if (!region) return;
     const node = document.createElement('div');
-    node.className = `admin-toast ${type}`;
+    node.className = `toast ${type}`;
     node.textContent = message;
     region.append(node);
-    window.setTimeout(() => node.remove(), 4800);
-  }
-
-  function authHeaders(token = session?.access_token) {
-    return {
-      apikey: ANON,
-      Authorization: `Bearer ${token || ANON}`,
-      Accept: 'application/json'
-    };
+    window.setTimeout(() => node.remove(), 5000);
   }
 
   async function request(path, options = {}) {
@@ -224,102 +142,106 @@
       try {
         const parsed = JSON.parse(raw);
         message = parsed.message || parsed.error_description || parsed.error || parsed.hint || raw;
-      } catch (_) { /* keep raw response */ }
-      throw new Error(message || `Request failed (${response.status})`);
+      } catch (_) { /* use raw */ }
+      throw new Error(message || `Request failed (${response.status}).`);
     }
     if (response.status === 204 || options.method === 'DELETE') return null;
-    const type = response.headers.get('content-type') || '';
-    return type.includes('application/json') ? response.json() : response.text();
+    return (response.headers.get('content-type') || '').includes('application/json') ? response.json() : response.text();
+  }
+
+  function authHeaders(token = session?.access_token) {
+    return { apikey: ANON, Authorization: `Bearer ${token || ANON}`, Accept: 'application/json' };
   }
 
   function saveSession(value) {
     session = value;
-    if (session) sessionStorage.setItem('o32-admin-session', JSON.stringify(session));
-    else sessionStorage.removeItem('o32-admin-session');
+    if (session) sessionStorage.setItem('o32-officer-session', JSON.stringify(session));
+    else sessionStorage.removeItem('o32-officer-session');
   }
 
   function loadSession() {
-    try { return JSON.parse(sessionStorage.getItem('o32-admin-session') || 'null'); }
+    try { return JSON.parse(sessionStorage.getItem('o32-officer-session') || 'null'); }
     catch (_) { return null; }
   }
 
   async function refreshSession() {
-    if (!session?.refresh_token) return false;
+    if (!session?.refresh_token) throw new Error('Your session has ended. Sign in again.');
     const next = await request('/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { apikey: ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: session.refresh_token })
+      method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: session.refresh_token })
     });
     next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
     saveSession(next);
-    return true;
   }
 
   async function ensureSession() {
-    if (!session) return false;
-    if (Number(session.expires_at || 0) < Math.floor(Date.now() / 1000) + 60) {
-      try { await refreshSession(); }
-      catch (_) { saveSession(null); return false; }
-    }
-    return true;
+    if (!session) throw new Error('Sign in required.');
+    if (Number(session.expires_at || 0) < Math.floor(Date.now() / 1000) + 60) await refreshSession();
   }
 
   async function signIn(email, password) {
     const next = await request('/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { apikey: ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
     });
     next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
     saveSession(next);
-    return next;
+  }
+
+  async function verifyCode(email, token) {
+    let lastError = null;
+    for (const type of ['invite', 'recovery']) {
+      try {
+        const next = await request('/auth/v1/verify', {
+          method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ type, email, token })
+        });
+        next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
+        saveSession(next);
+        return type;
+      } catch (error) { lastError = error; }
+    }
+    throw lastError || new Error('That code was not accepted.');
   }
 
   async function loadProfile() {
+    if (!session?.user?.id && session?.access_token) {
+      session.user = await request('/auth/v1/user', { headers: authHeaders() });
+      saveSession(session);
+    }
     if (!session?.user?.id) throw new Error('No authenticated user was returned.');
-    const rows = await request(`/rest/v1/profiles?id=eq.${encodeURIComponent(session.user.id)}&select=id,email,full_name,role`, {
-      headers: authHeaders()
-    });
+    const base = `/rest/v1/profiles?id=eq.${encodeURIComponent(session.user.id)}`;
+    let rows;
+    try {
+      rows = await request(`${base}&select=id,email,full_name,role,society_role_id`, { headers: authHeaders() });
+    } catch (error) {
+      if (!/society_role_id|schema cache|column.*does not exist|could not find/i.test(error.message || '')) throw error;
+      rows = await request(`${base}&select=id,email,full_name,role`, { headers: authHeaders() });
+      if (Array.isArray(rows)) rows = rows.map((row) => ({ ...row, society_role_id: null }));
+    }
     const record = Array.isArray(rows) ? rows[0] : null;
-    if (!record || !['admin', 'editor'].includes(record.role)) throw new Error('This account is not listed as a society administrator or editor.');
+    if (!record || !['admin','editor'].includes(record.role)) throw new Error('This account is not listed as a society officer.');
     profile = record;
-    return record;
   }
 
   async function signOut() {
-    try {
-      if (session?.access_token) await request('/auth/v1/logout', { method: 'POST', headers: authHeaders() });
-    } catch (_) { /* local logout still proceeds */ }
-    saveSession(null);
-    profile = null;
-    adminApp.hidden = true;
-    authScreen.hidden = false;
-    if (loginForm) loginForm.reset();
+    try { if (session?.access_token) await request('/auth/v1/logout', { method: 'POST', headers: authHeaders() }); }
+    catch (_) { /* local sign-out still succeeds */ }
+    saveSession(null); profile = null; portal.hidden = true; authScreen.hidden = false; loginView.hidden = false; codeView.hidden = true; passwordView.hidden = true;
   }
 
-  async function tableRows(table, order = '') {
+  async function rows(table, order = '') {
     await ensureSession();
     const query = new URLSearchParams({ select: '*' });
     if (order) query.set('order', order);
     return request(`/rest/v1/${table}?${query}`, { headers: authHeaders() });
   }
 
-  async function saveTableRecord(table, record, existingId = '') {
+  async function saveRecord(table, record, existingId = '') {
     await ensureSession();
     if (existingId) {
-      const rows = await request(`/rest/v1/${table}?id=eq.${encodeURIComponent(existingId)}`, {
-        method: 'PATCH',
-        headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=representation' },
-        body: JSON.stringify(record)
-      });
-      return Array.isArray(rows) ? rows[0] : rows;
+      const result = await request(`/rest/v1/${table}?id=eq.${encodeURIComponent(existingId)}`, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(record) });
+      return Array.isArray(result) ? result[0] : result;
     }
-    const rows = await request(`/rest/v1/${table}`, {
-      method: 'POST',
-      headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify(record)
-    });
-    return Array.isArray(rows) ? rows[0] : rows;
+    const result = await request(`/rest/v1/${table}`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(record) });
+    return Array.isArray(result) ? result[0] : result;
   }
 
   async function deleteTableRecord(table, id) {
@@ -327,525 +249,220 @@
     return request(`/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() });
   }
 
-  async function saveSiteSettings(settings) {
+  async function apiCall(path, options = {}) {
     await ensureSession();
-    const rows = await request('/rest/v1/site_settings?on_conflict=id', {
-      method: 'POST',
-      headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
-      body: JSON.stringify({ id: 'main', settings, published: true })
-    });
-    return Array.isArray(rows) ? rows[0] : rows;
-  }
-
-  async function loadSiteSettings() {
-    const rows = await tableRows('site_settings', 'updated_at.desc');
-    return (rows?.[0]?.settings) || {};
+    const response = await fetch(path, { ...options, headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', ...(options.headers || {}) } });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
+    return data;
   }
 
   async function uploadFile(file, collection = 'general') {
-    const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']);
-    const maxBytes = 15 * 1024 * 1024;
-    if (!allowedTypes.has(file.type)) throw new Error('Use a JPG, PNG, WebP, GIF, or PDF file.');
-    if (file.size > maxBytes) throw new Error('Files must be 15 MB or smaller.');
+    const allowed = new Set(['image/jpeg','image/png','image/webp','image/gif','application/pdf']);
+    if (!allowed.has(file.type)) throw new Error('Use a JPG, PNG, WebP, GIF, or PDF file.');
+    if (file.size > 15 * 1024 * 1024) throw new Error('Files must be 15 MB or smaller.');
     await ensureSession();
     const extension = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
     const base = safeId(file.name.replace(/\.[^.]+$/, '')) || 'upload';
-    const date = new Date();
-    const folder = `${date.getUTCFullYear()}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+    const now = new Date();
+    const folder = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2,'0')}`;
     const path = `${collection}/${folder}/${Date.now()}-${base}.${extension}`;
-    await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`, {
-      method: 'POST',
-      headers: { ...authHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false' },
-      body: file
-    });
+    await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': file.type, 'x-upsert': 'false' }, body: file });
     const publicUrl = `${API}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`;
     try {
-      await saveTableRecord('media', {
-        id: crypto.randomUUID(), file_name: file.name, storage_path: path, public_url: publicUrl,
-        mime_type: file.type || '', size_bytes: file.size, uploaded_by: session.user.id
-      });
-    } catch (error) {
-      console.warn('Media record could not be created:', error.message);
-    }
+      await request('/rest/v1/media', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ file_name: file.name, storage_path: path, public_url: publicUrl, mime_type: file.type, size_bytes: file.size, uploaded_by: session.user.id }) });
+    } catch (error) { console.warn('Could not record media metadata:', error.message); }
     return publicUrl;
   }
 
-  function recordTitle(definition, record) {
-    return record?.[definition.titleField] || record?.id || 'Untitled';
+  function titleFor(definition, record) { return record?.[definition.titleField] || record?.id || 'Untitled'; }
+  function subtitleFor(definition, record) { return record?.[definition.subtitleField] || record?.category || record?.type || ''; }
+  function statusMarkup(record) { const published = record.published !== false; return `<span class="status ${published ? '' : 'draft'}">${published ? 'Published' : 'Draft'}</span>`; }
+
+  function viewHead(definition) {
+    return `<div class="view-head"><div><p class="eyebrow">Public content</p><h2>${escapeHTML(definition.label)}</h2><p>${escapeHTML(definition.description)}</p></div><button class="button primary" type="button" data-create>Create ${escapeHTML(definition.singular)}</button></div>`;
   }
 
-  function recordSubtitle(definition, record) {
-    return record?.[definition.subtitleField] || record?.category || record?.type || '';
-  }
-
-  function statusMarkup(record) {
-    const published = record.published !== false;
-    const featured = Boolean(record.featured);
-    return `<span class="status-pill ${published ? 'live' : 'draft'}"><i></i>${published ? 'Published' : 'Draft'}</span>${featured ? ' <span class="status-pill featured">Featured</span>' : ''}`;
-  }
-
-  function viewHeader(definition) {
-    return `<div class="table-view-head"><div><span class="admin-kicker">CONTENT SYSTEM</span><h2>${escapeHTML(definition.label)}</h2><p>${escapeHTML(definition.description)}</p></div><button class="admin-button primary" type="button" data-create-record><span>Create ${escapeHTML(definition.singular)}</span><b>＋</b></button></div>`;
-  }
-
-  function renderTable(definition, records) {
-    if (!records.length) return `<div class="empty-state"><span>◇</span><h3>No ${escapeHTML(definition.label.toLowerCase())} yet</h3><p>Create the first record. Drafts remain hidden from the public website until published.</p><button class="admin-button primary" type="button" data-create-record><span>Create ${escapeHTML(definition.singular)}</span><b>＋</b></button></div>`;
-    return `<div class="record-table-wrap"><table class="record-table"><thead><tr><th>RECORD</th><th>STATUS</th><th>UPDATED</th><th></th></tr></thead><tbody>${records.map((record) => {
-      const title = recordTitle(definition, record);
-      const subtitle = recordSubtitle(definition, record);
-      const imageUrl = definition.imageField ? record[definition.imageField] : '';
-      const thumb = imageUrl ? `<img class="record-thumb" src="${escapeHTML(imageUrl)}" alt="">` : `<span class="record-thumb">${escapeHTML(initials(title))}</span>`;
-      return `<tr><td><div class="record-title">${thumb}<div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(subtitle)}</small></div></div></td><td>${statusMarkup(record)}</td><td>${escapeHTML(formatDate(record.updated_at || record.created_at))}</td><td><div class="row-actions"><button type="button" data-edit-record="${escapeHTML(record.id)}" aria-label="Edit ${escapeHTML(title)}">✎</button><button type="button" data-duplicate-record="${escapeHTML(record.id)}" aria-label="Duplicate ${escapeHTML(title)}">⧉</button><button type="button" data-remove-record="${escapeHTML(record.id)}" aria-label="Delete ${escapeHTML(title)}">×</button></div></td></tr>`;
+  function tableMarkup(definition, records) {
+    if (!records.length) return `<div class="empty"><div><h3>No ${escapeHTML(definition.label.toLowerCase())} yet</h3><p>Create the first record. Keep it as a draft until the information is ready for the public site.</p><button class="button primary" type="button" data-create>Create ${escapeHTML(definition.singular)}</button></div></div>`;
+    return `<div class="table-wrap"><table><thead><tr><th>Record</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>${records.map((record) => {
+      const title = titleFor(definition, record); const subtitle = subtitleFor(definition, record); const imageUrl = definition.imageField ? record[definition.imageField] : '';
+      const thumb = imageUrl ? `<img src="${escapeHTML(imageUrl)}" alt="">` : `<span>${escapeHTML(initials(title))}</span>`;
+      return `<tr><td><div class="record-title">${thumb}<div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(subtitle)}</small></div></div></td><td>${statusMarkup(record)}</td><td>${escapeHTML(formatDate(record.updated_at || record.created_at))}</td><td><div class="row-actions"><button type="button" data-edit="${escapeHTML(record.id)}" aria-label="Edit ${escapeHTML(title)}">✎</button><button type="button" data-copy="${escapeHTML(record.id)}" aria-label="Duplicate ${escapeHTML(title)}">⧉</button><button type="button" data-remove="${escapeHTML(record.id)}" aria-label="Delete ${escapeHTML(title)}">×</button></div></td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
   async function renderCollection(view) {
     const definition = collections[view];
-    activeRecords = await tableRows(view, definition.order || 'updated_at.desc');
-    contentRoot.innerHTML = `${viewHeader(definition)}<div class="toolbar"><label class="search-control"><span>⌕</span><input type="search" data-table-search placeholder="Search ${escapeHTML(definition.label.toLowerCase())}"></label><select data-table-filter><option value="all">All records</option><option value="published">Published</option><option value="draft">Drafts</option><option value="featured">Featured</option></select></div><div data-table-results>${renderTable(definition, activeRecords)}</div>`;
-
-    const rerender = () => {
-      const query = String($('[data-table-search]')?.value || '').toLowerCase().trim();
-      const filter = $('[data-table-filter]')?.value || 'all';
-      const rows = activeRecords.filter((record) => {
-        const haystack = JSON.stringify(record).toLowerCase();
-        const statusMatch = filter === 'all' || (filter === 'published' && record.published !== false) || (filter === 'draft' && record.published === false) || (filter === 'featured' && record.featured);
-        return statusMatch && (!query || haystack.includes(query));
+    activeRecords = await rows(view, definition.order || 'updated_at.desc');
+    content.innerHTML = `${viewHead(definition)}<div class="toolbar"><label><span class="sr-only">Search</span><input type="search" data-search placeholder="Search ${escapeHTML(definition.label.toLowerCase())}"></label><select data-filter><option value="all">All records</option><option value="published">Published</option><option value="draft">Drafts</option><option value="featured">Featured</option></select></div><div data-results>${tableMarkup(definition, activeRecords)}</div>`;
+    const refresh = () => {
+      const query = String($('[data-search]')?.value || '').trim().toLowerCase(); const filter = $('[data-filter]')?.value || 'all';
+      const filtered = activeRecords.filter((record) => {
+        const status = filter === 'all' || (filter === 'published' && record.published !== false) || (filter === 'draft' && record.published === false) || (filter === 'featured' && record.featured);
+        return status && (!query || JSON.stringify(record).toLowerCase().includes(query));
       });
-      $('[data-table-results]').innerHTML = renderTable(definition, rows);
-      bindCollectionActions(view);
+      $('[data-results]').innerHTML = tableMarkup(definition, filtered); bindRecordActions(view);
     };
-    $('[data-table-search]')?.addEventListener('input', rerender);
-    $('[data-table-filter]')?.addEventListener('change', rerender);
-    bindCollectionActions(view);
+    $('[data-search]')?.addEventListener('input', refresh); $('[data-filter]')?.addEventListener('change', refresh); bindRecordActions(view);
   }
 
-  function bindCollectionActions(view) {
-    $$('[data-create-record]').forEach((button) => button.addEventListener('click', () => openEditor(view)));
-    $$('[data-edit-record]').forEach((button) => button.addEventListener('click', () => {
-      const record = activeRecords.find((item) => String(item.id) === button.dataset.editRecord);
-      if (record) openEditor(view, record);
+  function bindRecordActions(view) {
+    $$('[data-create]', content).forEach((button) => button.addEventListener('click', () => openEditor(view)));
+    $$('[data-edit]', content).forEach((button) => button.addEventListener('click', () => { const record = activeRecords.find((item) => String(item.id) === button.dataset.edit); if (record) openEditor(view, record); }));
+    $$('[data-copy]', content).forEach((button) => button.addEventListener('click', () => {
+      const original = activeRecords.find((item) => String(item.id) === button.dataset.copy); if (!original) return;
+      const copy = structuredClone(original); delete copy.created_at; delete copy.updated_at; copy.id = `${safeId(titleFor(collections[view], copy))}-copy-${Date.now().toString().slice(-5)}`; if (copy.slug) copy.slug = `${safeId(copy.slug)}-copy`; copy.published = false; openEditor(view, copy, true);
     }));
-    $$('[data-duplicate-record]').forEach((button) => button.addEventListener('click', () => {
-      const original = activeRecords.find((item) => String(item.id) === button.dataset.duplicateRecord);
-      if (!original) return;
-      const copy = structuredClone(original);
-      delete copy.created_at; delete copy.updated_at;
-      copy.id = `${safeId(recordTitle(collections[view], original))}-copy-${Date.now().toString().slice(-5)}`;
-      if (copy.slug) copy.slug = `${safeId(copy.slug)}-copy`;
-      copy.published = false;
-      openEditor(view, copy, true);
-    }));
-    $$('[data-remove-record]').forEach((button) => button.addEventListener('click', () => {
-      const record = activeRecords.find((item) => String(item.id) === button.dataset.removeRecord);
-      if (record) confirmAction(`Delete ${recordTitle(collections[view], record)}?`, 'This removes the record from the content system and public website. This cannot be undone.', async () => {
-        await deleteTableRecord(view, record.id); toast('Record deleted.'); await renderCollection(view);
-      });
+    $$('[data-remove]', content).forEach((button) => button.addEventListener('click', () => {
+      const record = activeRecords.find((item) => String(item.id) === button.dataset.remove); if (!record) return;
+      confirmAction(`Delete ${titleFor(collections[view], record)}?`, 'This permanently removes the record from the content database.', async () => { await deleteTableRecord(view, record.id); toast('Record deleted.'); await renderCollection(view); });
     }));
   }
 
-  function fieldValue(field, record) {
+  function valueFor(field, record) {
     const value = record?.[field.name];
     if (field.type === 'json') return value ? JSON.stringify(value, null, 2) : '[]';
     if (field.type === 'array') return Array.isArray(value) ? value.join(', ') : (value || '');
-    if (field.type === 'datetime-local' && value) return String(value).slice(0, 16);
+    if (field.type === 'datetime-local' && value) return String(value).slice(0,16);
     return value ?? '';
   }
 
   function fieldMarkup(field, record) {
-    const value = fieldValue(field, record);
-    const classes = `editor-field${field.full ? ' full' : ''}`;
-    const required = field.required ? ' required' : '';
-    const help = field.help ? `<small>${escapeHTML(field.help)}</small>` : '';
+    const value = valueFor(field, record); const required = field.required ? ' required' : ''; const help = field.help ? `<small>${escapeHTML(field.help)}</small>` : '';
     const minmax = `${field.min !== undefined ? ` min="${field.min}"` : ''}${field.max !== undefined ? ` max="${field.max}"` : ''}`;
-
-    if (field.type === 'checkbox') {
-      return `<label class="${classes} checkbox-field"><input type="checkbox" name="${escapeHTML(field.name)}" ${value ? 'checked' : ''}><span>${escapeHTML(field.label)}</span></label>`;
-    }
-    if (field.type === 'textarea' || field.type === 'json') {
-      return `<label class="${classes}"><span>${escapeHTML(field.label)}</span><textarea name="${escapeHTML(field.name)}" rows="${field.rows || 5}" class="${field.type === 'json' ? 'code-field' : ''}"${required}>${escapeHTML(value)}</textarea>${help}</label>`;
-    }
-    if (field.type === 'select') {
-      return `<label class="${classes}"><span>${escapeHTML(field.label)}</span><select name="${escapeHTML(field.name)}"${required}>${(field.options || []).map((option) => `<option value="${escapeHTML(option)}" ${String(value) === option ? 'selected' : ''}>${escapeHTML(option)}</option>`).join('')}</select>${help}</label>`;
-    }
-    if (field.type === 'image') {
-      return `<div class="${classes}" data-image-field="${escapeHTML(field.name)}"><span>${escapeHTML(field.label)}</span><div class="media-upload"><img class="media-preview" src="${escapeHTML(value || '../assets/images/engineering-field.svg')}" alt=""><div><input type="url" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="Image URL"><input type="file" accept="image/*" data-file-upload="${escapeHTML(field.name)}"><small>Upload an image or paste a hosted URL. Uploads publish to the society media bucket.</small><div class="upload-progress"><i></i></div></div></div>${help}</div>`;
-    }
-    const inputType = field.type === 'array' ? 'text' : (field.type || 'text');
-    return `<label class="${classes}"><span>${escapeHTML(field.label)}</span><input type="${escapeHTML(inputType)}" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="${escapeHTML(field.placeholder || '')}"${required}${minmax}>${help}</label>`;
+    if (field.type === 'checkbox') return `<label class="checkbox"><input type="checkbox" name="${escapeHTML(field.name)}" ${value ? 'checked' : ''}><span>${escapeHTML(field.label)}</span></label>`;
+    if (field.type === 'textarea' || field.type === 'json') return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><textarea class="${field.type === 'json' ? 'code' : ''}" name="${escapeHTML(field.name)}" rows="${field.rows || 5}"${required}>${escapeHTML(value)}</textarea>${help}</label>`;
+    if (field.type === 'select') return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><select name="${escapeHTML(field.name)}"${required}>${field.options.map((option) => `<option value="${escapeHTML(option)}" ${String(value) === option ? 'selected' : ''}>${escapeHTML(option)}</option>`).join('')}</select>${help}</label>`;
+    if (field.type === 'image') return `<div class="image-field" data-image-field="${escapeHTML(field.name)}"><span>${escapeHTML(field.label)}</span><div class="image-control"><img src="${escapeHTML(value || '../assets/images/engineering-field.svg')}" alt=""><div><input type="url" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="Image URL"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload="${escapeHTML(field.name)}"><small>Use a licensed image and keep its credit in content/photo_credits.json.</small></div></div></div>`;
+    const inputType = field.type === 'array' ? 'text' : field.type;
+    return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><input type="${escapeHTML(inputType)}" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}"${required}${minmax}>${help}</label>`;
   }
 
   function openEditor(view, record = {}, forceNew = false) {
-    const definition = collections[view];
-    if (!definition) return;
+    const definition = collections[view]; if (!definition) return;
     editorContext = { view, originalId: forceNew ? '' : (record.id || ''), record };
-    editorTitle.textContent = `${forceNew || !record.id ? 'Create' : 'Edit'} ${definition.singular}`;
-    editorKicker.textContent = definition.label.toUpperCase();
+    editorKicker.textContent = definition.label; editorTitle.textContent = `${forceNew || !record.id ? 'Create' : 'Edit'} ${definition.singular}`;
     editorFields.innerHTML = definition.fields.map((field) => fieldMarkup(field, record)).join('');
-    deleteButton.hidden = forceNew || !record.id;
-    deleteButton.onclick = () => confirmAction(`Delete ${recordTitle(definition, record)}?`, 'This cannot be undone.', async () => {
-      await deleteTableRecord(view, record.id); editorDialog.close(); toast('Record deleted.'); await renderCollection(view);
-    });
-    $$('[data-file-upload]', editorFields).forEach((input) => input.addEventListener('change', async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const fieldName = input.dataset.fileUpload;
-      const wrapper = input.closest('[data-image-field]');
-      const progress = $('.upload-progress i', wrapper);
-      const preview = $('.media-preview', wrapper);
-      const urlInput = $(`input[name="${CSS.escape(fieldName)}"]`, wrapper);
-      try {
-        if (progress) progress.style.width = '35%';
-        const url = await uploadFile(file, view);
-        if (progress) progress.style.width = '100%';
-        if (preview) preview.src = url;
-        if (urlInput) urlInput.value = url;
-        toast('Image uploaded. Save the record to publish the change.');
-      } catch (error) {
-        if (progress) progress.style.width = '0';
-        toast(`Upload failed: ${error.message}`, 'error');
-      }
+    deleteRecord.hidden = forceNew || !record.id;
+    deleteRecord.onclick = () => confirmAction(`Delete ${titleFor(definition, record)}?`, 'This cannot be undone.', async () => { await deleteTableRecord(view, record.id); editorDialog.close(); toast('Record deleted.'); await renderCollection(view); });
+    $$('[data-upload]', editorFields).forEach((input) => input.addEventListener('change', async () => {
+      const file = input.files?.[0]; if (!file) return; const wrapper = input.closest('[data-image-field]');
+      try { const url = await uploadFile(file, view); $(`input[name="${CSS.escape(input.dataset.upload)}"]`, wrapper).value = url; $('img', wrapper).src = url; toast('Image uploaded. Save the record to publish it.'); }
+      catch (error) { toast(error.message, 'error'); }
     }));
     editorDialog.showModal();
   }
 
-  function collectEditorRecord(definition) {
-    const formData = new FormData(editorForm);
-    const record = {};
+  function collectRecord(definition) {
+    const data = new FormData(editorForm); const record = {};
     for (const field of definition.fields) {
-      if (field.type === 'checkbox') {
-        record[field.name] = Boolean($(`[name="${CSS.escape(field.name)}"]`, editorForm)?.checked);
-        continue;
-      }
-      let value = formData.get(field.name);
-      if (typeof value === 'string') value = value.trim();
+      if (field.type === 'checkbox') { record[field.name] = Boolean($(`[name="${CSS.escape(field.name)}"]`, editorForm)?.checked); continue; }
+      let value = data.get(field.name); if (typeof value === 'string') value = value.trim();
       if (field.type === 'number') record[field.name] = value === '' ? 0 : Number(value);
       else if (field.type === 'array') record[field.name] = String(value || '').split(',').map((item) => item.trim()).filter(Boolean);
-      else if (field.type === 'json') {
-        try { record[field.name] = JSON.parse(String(value || '[]')); }
-        catch (_) { throw new Error(`${field.label} must contain valid JSON.`); }
-      } else if (field.type === 'datetime-local') record[field.name] = value ? new Date(value).toISOString() : null;
+      else if (field.type === 'json') { try { record[field.name] = JSON.parse(String(value || '[]')); } catch (_) { throw new Error(`${field.label} must contain valid JSON.`); } }
+      else if (field.type === 'datetime-local') record[field.name] = value ? new Date(value).toISOString() : null;
+      else if (field.type === 'date') record[field.name] = value || null;
       else record[field.name] = value || '';
     }
-    if (!record.id) record.id = `${safeId(record.title || record.name || record.role || definition.singular)}-${Date.now().toString().slice(-5)}`;
-    if ('slug' in record && !record.slug) record.slug = safeId(record.title || record.name || record.id);
+    if (!record.id) record.id = `${safeId(record.title || record.name || record.current_term || definition.singular)}-${Date.now().toString().slice(-5)}`;
+    if (Object.prototype.hasOwnProperty.call(record, 'slug') && !record.slug) record.slug = safeId(record.title || record.name || record.id);
     return record;
   }
 
   async function renderDashboard() {
-    const tables = ['projects', 'project_updates', 'leaders', 'events', 'opportunities', 'submissions', 'content_audit'];
-    const values = await Promise.all(tables.map((table) => tableRows(table, table === 'submissions' || table === 'content_audit' ? 'created_at.desc' : 'updated_at.desc').catch(() => [])));
-    const [projects, updates, leaders, events, opportunities, submissions, audit] = values;
-    const newSubmissions = submissions.filter((item) => item.status === 'new');
-    $('[data-submission-count]') && ($('[data-submission-count]').textContent = String(newSubmissions.length));
-    const auditLabel = (item) => item.snapshot?.title || item.snapshot?.name || item.snapshot?.current_term || item.record_id || 'record';
-    contentRoot.innerHTML = `
-      <section class="dashboard-hero"><div><span class="system-status"><i></i> CONTENT SYSTEM ONLINE</span><h2>Welcome back, ${escapeHTML(profile?.full_name?.split(' ')[0] || 'administrator')}.</h2><p>Publish the society's work, keep leadership and opportunities current, develop the future Engineering Challenge concept responsibly, and preserve the record future boards will inherit.</p></div><div class="dashboard-hero-actions"><button class="admin-button primary" type="button" data-dashboard-create="projects"><span>Create project</span><b>＋</b></button><a class="admin-button ghost" href="../index.html" target="_blank" rel="noopener"><span>Open website</span><b>↗</b></a></div></section>
-      <div class="metric-grid"><article class="metric-card"><span>PUBLISHED PROJECTS</span><strong>${projects.filter((item) => item.published !== false).length}</strong><small>${projects.filter((item) => item.featured).length} featured</small></article><article class="metric-card"><span>CURRENT LEADERS</span><strong>${leaders.filter((item) => item.current && !item.open_seat).length}</strong><small>${leaders.filter((item) => item.current && item.open_seat).length} open seats</small></article><article class="metric-card"><span>BUILD-LOG UPDATES</span><strong>${updates.filter((item) => item.published !== false).length}</strong><small>${events.length} events on record</small></article><article class="metric-card"><span>NEW SUBMISSIONS</span><strong>${newSubmissions.length}</strong><small>${opportunities.length} opportunities live</small></article></div>
-      <div class="dashboard-grid"><section class="admin-panel"><header class="panel-head"><h3>Recent submissions</h3><span>${submissions.length} TOTAL</span></header><div class="activity-list">${submissions.slice(0, 6).map((item) => `<div class="activity-item"><span class="activity-icon">${escapeHTML(String(item.type || 'S').slice(0, 1).toUpperCase())}</span><div><strong>${escapeHTML(item.full_name || item.email || 'Website visitor')}</strong><p>${escapeHTML(String(item.type || 'submission').replaceAll('_', ' '))}</p></div><time>${escapeHTML(formatDate(item.created_at))}</time></div>`).join('') || '<div class="activity-item"><span class="activity-icon">✓</span><div><strong>No submissions yet</strong><p>New public form entries will appear here.</p></div></div>'}</div></section><section class="admin-panel"><header class="panel-head"><h3>Quick publish</h3><span>CREATE</span></header><div class="quick-list">${[['projects','◇','Project'],['project_updates','↻','Build-log update'],['leaders','◎','Leader'],['events','□','Event'],['news_posts','≋','Field note'],['opportunities','↗','Opportunity'],['competition_editions','✦','Challenge edition']].map(([view, icon, label]) => `<button class="quick-item" type="button" data-dashboard-create="${view}"><span>${icon}</span><strong>${label}</strong><p>Open editor</p></button>`).join('')}</div></section></div>
-      <section class="admin-panel audit-preview"><header class="panel-head"><h3>Recent content changes</h3><button class="text-button" type="button" data-open-audit>Open full history</button></header><div class="activity-list">${audit.slice(0, 6).map((item) => `<div class="activity-item"><span class="activity-icon audit-${escapeHTML(String(item.action || '').toLowerCase())}">${escapeHTML(String(item.action || 'U').slice(0, 1))}</span><div><strong>${escapeHTML(auditLabel(item))}</strong><p>${escapeHTML(String(item.action || 'updated').toLowerCase())} in ${escapeHTML(String(item.table_name || 'content').replaceAll('_', ' '))}</p></div><time>${escapeHTML(formatDate(item.created_at))}</time></div>`).join('') || '<div class="activity-item"><span class="activity-icon">≡</span><div><strong>No content changes recorded</strong><p>The audit log begins after the database schema is installed.</p></div></div>'}</div></section>`;
-    $$('[data-dashboard-create]').forEach((button) => button.addEventListener('click', () => openEditor(button.dataset.dashboardCreate)));
-    $('[data-open-audit]')?.addEventListener('click', () => switchView('content_audit'));
+    const names = ['projects','project_updates','leaders','events','resources','submissions','content_audit'];
+    const values = await Promise.all(names.map((name) => rows(name, name === 'submissions' || name === 'content_audit' ? 'created_at.desc' : 'updated_at.desc').catch(() => [])));
+    const [projects, updates, leaders, events, resources, submissions, audit] = values; const fresh = submissions.filter((item) => item.status === 'new');
+    $('[data-new-count]').textContent = String(fresh.length);
+    const firstName = profile?.full_name?.split(/\s+/)[0] || 'officer';
+    content.innerHTML = `<section class="hero-panel"><div><p class="eyebrow">Current responsibility</p><h2>Keep the site true, ${escapeHTML(firstName)}.</h2><p>Publish only confirmed dates, named people, supportable outcomes, and project status that matches the work happening now.</p></div><div class="hero-panel__aside"><button class="button secondary" type="button" data-quick="projects">Add a project</button></div></section><div class="metric-grid"><article class="metric"><span>Published projects</span><strong>${projects.filter((item) => item.published !== false).length}</strong></article><article class="metric"><span>Named leaders</span><strong>${leaders.filter((item) => item.current && !item.open_seat).length}</strong></article><article class="metric"><span>Scheduled events</span><strong>${events.filter((item) => item.start_at).length}</strong></article><article class="metric"><span>New submissions</span><strong>${fresh.length}</strong></article></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Recent submissions</h3><p>Membership, project, event, and contact responses.</p></div></header><div class="activity-list">${submissions.slice(0,6).map((item) => `<div class="activity"><span>${escapeHTML(String(item.type || 'S').slice(0,1).toUpperCase())}</span><div><strong>${escapeHTML(item.full_name || item.email || 'Visitor')}</strong><small>${escapeHTML(pretty(item.type || 'submission'))}</small></div><time>${escapeHTML(formatDate(item.created_at))}</time></div>`).join('') || '<div class="activity"><span>✓</span><div><strong>No submissions yet</strong><small>New forms will appear here.</small></div></div>'}</div></section><section class="panel"><header class="panel__head"><div><h3>Common tasks</h3><p>Open a focused editor rather than changing raw files.</p></div></header><div class="quick-grid">${[['projects','Project'],['events','Event'],['leaders','Leadership'],['resources','Resource'],['news_posts','News post'],['opportunities','Opportunity']].map(([view,label]) => `<button type="button" data-quick="${view}"><strong>${label}</strong><small>Create a new record</small></button>`).join('')}</div></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Recent changes</h3><p>The database audit log records content edits for board handoff.</p></div></header><div class="activity-list">${audit.slice(0,6).map((item) => `<div class="activity"><span>${escapeHTML(String(item.action || 'U').slice(0,1))}</span><div><strong>${escapeHTML(item.snapshot?.title || item.snapshot?.name || item.record_id || 'Record')}</strong><small>${escapeHTML(pretty(item.table_name || 'content'))}</small></div><time>${escapeHTML(formatDate(item.created_at,true))}</time></div>`).join('') || '<div class="activity"><span>≡</span><div><strong>No changes recorded</strong><small>The log starts after the database schema is installed.</small></div></div>'}</div></section>`;
+    $$('[data-quick]', content).forEach((button) => button.addEventListener('click', () => openEditor(button.dataset.quick)));
   }
 
   async function renderSubmissions() {
-    const submissions = await tableRows('submissions', 'created_at.desc');
-    $('[data-submission-count]') && ($('[data-submission-count]').textContent = String(submissions.filter((item) => item.status === 'new').length));
-    contentRoot.innerHTML = `<div class="table-view-head"><div><span class="admin-kicker">INBOX</span><h2>Public submissions</h2><p>Project ideas, leadership interest, competition updates, event suggestions, resource requests, opportunity listings, newsletters, and partnership messages.</p></div></div><div class="admin-panel">${submissions.map((item) => {
-      const payload = item.payload || {};
-      return `<article class="submission-card"><div><div class="submission-meta"><span>${escapeHTML(String(item.type || '').replaceAll('_', ' ').toUpperCase())}</span><span>${escapeHTML(formatDate(item.created_at))}</span><span>${escapeHTML(item.email || '')}</span><span>${escapeHTML(item.status || 'new')}</span></div><h3>${escapeHTML(item.full_name || item.email || 'Website submission')}</h3><p>${escapeHTML(payload.message || payload.problem || payload.value || payload.motivation || payload.description || '')}</p><div class="submission-data">${Object.entries(payload).map(([key, value]) => `<div><b>${escapeHTML(key.replaceAll('_', ' '))}</b><span>${escapeHTML(Array.isArray(value) ? value.join(', ') : value)}</span></div>`).join('')}</div></div><div class="row-actions"><button type="button" data-submission-status="reviewed" data-submission-id="${escapeHTML(item.id)}" title="Mark reviewed">✓</button><button type="button" data-submission-status="archived" data-submission-id="${escapeHTML(item.id)}" title="Archive">↧</button><button type="button" data-submission-delete="${escapeHTML(item.id)}" title="Delete">×</button></div></article>`;
-    }).join('') || '<div class="empty-state"><span>↳</span><h3>No submissions yet</h3><p>Public form entries will appear here after the database is connected.</p></div>'}</div>`;
-    $$('[data-submission-status]').forEach((button) => button.addEventListener('click', async () => {
-      await saveTableRecord('submissions', { status: button.dataset.submissionStatus }, button.dataset.submissionId); toast('Submission updated.'); await renderSubmissions();
-    }));
-    $$('[data-submission-delete]').forEach((button) => button.addEventListener('click', () => confirmAction('Delete this submission?', 'This permanently removes the entry.', async () => {
-      await deleteTableRecord('submissions', button.dataset.submissionDelete); toast('Submission deleted.'); await renderSubmissions();
-    })));
-  }
-
-  async function renderMedia() {
-    const media = await tableRows('media', 'created_at.desc').catch(() => []);
-    contentRoot.innerHTML = `<div class="table-view-head"><div><span class="admin-kicker">ASSET SYSTEM</span><h2>Media library</h2><p>Upload project covers, leadership portraits, event art, partner logos, and competition imagery. Files are published through the society's Supabase Storage bucket.</p></div></div><div class="media-uploader"><label><span>＋</span><strong>Upload media</strong><small>Images, PDFs, and approved public assets</small><input type="file" data-media-upload accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple></label></div><div class="media-grid">${media.map((item) => `<article class="media-card">${String(item.mime_type || '').startsWith('image/') ? `<img src="${escapeHTML(item.public_url)}" alt="">` : '<div class="record-thumb">FILE</div>'}<div><strong>${escapeHTML(item.file_name)}</strong><small>${Math.round(Number(item.size_bytes || 0) / 1024)} KB · ${escapeHTML(formatDate(item.created_at))}</small><button class="text-button" type="button" data-copy-media="${escapeHTML(item.public_url)}">Copy URL</button></div></article>`).join('') || '<div class="empty-state"><span>▧</span><h3>No uploaded media</h3><p>Upload the first image to create the library.</p></div>'}</div>`;
-    $('[data-media-upload]')?.addEventListener('change', async (event) => {
-      const files = [...(event.target.files || [])];
-      for (const file of files) {
-        try { await uploadFile(file, 'library'); toast(`${file.name} uploaded.`); }
-        catch (error) { toast(`Could not upload ${file.name}: ${error.message}`, 'error'); }
-      }
-      await renderMedia();
-    });
-    $$('[data-copy-media]').forEach((button) => button.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(button.dataset.copyMedia); toast('Media URL copied.');
-    }));
+    const submissions = await rows('submissions','created_at.desc'); $('[data-new-count]').textContent = String(submissions.filter((item) => item.status === 'new').length);
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Inbox</p><h2>Public submissions</h2><p>Review what students sent, mark it handled, or archive it. Network hashes are used only for abuse prevention and are not shown here.</p></div></div><div class="submission-list">${submissions.map((item) => {
+      const payload = item.payload || {}; const lead = payload.message || payload.motivation || payload.problem || payload.first_test || '';
+      return `<article class="submission"><div><div class="submission__meta"><span>${escapeHTML(pretty(item.type))}</span><span>${escapeHTML(item.status)}</span><span>${escapeHTML(formatDate(item.created_at,true))}</span><span>${escapeHTML(item.email)}</span></div><h3>${escapeHTML(item.full_name || item.email)}</h3><p>${escapeHTML(lead)}</p><div class="submission-data">${Object.entries(payload).filter(([key]) => !['full_name','email'].includes(key)).map(([key,value]) => `<div><b>${escapeHTML(pretty(key))}</b><span>${escapeHTML(Array.isArray(value) ? value.join(', ') : value)}</span></div>`).join('')}</div></div><div class="row-actions"><button type="button" data-status="reviewed" data-id="${escapeHTML(item.id)}" title="Mark reviewed">✓</button><button type="button" data-status="archived" data-id="${escapeHTML(item.id)}" title="Archive">↧</button><button type="button" data-delete-submission="${escapeHTML(item.id)}" title="Delete">×</button></div></article>`;
+    }).join('') || '<div class="empty"><div><h3>No submissions yet</h3><p>Working public forms will place new entries here.</p></div></div>'}</div>`;
+    $$('[data-status]',content).forEach((button) => button.addEventListener('click', async () => { await saveRecord('submissions',{status:button.dataset.status},button.dataset.id); toast('Submission updated.'); await renderSubmissions(); }));
+    $$('[data-delete-submission]',content).forEach((button) => button.addEventListener('click', () => confirmAction('Delete this submission?','This permanently removes the entry.',async()=>{await deleteTableRecord('submissions',button.dataset.deleteSubmission);toast('Submission deleted.');await renderSubmissions();})));
   }
 
   async function renderSiteSettings() {
-    const settings = await loadSiteSettings();
-    contentRoot.innerHTML = `<div class="table-view-head"><div><span class="admin-kicker">GLOBAL CONFIGURATION</span><h2>Site settings</h2><p>Update the announcement, contact information, membership link, Instagram, competition label, current term, and global public copy.</p></div></div><form class="admin-panel" data-settings-form><div class="editor-body">${siteFields.map((field) => fieldMarkup(field, settings)).join('')}</div><footer class="editor-actions"><span class="editor-spacer"></span><button class="admin-button primary" type="submit"><span>Publish settings</span><b>✓</b></button></footer></form>`;
-    $('[data-settings-form]')?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const data = new FormData(form);
-      const next = {};
-      siteFields.forEach((field) => { next[field.name] = String(data.get(field.name) || '').trim(); });
-      await saveSiteSettings(next); toast('Site settings published.');
-    });
+    const settingsRows = await rows('site_settings','updated_at.desc'); const settings = settingsRows?.[0]?.settings || {};
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Configuration</p><h2>Site settings</h2><p>These values control contact links, the announcement, and homepage identity. Page copy remains versioned in GitHub.</p></div></div><form class="panel" data-settings-form><div class="editor__fields">${siteFields.map((field)=>fieldMarkup(field,settings)).join('')}</div><div style="display:flex;justify-content:flex-end;padding:1rem;border-top:1px solid var(--line)"><button class="button primary" type="submit">Save settings</button></div></form>`;
+    $('[data-settings-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);const next={};siteFields.forEach((field)=>{next[field.name]=String(data.get(field.name)||'').trim();});await request('/rest/v1/site_settings?on_conflict=id',{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:'main',settings:next,published:true})});toast('Site settings saved.');});
   }
 
-  function confirmAction(title, copy, action) {
-    $('[data-confirm-title]').textContent = title;
-    $('[data-confirm-copy]').textContent = copy;
-    pendingConfirm = action;
-    confirmDialog.showModal();
+  async function renderMedia() {
+    const media = await rows('media','created_at.desc').catch(()=>[]);
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Assets</p><h2>Media library</h2><p>Upload public images and PDFs. Record the original source and license separately when the file is not created by the society.</p></div></div><div class="media-uploader"><label><span><strong>Upload files</strong><small> JPG, PNG, WebP, GIF, or PDF. Maximum 15 MB each.</small></span><input type="file" data-media-upload accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple></label></div><div class="media-grid">${media.map((item)=>`<article class="media-card">${String(item.mime_type||'').startsWith('image/')?`<img src="${escapeHTML(item.public_url)}" alt="">`:'<div class="media-card__file">FILE</div>'}<div><strong title="${escapeHTML(item.file_name)}">${escapeHTML(item.file_name)}</strong><small>${escapeHTML(formatDate(item.created_at))}</small><button class="link-button" type="button" data-copy-url="${escapeHTML(item.public_url)}">Copy URL</button></div></article>`).join('')||'<div class="empty"><div><h3>No uploaded media</h3><p>The versioned site images remain available in the repository.</p></div></div>'}</div>`;
+    $('[data-media-upload]')?.addEventListener('change',async(event)=>{const files=[...(event.target.files||[])];for(const file of files){try{await uploadFile(file,'media');toast(`${file.name} uploaded.`);}catch(error){toast(`${file.name}: ${error.message}`,'error');}}await renderMedia();});
+    $$('[data-copy-url]',content).forEach((button)=>button.addEventListener('click',async()=>{await navigator.clipboard.writeText(button.dataset.copyUrl);toast('URL copied.');}));
+  }
+
+  async function renderAudit() {
+    const audit = await rows('content_audit','created_at.desc');
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Accountability</p><h2>Change history</h2><p>Content changes are recorded automatically. This view is read-only.</p></div></div><div class="table-wrap"><table><thead><tr><th>Action</th><th>Record</th><th>Collection</th><th>Date</th></tr></thead><tbody>${audit.map((item)=>`<tr><td>${escapeHTML(item.action)}</td><td>${escapeHTML(item.snapshot?.title||item.snapshot?.name||item.record_id||'Record')}</td><td>${escapeHTML(pretty(item.table_name))}</td><td>${escapeHTML(formatDate(item.created_at,true))}</td></tr>`).join('')||'<tr><td colspan="4">No changes have been recorded.</td></tr>'}</tbody></table></div>`;
+  }
+
+  async function renderMembers() {
+    if (profile.role !== 'admin') { content.innerHTML='<div class="empty"><div><h3>Administrator access required</h3><p>Editors can maintain public content. Only administrators can invite officers or change access roles.</p></div></div>'; return; }
+    const [roleData, memberData] = await Promise.all([apiCall('/api/roles'),apiCall('/api/members')]); const roles=roleData.roles||[]; const members=memberData.members||[]; const invitations=memberData.invitations||[];
+    const roleMap=new Map(roles.map((role)=>[role.id,role.label]));
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Access</p><h2>Officers and roles</h2><p>Create a role before inviting someone into it. Seat limits count current profiles and pending invitations.</p></div></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Invite an officer</h3><p>The recipient receives a temporary setup code.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-invite-form><label>Full name<input type="text" name="full_name" maxlength="120"></label><label>Email<input type="email" name="email" required></label><label>Role<select name="role_id" required><option value="">Choose a role</option>${roles.filter((role)=>role.active).map((role)=>`<option value="${escapeHTML(role.id)}">${escapeHTML(role.label)} · ${role.seats} seat${role.seats===1?'':'s'}</option>`).join('')}</select></label><label>Optional note<textarea name="message" rows="3" maxlength="800"></textarea></label><button class="button primary" type="submit">Send setup code</button><p class="form-message" data-invite-message></p></form></section><section class="panel"><header class="panel__head"><div><h3>Create a role</h3><p>Use officer titles that describe the actual responsibility.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-role-form><label>Role name<input type="text" name="label" required maxlength="100"></label><label>Description<textarea name="description" rows="3" maxlength="600"></textarea></label><label>Access<select name="access_level"><option value="editor">Editor</option><option value="admin">Administrator</option></select></label><label>Seats<input type="number" name="seats" value="1" min="1" max="50"></label><button class="button primary" type="submit">Create role</button></form></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Current officers</h3><p>${members.length} profile${members.length===1?'':'s'}</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Name</th><th>Email</th><th>Officer role</th><th>Access</th></tr></thead><tbody>${members.map((member)=>`<tr><td>${escapeHTML(member.full_name||'Not set')}</td><td>${escapeHTML(member.email)}</td><td>${escapeHTML(roleMap.get(member.society_role_id)||'Not assigned')}</td><td>${escapeHTML(member.role)}</td></tr>`).join('')||'<tr><td colspan="4">No officer profiles.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Invitations</h3><p>Pending and historical invitation records.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Sent</th><th></th></tr></thead><tbody>${invitations.map((invite)=>`<tr><td>${escapeHTML(invite.full_name||invite.email)}<br><small>${escapeHTML(invite.email)}</small></td><td>${escapeHTML(roleMap.get(invite.role_id)||'Role removed')}</td><td>${escapeHTML(invite.status)}</td><td>${escapeHTML(formatDate(invite.sent_at,true))}</td><td>${invite.status==='sent'?`<button class="link-button" type="button" data-revoke="${escapeHTML(invite.id)}">Revoke</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">No invitations.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Role definitions</h3><p>Deactivate roles that should no longer accept invitations.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Role</th><th>Access</th><th>Seats</th><th>Status</th><th></th></tr></thead><tbody>${roles.map((role)=>`<tr><td><strong>${escapeHTML(role.label)}</strong><br><small>${escapeHTML(role.description||'')}</small></td><td>${escapeHTML(role.access_level)}</td><td>${role.seats}</td><td>${role.active?'Active':'Inactive'}</td><td>${role.active?`<button class="link-button" type="button" data-deactivate-role="${escapeHTML(role.id)}">Deactivate</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
+    $('[data-invite-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));const message=$('[data-invite-message]');message.textContent='Sending…';try{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'invite',...data})});message.textContent='Setup code sent.';message.classList.add('success');event.currentTarget.reset();toast('Officer invitation sent.');await renderMembers();}catch(error){message.textContent=error.message;}});
+    $('[data-role-form]').addEventListener('submit',async(event)=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));data.seats=Number(data.seats||1);try{await apiCall('/api/roles',{method:'POST',body:JSON.stringify(data)});toast('Role created.');await renderMembers();}catch(error){toast(error.message,'error');}});
+    $$('[data-revoke]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Revoke this invitation?','The existing one-time code will no longer be treated as a pending invitation record.',async()=>{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'revoke',id:button.dataset.revoke})});toast('Invitation revoked.');await renderMembers();})));
+    $$('[data-deactivate-role]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Deactivate this role?','Existing officer profiles remain. The role will disappear from new invitations.',async()=>{await apiCall('/api/roles',{method:'DELETE',body:JSON.stringify({id:button.dataset.deactivateRole})});toast('Role deactivated.');await renderMembers();})));
   }
 
   async function switchView(view) {
-    activeView = view;
-    $$('.admin-nav button[data-view]').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
-    const labels = {
-      dashboard: 'Command overview', submissions: 'Public submissions', site_settings: 'Site settings', media: 'Media library',
-      ...Object.fromEntries(Object.entries(collections).map(([key, value]) => [key, value.label]))
-    };
-    viewTitle.textContent = labels[view] || 'Content';
-    breadcrumb.textContent = String(labels[view] || view).toUpperCase();
-    primaryAction.hidden = !collections[view];
-    if (collections[view]) primaryAction.innerHTML = `<span>Create ${escapeHTML(collections[view].singular)}</span><b>＋</b>`;
-    contentRoot.innerHTML = '<div class="admin-loading"><span></span><p>Loading society systems…</p></div>';
+    activeView=view; $$('[data-view]').forEach((button)=>button.classList.toggle('active',button.dataset.view===view)); document.body.classList.remove('sidebar-open');
+    const labels={dashboard:'Officer overview',submissions:'Public submissions',site_settings:'Site settings',members:'Officers and roles',media:'Media library',content_audit:'Change history'};
+    const title=labels[view]||collections[view]?.label||pretty(view); viewTitle.textContent=title; breadcrumb.textContent=view==='dashboard'?'Overview':title;
+    primaryAction.hidden=!collections[view]; primaryAction.textContent=collections[view]?`Create ${collections[view].singular}`:'Create';
+    content.innerHTML='<div class="loading"><span></span><p>Loading…</p></div>';
     try {
-      if (view === 'dashboard') await renderDashboard();
-      else if (view === 'submissions') await renderSubmissions();
-      else if (view === 'media') await renderMedia();
-      else if (view === 'site_settings') await renderSiteSettings();
-      else if (collections[view]) await renderCollection(view);
-    } catch (error) {
-      console.error(error);
-      contentRoot.innerHTML = `<div class="connection-warning">The admin system could not load this view: ${escapeHTML(error.message)}</div>`;
-      toast(error.message, 'error');
-    }
+      if(view==='dashboard') await renderDashboard(); else if(view==='submissions') await renderSubmissions(); else if(view==='site_settings') await renderSiteSettings(); else if(view==='members') await renderMembers(); else if(view==='media') await renderMedia(); else if(view==='content_audit') await renderAudit(); else if(collections[view]) await renderCollection(view); else throw new Error('Unknown portal view.');
+    } catch(error){content.innerHTML=`<div class="empty"><div><h3>This section could not load</h3><p>${escapeHTML(error.message)}</p><button class="button secondary" type="button" data-retry>Try again</button></div></div>`;$('[data-retry]')?.addEventListener('click',()=>switchView(view));}
   }
 
-  async function enterAdmin() {
-    await loadProfile();
-    authScreen.hidden = true;
-    adminApp.hidden = false;
-    $('[data-user-name]').textContent = profile.full_name || profile.email;
-    $('[data-user-role]').textContent = profile.role;
-    $('[data-user-initials]').textContent = initials(profile.full_name || profile.email);
-    await switchView('dashboard');
-  }
+  function confirmAction(title,copy,action){pendingConfirm=action;$('[data-confirm-title]').textContent=title;$('[data-confirm-copy]').textContent=copy;confirmDialog.showModal();}
 
   function bindShell() {
-    $$('.admin-nav button[data-view]').forEach((button) => button.addEventListener('click', () => {
-      switchView(button.dataset.view);
-      $('[data-sidebar]')?.classList.remove('open');
-    }));
-    primaryAction?.addEventListener('click', () => { if (collections[activeView]) openEditor(activeView); });
-    $('[data-logout]')?.addEventListener('click', signOut);
-    $('[data-sidebar-open]')?.addEventListener('click', () => $('[data-sidebar]')?.classList.add('open'));
-    $('[data-sidebar-close]')?.addEventListener('click', () => $('[data-sidebar]')?.classList.remove('open'));
-    $('[data-editor-close]')?.addEventListener('click', () => editorDialog.close());
-    $('[data-editor-cancel]')?.addEventListener('click', () => editorDialog.close());
-    $('[data-confirm-cancel]')?.addEventListener('click', () => { pendingConfirm = null; confirmDialog.close(); });
-    $('[data-confirm-accept]')?.addEventListener('click', async () => {
-      const action = pendingConfirm; pendingConfirm = null; confirmDialog.close();
-      if (!action) return;
-      try { await action(); }
-      catch (error) { toast(error.message, 'error'); }
-    });
-    editorForm?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (!editorContext) return;
-      const definition = collections[editorContext.view];
-      try {
-        const record = collectEditorRecord(definition);
-        await saveTableRecord(editorContext.view, record, editorContext.originalId);
-        editorDialog.close(); toast(`${definition.singular[0].toUpperCase()}${definition.singular.slice(1)} saved.`); await renderCollection(editorContext.view);
-      } catch (error) {
-        toast(error.message, 'error');
-      }
-    });
+    $$('[data-view]').forEach((button)=>button.addEventListener('click',()=>switchView(button.dataset.view)));
+    $('[data-open-sidebar]')?.addEventListener('click',()=>document.body.classList.add('sidebar-open'));
+    $('[data-close-sidebar]')?.addEventListener('click',()=>document.body.classList.remove('sidebar-open'));
+    $('[data-logout]')?.addEventListener('click',signOut);
+    primaryAction?.addEventListener('click',()=>{if(collections[activeView])openEditor(activeView);});
+    $('[data-editor-close]')?.addEventListener('click',()=>editorDialog.close()); $('[data-editor-cancel]')?.addEventListener('click',()=>editorDialog.close());
+    $('[data-confirm-cancel]')?.addEventListener('click',()=>{pendingConfirm=null;confirmDialog.close();});
+    $('[data-confirm-accept]')?.addEventListener('click',async()=>{const action=pendingConfirm;pendingConfirm=null;confirmDialog.close();if(!action)return;try{await action();}catch(error){toast(error.message,'error');}});
+    editorForm?.addEventListener('submit',async(event)=>{event.preventDefault();if(!editorContext)return;const definition=collections[editorContext.view];try{const record=collectRecord(definition);await saveRecord(editorContext.view,record,editorContext.originalId);editorDialog.close();toast('Record saved.');await renderCollection(editorContext.view);}catch(error){toast(error.message,'error');}});
   }
+
+  async function enterPortal() {
+    try { await apiCall('/api/members', { method: 'POST', body: JSON.stringify({ action: 'accept_self' }) }); } catch (_) { /* existing officers can still continue */ }
+    await loadProfile();
+    authScreen.hidden=true; portal.hidden=false; $('[data-user-name]').textContent=profile.full_name||profile.email; $('[data-user-role]').textContent=profile.role; $('[data-user-initials]').textContent=initials(profile.full_name||profile.email); await switchView('dashboard');
+  }
+
+  function showAuth(view) { loginView.hidden=view!=='login'; codeView.hidden=view!=='code'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
 
   async function initialize() {
-    configuredLogin.hidden = !configured;
-    setupState.hidden = configured;
-    bindShell();
-
-    if (!configured) return;
-
-    loginForm?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(loginForm);
-      authMessage.textContent = '';
-      const button = $('button[type="submit"]', loginForm);
-      const original = button.innerHTML;
-      button.disabled = true; button.textContent = 'Authenticating…';
-      try {
-        await signIn(String(formData.get('email') || ''), String(formData.get('password') || ''));
-        await enterAdmin();
-      } catch (error) {
-        saveSession(null);
-        authMessage.textContent = error.message;
-      } finally {
-        button.disabled = false; button.innerHTML = original;
-      }
-    });
-
-    /* Reset goes through our own endpoint so the mail comes from Resend on the
-     * society's domain, not from Supabase's default sender. */
-    $('[data-reset-password]')?.addEventListener('click', async () => {
-      const email = String($('input[name="email"]', loginForm)?.value || '').trim();
-      if (!email) { authMessage.textContent = 'Enter your email address first.'; return; }
-      try {
-        const response = await fetch('/api/members', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'reset', email })
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Could not send the code.');
-        showCodeStep(email);
-      } catch (error) { authMessage.textContent = error.message; }
-    });
-
-    /* A code you type, not a link you click. Oberlin's mail filter fetches
-     * links to inspect them, which spends a single-use token before the
-     * recipient ever sees the message. */
-    const codeStep = $('[data-code-step]');
-    const codeForm = $('[data-code-form]');
-    const codeMessage = $('[data-code-message]');
-
-    function showCodeStep(email) {
-      if (!codeStep) return;
-      configuredLogin.hidden = true;
-      codeStep.hidden = false;
-      const field = $('input[name="email"]', codeForm);
-      if (field && email) field.value = email;
-      $('input[name="code"]', codeForm)?.focus();
-    }
-
-    $('[data-back-to-signin]')?.addEventListener('click', () => {
-      if (codeStep) codeStep.hidden = true;
-      configuredLogin.hidden = false;
-    });
-
-    codeForm?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const data = new FormData(codeForm);
-      const email = String(data.get('email') || '').trim();
-      const token = String(data.get('code') || '').replace(/\s/g, '');
-      if (!email || !token) { codeMessage.textContent = 'Enter your email and the code.'; return; }
-      codeMessage.textContent = 'Checking...';
-      try {
-        const next = await request('/auth/v1/verify', {
-          method: 'POST',
-          headers: { apikey: ANON, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'recovery', email, token })
-        });
-        saveSession(next);
-        codeStep.hidden = true;
-        openPasswordForm();
-      } catch (error) {
-        codeMessage.textContent = 'That code was not accepted. Ask for a new one.';
-      }
-    });
-
-    /* Supabase sends people back here with the session in the URL fragment.
-     * Without this the recovery link just showed the sign-in form again, which
-     * is useless to someone who does not have a password yet. */
-    const handled = await consumeAuthFragment();
-    if (handled) return;
-
-    session = loadSession();
-    if (session && await ensureSession()) {
-      try { await enterAdmin(); }
-      catch (error) { saveSession(null); authMessage.textContent = error.message; }
-    }
+    bindShell(); if(!configured){showAuth('config');return;} showAuth('login');
+    loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$('[data-login-message]');message.textContent='';const button=$('button[type="submit"]',loginForm);button.disabled=true;try{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();}catch(error){saveSession(null);message.textContent=error.message;}finally{button.disabled=false;}});
+    $('[data-request-code]').addEventListener('click',()=>{const email=$('input[name="email"]',loginForm).value;$('input[name="email"]',codeForm).value=email;showAuth('code');});
+    $('[data-back-login]').addEventListener('click',()=>showAuth('login'));
+    $('[data-send-reset]').addEventListener('click',async()=>{const email=String($('input[name="email"]',codeForm).value||'').trim();const message=$('[data-code-message]');if(!email){message.textContent='Enter your email address first.';return;}message.textContent='Sending…';try{const response=await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset',email})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not request a code.');message.textContent='If that address has an officer account, a code has been sent.';message.classList.add('success');}catch(error){message.textContent=error.message;}});
+    codeForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(codeForm);const email=String(data.get('email')||'').trim();const token=String(data.get('code')||'').replace(/\s/g,'');const message=$('[data-code-message]');message.textContent='Checking…';try{await verifyCode(email,token);showAuth('password');}catch(error){message.textContent='That code was not accepted. Request a new code and try again.';}});
+    passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$('[data-password-message]');if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();}catch(error){message.textContent=error.message;}});
+    session=loadSession(); if(session){try{await ensureSession();await enterPortal();}catch(error){saveSession(null);$('[data-login-message]').textContent=error.message;}}
   }
 
-  /* Read #access_token=...&type=recovery from the URL, adopt the session, and
-   * put the password form up. Returns true when it took over the screen. */
-  async function consumeAuthFragment() {
-    const raw = location.hash.startsWith('#') ? location.hash.slice(1) : '';
-    if (!raw) return false;
-    const params = new URLSearchParams(raw);
-    const accessToken = params.get('access_token');
-    if (!accessToken) {
-      if (params.get('error_description')) {
-        authMessage.textContent = decodeURIComponent(params.get('error_description'))
-          + ' Ask for a new link.';
-        history.replaceState(null, '', location.pathname);
-      }
-      return false;
-    }
-
-    /* The fragment carries tokens but no user object, and loadProfile() reads
-     * session.user.id. Without this the password saved fine and then sign-in
-     * failed with "No authenticated user was returned." */
-    let fragmentUser = null;
-    try {
-      fragmentUser = await request('/auth/v1/user', {
-        headers: { apikey: ANON, Authorization: `Bearer ${accessToken}` }
-      });
-    } catch (_) { /* handled below */ }
-
-    saveSession({
-      access_token: accessToken,
-      refresh_token: params.get('refresh_token') || '',
-      expires_at: Number(params.get('expires_at') || 0),
-      token_type: params.get('token_type') || 'bearer',
-      user: fragmentUser
-    });
-    // do not leave the token sitting in the address bar or in history
-    history.replaceState(null, '', location.pathname);
-
-    const kind = params.get('type');
-    if (kind !== 'recovery' && kind !== 'invite' && kind !== 'signup') {
-      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
-      return true;
-    }
-
-    if (!openPasswordForm()) {
-      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
-    }
-    return true;
-  }
-
-  /* Shown once a session exists but the account still needs a password. */
-  function openPasswordForm() {
-    const panel = $('[data-set-password]');
-    const form = $('[data-set-password-form]');
-    const message = $('[data-set-password-message]');
-    if (!panel || !form) return false;
-
-    const configuredLogin = $('[data-configured-login]');
-    const setupState = $('[data-setup-state]');
-    if (configuredLogin) configuredLogin.hidden = true;
-    if (setupState) setupState.hidden = true;
-    panel.hidden = false;
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const data = new FormData(form);
-      const password = String(data.get('password') || '');
-      const confirm = String(data.get('confirm') || '');
-      if (password.length < 8) { message.textContent = 'Use at least 8 characters.'; return; }
-      if (password !== confirm) { message.textContent = 'Those two do not match.'; return; }
-      message.textContent = 'Saving...';
-      try {
-        await request('/auth/v1/user', {
-          method: 'PUT',
-          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
-        });
-        panel.hidden = true;
-        await enterAdmin();
-      } catch (error) {
-        message.textContent = error.message || 'Could not save that password.';
-      }
-    });
-    return true;
-  }
-
-  document.addEventListener('DOMContentLoaded', initialize);
+  document.addEventListener('DOMContentLoaded',initialize);
 })();

@@ -1,63 +1,39 @@
-<div class="announcement-bar" data-announcement>
-  <div class="container announcement-inner">
-    <span class="announcement-pulse" aria-hidden="true"></span>
-    <p data-site-announcement>Membership, project teams, and 2026–27 student leadership roles are now open.</p>
-    <a data-announcement-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Choose your role <span aria-hidden="true">↗</span></a>
+<div class="announcement" data-announcement>
+  <div class="container announcement__inner">
+    <p data-site-announcement>Launching in 2026–27. Founding members and student leaders are welcome.</p>
+    <a data-announcement-link href="join">Tell us what interests you <span aria-hidden="true">→</span></a>
   </div>
 </div>
 <header class="site-header" data-header>
-  <div class="container nav-wrap">
+  <div class="container nav-shell">
     <a class="brand" href="/" aria-label="Oberlin 3-2 Engineering Society home">
       <img src="assets/images/logo-mark.svg" alt="" width="48" height="48">
-      <span class="brand-lockup">
-        <strong>OBERLIN <b>3-2</b></strong>
-        <small>ENGINEERING SOCIETY</small>
-      </span>
+      <span><strong>Oberlin 3-2</strong><small>Engineering Society</small></span>
     </a>
-
-    <nav class="desktop-nav" aria-label="Primary navigation">
-      <a href="about" data-nav="about">About</a>
-      <a href="pathway" data-nav="pathway">3-2 Pathway</a>
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <a href="pathway" data-nav="pathway">3-2 guide</a>
       <a href="projects" data-nav="projects">Projects</a>
-      <a class="competition-link" href="competition" data-nav="competition"><span></span>Challenge</a>
-      <a href="leadership" data-nav="leadership">Leadership</a>
-      <div class="nav-dropdown">
-        <button type="button" aria-expanded="false" data-more-toggle>Explore <span aria-hidden="true">⌄</span></button>
-        <div class="nav-dropdown-panel" data-more-menu>
-          <a href="events" data-nav="events"><strong>Events + news</strong><span>Panels, build nights, updates, and showcases</span></a>
-          <a href="opportunities" data-nav="opportunities"><strong>Opportunities</strong><span>Leadership, project, research, and program openings</span></a>
-          <a href="resources" data-nav="resources"><strong>Resource hub</strong><span>3-2 planning, careers, projects, and partner schools</span></a>
-          <a href="impact" data-nav="impact"><strong>Impact + archive</strong><span>Milestones, annual reports, and organizational memory</span></a>
-          <a href="join" data-nav="join"><strong>Join the society</strong><span>Find your place in the community</span></a>
-          <a href="contact" data-nav="contact"><strong>Contact + partner</strong><span>Speakers, alumni, sponsors, and collaborations</span></a>
-        </div>
-      </div>
+      <a href="events" data-nav="events">Events</a>
+      <a href="resources" data-nav="resources">Resources</a>
+      <a href="about" data-nav="about">About</a>
     </nav>
-
     <div class="nav-actions">
-      <button class="nav-search" type="button" data-search-open aria-label="Search website">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-        <span class="desktop-only">Search</span>
-      </button>
-      <a class="button button-primary nav-join desktop-only" href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Join the society <span aria-hidden="true">↗</span></a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle aria-label="Open navigation">
-        <span></span><span></span>
+      <a class="button button--small button--primary desktop-join" href="join" data-nav="join">Join</a>
+      <button class="menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
+        <span class="sr-only">Open navigation</span><i></i><i></i><i></i>
       </button>
     </div>
   </div>
   <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
     <nav class="container" aria-label="Mobile navigation">
-      <a href="about">About <span>Mission, model, and continuity</span></a>
-      <a href="pathway">3-2 pathway <span>Five-year planning and official resources</span></a>
-      <a href="projects">Projects <span>Project board, teams, and archive</span></a>
-      <a href="competition">Future challenge <span>A public build concept under evaluation</span></a>
-      <a href="leadership">Leadership <span>Organizing team, open roles, and archive</span></a>
-      <a href="events">Events + news</a>
-      <a href="opportunities">Opportunities</a>
-      <a href="resources">Resource hub</a>
-      <a href="impact">Impact + archive</a>
-      <a href="contact">Contact + partner</a>
-      <a class="button button-primary" href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Join the society</a>
+      <a href="pathway">3-2 guide <span>Plan courses and compare partner schools</span></a>
+      <a href="projects">Projects <span>Explore proposals and join a team</span></a>
+      <a href="events">Events <span>See what is planned and register interest</span></a>
+      <a href="resources">Resources <span>Use verified links and student tools</span></a>
+      <a href="about">About <span>Meet the founder and understand the group</span></a>
+      <a href="leadership">Leadership <span>Founding roles and expectations</span></a>
+      <a href="contact">Contact <span>Questions, speakers, and partnerships</span></a>
+      <a class="button button--primary" href="join">Join the launch list</a>
     </nav>
   </div>
 </header>

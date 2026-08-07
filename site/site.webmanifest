@@ -1,12 +1,12 @@
 {
   "name": "Oberlin 3-2 Engineering Society",
   "short_name": "Oberlin 3-2",
-  "description": "Connect. Prepare. Build.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "description": "A student-led engineering community at Oberlin College.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#080b10",
-  "theme_color": "#080b10",
+  "background_color": "#f7f4ef",
+  "theme_color": "#8f1733",
   "icons": [
     {
       "src": "assets/images/icon-192.png",

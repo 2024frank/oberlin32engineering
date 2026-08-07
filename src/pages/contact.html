@@ -1,61 +1,39 @@
-<section class="page-hero contact-hero">
-  <div class="container page-hero-layout">
-    <div class="reveal"><span class="eyebrow">CONTACT + PARTNERSHIPS</span><h1>Bring a question.<br>Bring a problem.<br><em>Bring a possibility.</em></h1></div>
-    <div class="page-hero-side reveal reveal-delay-1"><p>Contact the society about membership, projects, panels, alumni involvement, community partnerships, sponsorships, a possible future engineering challenge, or collaboration with another organization.</p></div>
-  </div>
-  <figure class="page-hero-figure">
-    <img src="assets/images/photos/inspecting-equipment.jpg" width="1920" height="1281" loading="lazy" decoding="async"
-         alt="An engineer inspecting a piece of electronic equipment.">
-  </figure>
-</section>
-
-<section class="section contact-options-section">
-  <div class="container contact-option-grid">
-    <a class="contact-option reveal" data-email-link href="mailto:fkusiapp@oberlin.edu"><span>01</span><div><small>GENERAL CONTACT</small><h3>Email the society</h3><p data-contact-email>fkusiapp@oberlin.edu</p></div><b>↗</b></a>
-    <a class="contact-option reveal reveal-delay-1" data-instagram-link href="https://www.instagram.com/oberlin32engineering/" target="_blank" rel="noopener"><span>02</span><div><small>FOLLOW + MESSAGE</small><h3>Instagram</h3><p data-instagram-handle>@oberlin32engineering</p></div><b>↗</b></a>
-    <a class="contact-option reveal reveal-delay-2" data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener"><span>03</span><div><small>MEMBERSHIP + LEADERSHIP</small><h3>Interest form</h3><p>Choose how you want to participate</p></div><b>↗</b></a>
+<section class="page-hero">
+  <div class="container page-hero__grid">
+    <div><span class="eyebrow">Contact</span><h1>Questions, ideas, speakers, and practical offers of help.</h1><p class="page-hero__lead">Send a message to the student organizing team. We usually reply within a few school days.</p></div>
+    <aside class="page-hero__aside"><strong>Email</strong><p><a class="text-link" data-email-link href="mailto:fkusiapp@oberlin.edu"><span data-contact-email>fkusiapp@oberlin.edu</span></a></p><strong>Instagram</strong><p><a class="text-link" data-instagram-link href="https://www.instagram.com/oberlin32engineering/" target="_blank" rel="noopener">@oberlin32engineering ↗</a></p></aside>
   </div>
 </section>
 
-<section class="section figure-band">
-  <div class="container figure-band-grid">
-    <figure>
-      <img src="assets/images/photos/bench-multimeter.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="Measurement in progress.">
-    </figure>
-    <figure>
-      <img src="assets/images/photos/circuit-board-dark.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="Unpopulated board.">
-    </figure>
-  </div>
-</section>
-
-
-
-<section class="section section-ivory contact-form-section">
-  <div class="container contact-form-grid">
-    <div class="contact-form-copy reveal"><span class="eyebrow dark">SEND A MESSAGE</span><h2>Route your message<br><em>to the right team.</em></h2><p>Choose a topic so the board can respond efficiently. For time-sensitive academic questions about the official 3-2 program, contact the relevant Oberlin advisor or office directly.</p><div class="response-note"><span>TYPICAL RESPONSE</span><strong>Within 3 school days</strong><small>Response time may vary during breaks.</small></div></div>
-    <form class="public-form light-form reveal reveal-delay-1" data-submission-form data-submission-type="contact_message">
-      <div class="form-row"><label>Full name<input name="full_name" required autocomplete="name"></label><label>Email<input name="email" type="email" required autocomplete="email"></label></div>
-      <label>Topic<select name="topic" required data-topic-select><option value="">Choose a topic</option><option value="membership">Membership or leadership</option><option value="project">Project or project partnership</option><option value="competition">Engineering Challenge</option><option value="judge">Judge or mentor volunteering</option><option value="speaker">Panel, speaker, or workshop</option><option value="alumni">Alumni involvement</option><option value="sponsor">Sponsorship or material support</option><option value="campus">Campus organization collaboration</option><option value="community">Community partnership</option><option value="media">Media or communications</option><option value="other">Other</option></select></label>
-      <label>Subject<input name="subject" required></label>
-      <label>Message<textarea name="message" rows="7" required></textarea></label>
-      <label>Relevant link<input name="url" type="url" placeholder="Optional"></label>
-      <label class="checkbox-row"><input type="checkbox" name="permission" required><span>I agree that the society may contact me in response to this message.</span></label>
-      <button class="button button-primary" type="submit">Send message <span>↗</span></button>
-      <p class="form-status" data-form-status aria-live="polite"></p>
+<section class="section">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">Good reasons to write</span>
+      <h2>Be specific about what you need or can offer.</h2>
+      <ul class="check-list"><li>A question about joining or a planned event</li><li>A project problem, tool, space, or mentoring offer</li><li>An alumni, faculty, engineer, or researcher willing to speak</li><li>A campus organization interested in co-hosting something concrete</li><li>A correction to a resource or 3-2 link</li><li>An accessibility concern or privacy request</li></ul>
+      <div class="callout callout--warning"><p><strong>Academic questions:</strong> We can help you prepare questions and find official pages, but only authorized advisers and institutions can confirm requirements.</p></div>
+    </div>
+    <form class="form-shell" data-o32-form data-form-type="contact">
+      <h2>Send a message</h2>
+      <div class="form-grid">
+        <label class="form-field"><span>Your name</span><input type="text" name="full_name" maxlength="120" autocomplete="name" required></label>
+        <label class="form-field"><span>Email</span><input type="email" name="email" maxlength="254" autocomplete="email" required></label>
+        <label class="form-field form-field--full"><span>Topic</span><select name="topic"><option>General question</option><option>Membership</option><option>Project idea or support</option><option>Speaker or alumni conversation</option><option>Campus collaboration</option><option>Resource correction</option><option>Privacy or accessibility</option><option>Media request</option></select></label>
+        <label class="form-field form-field--full"><span>Message</span><textarea name="message" maxlength="2500" required></textarea></label>
+        <label class="honeypot" aria-hidden="true">Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label>
+        <div class="form-actions"><button class="button button--primary" type="submit">Send message</button><p class="form-status" data-form-status></p></div>
+      </div>
     </form>
   </div>
 </section>
 
-<section class="section partnership-section">
+<section class="section section--soft">
   <div class="container">
-    <div class="section-heading split-heading reveal"><div><span class="eyebrow">PARTNER WITH THE SOCIETY</span><h2>Support work students<br><em>can point to.</em></h2></div><p class="heading-copy">Partnerships should create meaningful student opportunity and strengthen projects, knowledge, or community. We welcome conversations even when the right format is not obvious yet.</p></div>
-    <div class="partnership-grid">
-      <article class="reveal"><span>PROBLEMS</span><h3>Community project partner</h3><p>Bring a real need, context, users, and feedback for a student team to explore responsibly.</p></article>
-      <article class="reveal reveal-delay-1"><span>EXPERTISE</span><h3>Mentor, judge, or speaker</h3><p>Challenge student reasoning, share a field, teach a skill, or help review a project at the right moment.</p></article>
-      <article class="reveal reveal-delay-2"><span>RESOURCES</span><h3>Materials and technical support</h3><p>Contribute components, fabrication access, software, testing equipment, workspace, or project services.</p></article>
-      <article class="reveal"><span>SPONSORSHIP</span><h3>Programs and competition</h3><p>Support project materials, workshops, public showcases, travel, or a future Engineering Challenge after its format and resources are confirmed.</p></article>
-      <article class="reveal reveal-delay-1"><span>PATHWAYS</span><h3>Internships and research</h3><p>Share positions, host visits, offer informational conversations, or build a recurring student pipeline.</p></article>
-      <article class="reveal reveal-delay-2"><span>COLLABORATION</span><h3>Campus organizations</h3><p>Co-create events or projects that combine engineering with the arts, sciences, community work, policy, entrepreneurship, or sustainability.</p></article>
+    <div class="section-heading"><div><span class="eyebrow">Working with the society</span><h2>Useful partnerships start with a defined next step.</h2></div><p>Please describe the audience, proposed activity, timing, costs, access needs, and what you are asking students to do.</p></div>
+    <div class="card-grid">
+      <article class="card"><h3>Speakers and mentors</h3><p>Share a specific topic, your background, preferred format, available dates, and whether the conversation can be recorded or summarized.</p></article>
+      <article class="card"><h3>Campus collaborators</h3><p>Suggest one event or project with a clear owner, timeline, room or equipment need, and division of responsibility.</p></article>
+      <article class="card"><h3>Material support</h3><p>Describe the item, condition, safety information, restrictions, and whether the society would own, borrow, or dispose of it.</p></article>
     </div>
   </div>
 </section>

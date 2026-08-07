@@ -1,83 +1,38 @@
-# Deployment Runbook
+# Deployment
 
-This site is built as a static release and deployed from the `main` branch through GitHub Pages. The deployable output is the generated `site/` directory. Do not hand-edit files inside `site/`; make changes in `src/` or `content/`, then rebuild.
+The production build is generated from `src/` and `content/` into `site/`.
 
-## Release flow
-
-1. Update templates, assets, or JSON content.
-2. Generate the optional Supabase seed when content records changed.
-3. Build the static release.
-4. Run all release checks.
-5. Review the diff and confirm that no private information or credentials are present.
-6. Commit and push to `main`.
-7. Confirm the GitHub Pages workflow completed successfully.
-8. Check the custom domain on desktop and mobile.
+## Build command
 
 ```bash
-python scripts/generate_seed.py
-python scripts/build.py
-python scripts/check_site.py
-git status
-git diff --check
-git add -A
-git commit -m "Describe the website update"
-git push
+python3 scripts/build.py
 ```
 
-## GitHub Pages configuration
-
-The repository workflow at `.github/workflows/deploy-pages.yml` builds, validates, uploads, and deploys the `site/` directory. In the repository settings:
-
-- Set **Pages → Build and deployment → Source** to **GitHub Actions**.
-- Keep the custom domain set to `oberlin32engineeringsociety.com`.
-- Enable HTTPS after GitHub confirms the DNS records.
-- Restrict direct changes to `main` when the leadership team grows.
-
-The generated `site/CNAME` file must contain exactly:
+## Output directory
 
 ```text
-oberlin32engineeringsociety.com
+site
 ```
 
-See `docs/DOMAIN_SETUP.md` for the registrar records.
-
-## Optional Supabase configuration
-
-The public website works entirely from versioned JSON without Supabase. To enable the command center and database-backed submissions, add repository **Variables**, not secrets embedded in source:
-
-- `SUPABASE_URL`
-- `SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_STORAGE_BUCKET`
-
-The publishable key is intended for browser use when row-level security is configured correctly. Never publish a service-role key, database password, recovery code, or personal access token.
-
-## Release verification
-
-After deployment, verify:
-
-- Home, pathway, projects, events, resources, join, and contact pages load.
-- Navigation and mobile menu work.
-- The membership form opens at the correct Google Form.
-- External links open safely in a new tab.
-- Search and content filters return results.
-- The 404 page displays for an invalid path.
-- The favicon, social image, manifest, sitemap, and robots file are available.
-- No unconfirmed date, room, funding amount, speaker, award, sponsor, or partnership is presented as final.
-
-## Rollback
-
-If a release is broken:
-
-1. Open the repository’s Actions tab and confirm which commit introduced the issue.
-2. Revert that commit locally or through a reviewed pull request.
-3. Run the build and checks again.
-4. Push the revert to `main`.
+## Validation
 
 ```bash
-git revert <commit-sha>
-python scripts/build.py
-python scripts/check_site.py
-git push
+python3 scripts/generate_seed.py
+python3 scripts/build.py
+python3 scripts/check_site.py
+node scripts/test_api.js
 ```
 
-Do not delete deployment history or force-push over a published release unless repository recovery requires it.
+The repository includes a GitHub Pages workflow for the static public build. The same generated `site/` directory can also be deployed through Vercel. API routes in `api/` require a serverless deployment such as Vercel; GitHub Pages alone cannot execute them. The production custom domain should point to the deployment that serves both the static output and the API routes.
+
+## Required production variables
+
+See `docs/ADMIN_SETUP.md`. The build may run without Supabase public variables, but the officer portal displays a setup state. Public forms require `SUPABASE_URL` and a server-side service key. Email notifications and officer codes also require Resend. Leave `NEXT_PUBLIC_ENABLE_PORTAL=false` and `NEXT_PUBLIC_USE_DATABASE=false` during the first safe cutover. In that state, the browser receives no Supabase public configuration, the public site uses versioned JSON, and forms still use the server endpoint. After the migration, seed, Auth redirects, and first administrator are verified, enable the portal. Turn on database-backed public content only after the seeded records have been checked.
+
+## Domain behavior
+
+The canonical public URL is `https://www.oberlin32engineeringsociety.com`. Configure the apex domain to redirect to the canonical host. Keep the admin host and any deployment preview hosts in the Supabase redirect allowlist only when needed.
+
+## After deployment
+
+Check the homepage, 3-2 guide, project filtering, resource search, all public forms, the 404 page, the officer login, a draft content record, and a published content record. Confirm that `/admin/` is excluded from indexing and that API responses do not expose server configuration.

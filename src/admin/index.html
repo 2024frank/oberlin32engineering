@@ -1,178 +1,134 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090c12">
+  <meta name="theme-color" content="#7a1833">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Secure content and operations dashboard for the Oberlin 3-2 Engineering Society.">
-  <title>Society Command Center · Oberlin 3-2 Engineering Society</title>
+  <meta name="description" content="Officer portal for the Oberlin 3-2 Engineering Society.">
+  <title>Officer portal · Oberlin 3-2 Engineering Society</title>
   <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
   <script src="../assets/js/runtime-config.js" defer></script>
   <script src="admin.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#portal-main">Skip to portal content</a>
 
-  <main class="auth-screen" data-auth-screen>
-    <section class="auth-brand">
-      <a href="../index.html" class="admin-brand" aria-label="Return to public website">
-        <img src="../assets/images/logo-mark.svg" alt="" width="64" height="64">
-        <span><strong>OBERLIN <b>3-2</b></strong><small>ENGINEERING SOCIETY</small></span>
+  <main class="auth" data-auth-screen>
+    <section class="auth__intro">
+      <a class="auth__brand" href="../" aria-label="Return to the public website">
+        <img src="../assets/images/logo-mark.svg" alt="" width="54" height="54">
+        <span><strong>Oberlin 3-2</strong><small>Engineering Society</small></span>
       </a>
-      <div class="auth-copy">
-        <span class="admin-kicker">SOCIETY OPERATIONS</span>
-        <h1>The organization’s<br><em>command center.</em></h1>
-        <p>Publish projects, update the organizing team, manage events and resources, review submissions, develop future concepts, and keep the public website current.</p>
+      <div>
+        <p class="eyebrow">Officer portal</p>
+        <h1>Keep the public information accurate.</h1>
+        <p>Manage project proposals, events, resources, leadership, submissions, and the people responsible for maintaining them.</p>
       </div>
-      <div class="auth-systems" aria-label="Admin capabilities">
-        <span>PROJECTS</span><i></i><span>LEADERSHIP</span><i></i><span>PROGRAMS</span><i></i><span>PUBLISHING</span>
-      </div>
+      <p class="auth__note">Access is limited to invited society officers. Public membership does not require an officer account.</p>
     </section>
 
-    <section class="auth-panel">
-      <div class="auth-card" data-login-card>
-        <div class="auth-card-head">
-          <span class="system-light"><i></i> SECURE ACCESS</span>
-          <span>ADMIN / EDITOR</span>
-        </div>
-        <div data-configured-login>
-          <h2>Sign in</h2>
-          <p>Use the email account approved in the society’s administrator directory.</p>
-          <form class="auth-form" data-login-form>
-            <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
-            <label>Password<input type="password" name="password" autocomplete="current-password" required placeholder="••••••••"></label>
-            <button class="admin-button primary" type="submit"><span>Enter command center</span><b>→</b></button>
-            <p class="form-message" data-auth-message aria-live="polite"></p>
-          </form>
-          <button class="text-button" type="button" data-reset-password>Email me an access code</button>
-        </div>
-        <div data-code-step hidden>
-          <h2>Enter your code</h2>
-          <p>We sent an eight digit code to your Oberlin address. It is good for one hour.</p>
-          <form class="auth-form" data-code-form>
-            <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
-            <label>Code<input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required placeholder="12345678"></label>
-            <button class="admin-button primary" type="submit"><span>Continue</span><b>&rarr;</b></button>
-            <p class="form-message" data-code-message aria-live="polite"></p>
-          </form>
-          <button class="text-button" type="button" data-back-to-signin>Back to sign in</button>
-        </div>
-        <div data-set-password hidden>
-          <h2>Choose a password</h2>
-          <p>Set a password for your account. You will be signed in straight afterwards.</p>
-          <form class="auth-form" data-set-password-form>
-            <label>New password<input type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"></label>
-            <label>Confirm password<input type="password" name="confirm" autocomplete="new-password" required minlength="8" placeholder="Type it again"></label>
-            <button class="admin-button primary" type="submit"><span>Save and continue</span><b>→</b></button>
-            <p class="form-message" data-set-password-message aria-live="polite"></p>
-          </form>
-        </div>
-        <div class="setup-state" data-setup-state hidden>
-          <span class="setup-code">CONFIG_REQUIRED</span>
-          <h2>Connect the content system</h2>
-          <p>The public site is ready and uses its built-in content. To enable secure editing, uploads, and submissions, connect a Supabase project.</p>
-          <ol>
-            <li>Run <code>database/schema.sql</code> in Supabase.</li>
-            <li>Add the project URL and publishable key to GitHub repository variables.</li>
-            <li>Create an admin user and add their ID to <code>profiles</code>.</li>
-          </ol>
-          <a class="admin-button primary" href="https://github.com/2024frank/oberlin32engineering/blob/main/docs/ADMIN_SETUP.md" target="_blank" rel="noopener"><span>Open setup guide</span><b>↗</b></a>
-          <a class="text-button link" href="../index.html">Return to public website</a>
-        </div>
+    <section class="auth__panel">
+      <div class="auth-card" data-login-view>
+        <p class="eyebrow">Sign in</p>
+        <h2>Officer account</h2>
+        <p>Use the email address connected to your invitation.</p>
+        <form data-login-form>
+          <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+          <button class="button primary" type="submit">Sign in</button>
+          <p class="form-message" data-login-message aria-live="polite"></p>
+        </form>
+        <button class="link-button" type="button" data-request-code>Use an invitation or reset code</button>
+      </div>
+
+      <div class="auth-card" data-code-view hidden>
+        <p class="eyebrow">One-time code</p>
+        <h2>Enter the code from your email</h2>
+        <p>The portal accepts both invitation and password-reset codes.</p>
+        <form data-code-form>
+          <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
+          <label>One-time code<input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="10" required></label>
+          <button class="button primary" type="submit">Verify code</button>
+          <p class="form-message" data-code-message aria-live="polite"></p>
+        </form>
+        <div class="auth-card__links"><button class="link-button" type="button" data-send-reset>Send me a reset code</button><button class="link-button" type="button" data-back-login>Back to sign in</button></div>
+      </div>
+
+      <div class="auth-card" data-password-view hidden>
+        <p class="eyebrow">Account setup</p>
+        <h2>Choose a password</h2>
+        <form data-password-form>
+          <label>New password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+          <label>Confirm password<input type="password" name="confirm" autocomplete="new-password" minlength="10" required></label>
+          <button class="button primary" type="submit">Save password</button>
+          <p class="form-message" data-password-message aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="auth-card" data-config-view hidden>
+        <p class="eyebrow">Setup required</p>
+        <h2>Connect Supabase first</h2>
+        <p>The portal needs the public Supabase URL and anon key in the site runtime configuration. Follow the repository setup guide, then redeploy.</p>
+        <a class="button secondary" href="https://github.com/2024frank/oberlin32engineering/blob/main/docs/ADMIN_SETUP.md" target="_blank" rel="noopener">Open setup guide</a>
       </div>
     </section>
   </main>
 
-  <div class="admin-app" data-admin-app hidden>
-    <aside class="admin-sidebar" data-sidebar>
-      <div class="sidebar-head">
-        <a href="../index.html" class="admin-brand compact" aria-label="Public website">
-          <img src="../assets/images/logo-mark.svg" alt="" width="44" height="44">
-          <span><strong>O32</strong><small>COMMAND</small></span>
-        </a>
-        <button class="sidebar-close" type="button" data-sidebar-close aria-label="Close navigation">×</button>
+  <div class="portal" data-portal hidden>
+    <aside class="sidebar" data-sidebar>
+      <div class="sidebar__head">
+        <a class="sidebar__brand" href="../" target="_blank" rel="noopener"><img src="../assets/images/logo-mark.svg" alt="" width="42" height="42"><span><strong>Oberlin 3-2</strong><small>Officer portal</small></span></a>
+        <button class="icon-button sidebar__close" type="button" data-close-sidebar aria-label="Close navigation">×</button>
       </div>
-
-      <nav class="admin-nav" aria-label="Admin sections">
-        <span class="nav-section-label">OVERVIEW</span>
-        <button type="button" class="active" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</button>
-        <button type="button" data-view="submissions"><span class="nav-icon">↳</span>Submissions <b data-submission-count>0</b></button>
-        <span class="nav-section-label">PUBLISH</span>
-        <button type="button" data-view="projects"><span class="nav-icon">◇</span>Projects</button>
-        <button type="button" data-view="project_updates"><span class="nav-icon">↻</span>Project updates</button>
-        <button type="button" data-view="leaders"><span class="nav-icon">◎</span>Leadership</button>
-        <button type="button" data-view="events"><span class="nav-icon">□</span>Events</button>
-        <button type="button" data-view="news_posts"><span class="nav-icon">≋</span>News</button>
-        <button type="button" data-view="resources"><span class="nav-icon">▤</span>Resources</button>
-        <button type="button" data-view="opportunities"><span class="nav-icon">↗</span>Opportunities</button>
-        <span class="nav-section-label">FLAGSHIP + ARCHIVE</span>
-        <button type="button" data-view="competition_editions"><span class="nav-icon">✦</span>Engineering Challenge</button>
-        <button type="button" data-view="sponsors"><span class="nav-icon">⬡</span>Partners + sponsors</button>
-        <button type="button" data-view="partner_schools"><span class="nav-icon">⌁</span>3-2 partner schools</button>
-        <button type="button" data-view="impact"><span class="nav-icon">◫</span>Impact + reports</button>
-        <button type="button" data-view="documents"><span class="nav-icon">▧</span>Documents</button>
-        <span class="nav-section-label">SYSTEM</span>
-        <button type="button" data-view="site_settings"><span class="nav-icon">⚙</span>Site settings</button>
-        <button type="button" data-view="media"><span class="nav-icon">▣</span>Media library</button>
-        <button type="button" data-view="content_audit"><span class="nav-icon">≡</span>Change history</button>
+      <nav aria-label="Officer portal">
+        <button class="active" type="button" data-view="dashboard">Overview</button>
+        <button type="button" data-view="submissions">Submissions <span data-new-count>0</span></button>
+        <p>Public content</p>
+        <button type="button" data-view="projects">Projects</button>
+        <button type="button" data-view="project_updates">Project updates</button>
+        <button type="button" data-view="events">Events</button>
+        <button type="button" data-view="leaders">Leadership</button>
+        <button type="button" data-view="resources">Resources</button>
+        <button type="button" data-view="opportunities">Opportunities</button>
+        <button type="button" data-view="news_posts">News</button>
+        <button type="button" data-view="partner_schools">Partner schools</button>
+        <button type="button" data-view="competition_editions">Future showcase</button>
+        <button type="button" data-view="impact">Roadmap</button>
+        <button type="button" data-view="documents">Documents</button>
+        <button type="button" data-view="sponsors">Sponsors</button>
+        <p>Administration</p>
+        <button type="button" data-view="site_settings">Site settings</button>
+        <button type="button" data-view="members">Officers and roles</button>
+        <button type="button" data-view="media">Media library</button>
+        <button type="button" data-view="content_audit">Change history</button>
       </nav>
-
-      <div class="sidebar-user">
-        <div class="user-avatar" data-user-initials>KA</div>
-        <div><strong data-user-name>Administrator</strong><small data-user-role>admin</small></div>
-        <button type="button" data-logout aria-label="Sign out">↪</button>
-      </div>
+      <div class="sidebar__user"><span data-user-initials>O3</span><div><strong data-user-name>Officer</strong><small data-user-role>editor</small></div><button class="icon-button" type="button" data-logout aria-label="Sign out">↪</button></div>
     </aside>
 
-    <div class="admin-main">
-      <header class="admin-topbar">
-        <button class="sidebar-open" type="button" data-sidebar-open aria-label="Open navigation">☰</button>
-        <div>
-          <span class="admin-breadcrumb">O32 / <b data-breadcrumb>OVERVIEW</b></span>
-          <h1 data-view-title>Command overview</h1>
-        </div>
-        <div class="topbar-actions">
-          <button class="admin-button ghost" type="button" data-export-backup><span>Export backup</span><b>↓</b></button>
-          <a class="admin-button ghost" href="../index.html" target="_blank" rel="noopener"><span>View website</span><b>↗</b></a>
-          <button class="admin-button primary" type="button" data-primary-action><span>Create new</span><b>＋</b></button>
-        </div>
+    <main class="portal-main" id="portal-main">
+      <header class="topbar">
+        <button class="icon-button topbar__menu" type="button" data-open-sidebar aria-label="Open navigation">☰</button>
+        <div><p class="eyebrow" data-breadcrumb>Overview</p><h1 data-view-title>Officer overview</h1></div>
+        <div class="topbar__actions"><a class="button secondary" href="../" target="_blank" rel="noopener">View website</a><button class="button primary" type="button" data-primary-action hidden>Create</button></div>
       </header>
-
-      <section class="admin-content" data-admin-content>
-        <div class="admin-loading"><span></span><p>Loading society systems…</p></div>
-      </section>
-    </div>
+      <section class="content" data-content><div class="loading"><span></span><p>Loading portal data…</p></div></section>
+    </main>
   </div>
 
-  <dialog class="editor-dialog" data-editor-dialog>
-    <form method="dialog" class="editor-shell" data-editor-form>
-      <header class="editor-head">
-        <div><span class="admin-kicker" data-editor-kicker>CONTENT RECORD</span><h2 data-editor-title>Create record</h2></div>
-        <button type="button" class="dialog-close" data-editor-close aria-label="Close">×</button>
-      </header>
-      <div class="editor-body" data-editor-fields></div>
-      <footer class="editor-actions">
-        <button type="button" class="admin-button ghost danger" data-delete-record hidden><span>Delete</span></button>
-        <span class="editor-spacer"></span>
-        <button type="button" class="admin-button ghost" data-editor-cancel><span>Cancel</span></button>
-        <button type="submit" class="admin-button primary"><span>Save changes</span><b>✓</b></button>
-      </footer>
+  <dialog class="editor" data-editor-dialog>
+    <form class="editor__shell" data-editor-form>
+      <header><div><p class="eyebrow" data-editor-kicker>Content</p><h2 data-editor-title>Edit record</h2></div><button class="icon-button" type="button" data-editor-close aria-label="Close editor">×</button></header>
+      <div class="editor__fields" data-editor-fields></div>
+      <footer><button class="button danger" type="button" data-delete-record hidden>Delete</button><span></span><button class="button secondary" type="button" data-editor-cancel>Cancel</button><button class="button primary" type="submit">Save</button></footer>
     </form>
   </dialog>
 
-  <dialog class="confirm-dialog" data-confirm-dialog>
-    <div class="confirm-card">
-      <span class="admin-kicker">CONFIRM ACTION</span>
-      <h2 data-confirm-title>Delete this record?</h2>
-      <p data-confirm-copy>This cannot be undone.</p>
-      <div><button class="admin-button ghost" type="button" data-confirm-cancel>Cancel</button><button class="admin-button primary danger-fill" type="button" data-confirm-accept>Delete permanently</button></div>
-    </div>
+  <dialog class="confirm" data-confirm-dialog>
+    <div><p class="eyebrow">Confirm action</p><h2 data-confirm-title>Continue?</h2><p data-confirm-copy></p><footer><button class="button secondary" type="button" data-confirm-cancel>Cancel</button><button class="button danger" type="button" data-confirm-accept>Confirm</button></footer></div>
   </dialog>
 
-  <div class="admin-toast-region" data-admin-toasts aria-live="polite" aria-atomic="true"></div>
+  <div class="toast-region" data-toasts aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

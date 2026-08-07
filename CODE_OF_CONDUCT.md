@@ -1,7 +1,9 @@
-# Community code of conduct
+# Community expectations
 
-The Oberlin 3-2 Engineering Society is open to students across disciplines, experience levels, identities, and engineering interests.
+The Oberlin 3-2 Engineering Society should be a place where beginners and experienced students can ask questions, contribute, and learn without being dismissed or embarrassed.
 
-Participants are expected to communicate respectfully, give useful credit, document decisions honestly, protect private information, follow campus and laboratory safety rules, and create room for others to learn. Harassment, discrimination, intimidation, deliberate exclusion, unsafe conduct, plagiarism, and misuse of society resources are not acceptable.
+Be respectful, give credit, communicate clearly, and criticize ideas without attacking people. Do not harass, threaten, discriminate against, or deliberately exclude someone based on identity, background, disability, experience level, citizenship, financial means, academic path, or another protected or personal characteristic.
 
-Concerns should be raised privately with the president, advisor, or another trusted society leader. Serious or urgent matters should also be reported through the appropriate Oberlin College process.
+Project teams must respect safety rules, consent, privacy, and the ownership of code, designs, photographs, and data. Do not publish another person’s private information or image without permission.
+
+Concerns may be reported to the current organizing team at `fkusiapp@oberlin.edu`. Reports will be handled as privately as practical. The organizing team may remove someone from a meeting, project, online space, or leadership role when needed to protect the community.

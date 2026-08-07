@@ -1,35 +1,55 @@
-# Content guide
+# Public content guide
 
-The website reads public content from `content/*.json`. These files also serve as the fallback when the optional database is unavailable.
+The website should sound like students who know what they are doing, not like a large institution describing an imagined future.
 
-## Global settings
+## Voice
 
-Edit `content/site.json` for the membership form, Instagram account, contact email, advisor, announcement, founding term, and competition label.
+Write in clear sentences. Use specific nouns, dates, locations, owners, and next steps. One memorable line on a page is enough. Avoid repeated slogan fragments, consulting language, inflated abstractions, and claims that cannot be checked.
 
-## Collections
+Prefer:
 
-- `projects.json`: project briefs, skills, open roles, progress, and featured status
-- `leaders.json`: current leaders, advisor, and open seats
-- `events.json`: dates, locations, registration links, and featured events
-- `opportunities.json`: leadership, project, internship, research, and collaboration listings
-- `resources.json`: official and society-created resources
-- `news.json`: field notes and announcements
-- `competition.json`: current competition edition, tracks, stages, and judging framework
-- `sponsors.json`: formally confirmed partners and supporters
+> The first meeting date and room are being scheduled. Join the list to receive the confirmed details.
 
-## Publishing rules
+Avoid:
 
-- Every collection record needs a stable unique `id`.
-- Keep `published` false until the item is ready for public display.
-- Use `featured` only for the small number of records that should appear prominently.
-- Leave dates blank and use an honest `date_label` when details are not confirmed.
-- Do not claim funding, prizes, speakers, rooms, partnerships, or official approval before confirmation.
-- Link to authoritative sources for formal academic requirements.
-- Do not put private contact lists or form responses in these files.
+> Meet. Learn. Move the work forward.
 
-## Build and validation
+## Status language
 
-```bash
-python scripts/build.py
-python scripts/check_site.py
-```
+Use present tense only for things that currently exist.
+
+- A project is **proposed** until a lead, team, scope, tools, safety plan, and next milestone exist.
+- An event is **planned** until its date, time, location, responsible organizer, and access details are confirmed.
+- A relationship is **prospective** until the other organization has agreed to be named publicly.
+- A result is **impact** only when there is evidence such as attendance, completed work, published documentation, or participant feedback.
+
+## Page headings
+
+The H1 should describe the page in language students might search for. Keep only one H1 per page. Section headings should explain the section rather than repeat the brand voice.
+
+## 3-2 information
+
+Use official Oberlin and partner-school pages as the source of truth. Add a `reviewed_at` date to resource links. When a requirement may differ by school, citizenship status, major, or application year, say so and send students to an adviser or official source.
+
+## Project briefs
+
+Each project record should answer:
+
+- What problem or learning goal is being addressed?
+- What is the smallest useful first version?
+- What skills or roles are needed?
+- What is the current status?
+- Who owns the next step?
+- What would make the project pause or stop?
+
+Do not use a progress percentage unless the team has defined what 100 percent means.
+
+## Events
+
+Do not call a series monthly until the calendar supports it. Include a date, time, room, registration link, access information, food information, and contact when confirmed. Use a clear planned status when details are still being arranged.
+
+## Images
+
+Prefer real photographs of society work once they exist. Get consent before publishing identifiable students. Until then, use only images with a documented license and record each file in `content/photo_credits.json`.
+
+Avoid imagery that implies the society owns a lab, has a large team, or has completed work that it has not done.

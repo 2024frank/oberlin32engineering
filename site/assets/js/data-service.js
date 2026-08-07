@@ -3,7 +3,7 @@
 
   const config = window.O32_CONFIG || {};
   const hasSupabase = Boolean(config.supabaseUrl && config.supabaseAnonKey);
-  const staticOnly = new Set(['partner_schools', 'impact', 'documents']);
+  const useDatabase = hasSupabase && config.useDatabase === true;
   const tableFallbacks = {
     site_settings: 'site.json',
     projects: 'projects.json',
@@ -21,13 +21,14 @@
   };
 
   const sorters = {
-    projects: (a, b) => (a.sort_order || 999) - (b.sort_order || 999),
+    projects: (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999),
     project_updates: (a, b) => String(b.published_at || '').localeCompare(String(a.published_at || '')),
-    leaders: (a, b) => (a.sort_order || 999) - (b.sort_order || 999),
-    resources: (a, b) => (a.sort_order || 999) - (b.sort_order || 999),
-    sponsors: (a, b) => (a.sort_order || 999) - (b.sort_order || 999),
-    partner_schools: (a, b) => String(a.name || '').localeCompare(String(b.name || '')),
-    news_posts: (a, b) => String(b.published_at || '').localeCompare(String(a.published_at || ''))
+    leaders: (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999),
+    events: (a, b) => String(a.start_at || '9999').localeCompare(String(b.start_at || '9999')),
+    resources: (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || (a.sort_order ?? 999) - (b.sort_order ?? 999),
+    opportunities: (a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || String(a.deadline || '9999').localeCompare(String(b.deadline || '9999')),
+    news_posts: (a, b) => String(b.published_at || '').localeCompare(String(a.published_at || '')),
+    partner_schools: (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)
   };
 
   function publicHeaders() {
@@ -39,53 +40,60 @@
   }
 
   async function fetchJson(path) {
-    const response = await fetch(path, { cache: 'no-store' });
+    const response = await fetch(path, { cache: 'no-store', headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Could not load ${path} (${response.status})`);
     return response.json();
   }
 
   async function fetchSupabase(table, options = {}) {
-    const params = new URLSearchParams();
-    params.set('select', options.select || '*');
-    if (options.published !== false && table !== 'submissions') params.set('published', 'eq.true');
-    if (options.filters) {
-      Object.entries(options.filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') params.set(key, `eq.${value}`);
-      });
+    const params = new URLSearchParams({ select: options.select || '*' });
+    if (options.published !== false && table !== 'submissions' && table !== 'site_settings') {
+      params.set('published', 'eq.true');
     }
-    const defaultOrder = table === 'competition_editions' ? 'year.desc' : '';
-    if (options.order || defaultOrder) params.set('order', options.order || defaultOrder);
-    const url = `${config.supabaseUrl.replace(/\/$/, '')}/rest/v1/${table}?${params}`;
-    const response = await fetch(url, { headers: publicHeaders() });
+    if (table === 'site_settings') params.set('published', 'eq.true');
+    Object.entries(options.filters || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') params.set(key, `eq.${value}`);
+    });
+    if (options.order) params.set('order', options.order);
+    const base = String(config.supabaseUrl).replace(/\/$/, '');
+    const response = await fetch(`${base}/rest/v1/${table}?${params}`, {
+      headers: publicHeaders(),
+      cache: 'no-store'
+    });
     if (!response.ok) throw new Error(`Data request failed for ${table} (${response.status})`);
     return response.json();
   }
 
   async function get(table, options = {}) {
-    try {
-      if (hasSupabase && !staticOnly.has(table)) {
+    if (!tableFallbacks[table]) return [];
+    if (useDatabase) {
+      try {
         const rows = await fetchSupabase(table, options);
         if (table === 'site_settings') {
-          const settings = Array.isArray(rows) ? rows : [];
-          if (settings.length && settings[0].settings) return settings[0].settings;
+          const record = Array.isArray(rows) ? rows[0] : rows;
+          if (record?.settings) return record.settings;
+        } else if (table === 'competition_editions') {
+          const records = Array.isArray(rows) ? rows : [];
+          if (records.length) return records.sort((a, b) => String(b.year || '').localeCompare(String(a.year || '')))[0];
+        } else if (Array.isArray(rows) && rows.length) {
+          return sorters[table] ? rows.sort(sorters[table]) : rows;
+        } else if (rows && !Array.isArray(rows)) {
+          return rows;
         }
-        if (table === 'competition_editions') return Array.isArray(rows) ? (rows[0] || null) : rows;
-        return rows;
+      } catch (error) {
+        console.warn(`[O32] Using versioned fallback for ${table}:`, error.message);
       }
-    } catch (error) {
-      console.warn(`[O32] Supabase fallback for ${table}:`, error.message);
     }
 
-    const fallback = tableFallbacks[table];
-    if (!fallback) return [];
-    const data = await fetchJson(`content/${fallback}`);
+    const data = await fetchJson(`content/${tableFallbacks[table]}`);
     if (Array.isArray(data) && sorters[table]) data.sort(sorters[table]);
     return data;
   }
 
   function serializeForm(formData) {
     const output = {};
-    for (const [key, value] of formData.entries()) {
+    for (const [key, raw] of formData.entries()) {
+      const value = typeof raw === 'string' ? raw.trim() : raw;
       if (Object.prototype.hasOwnProperty.call(output, key)) {
         output[key] = Array.isArray(output[key]) ? [...output[key], value] : [output[key], value];
       } else {
@@ -97,48 +105,16 @@
 
   async function submit(type, formData) {
     const payload = serializeForm(formData);
-    const record = {
-      type,
-      full_name: payload.full_name || '',
-      email: payload.email || '',
-      payload,
-      status: 'new'
-    };
-
-    if (hasSupabase) {
-      const url = `${config.supabaseUrl.replace(/\/$/, '')}/rest/v1/submissions`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          ...publicHeaders(),
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal'
-        },
-        body: JSON.stringify(record)
-      });
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `Submission failed (${response.status})`);
-      }
-      return { ok: true, via: 'database' };
-    }
-
-    const site = await get('site_settings').catch(() => ({}));
-    const email = site.contact_email || config.contactEmail || 'fkusiapp@oberlin.edu';
-    const subject = `[Website] ${type.replaceAll('_', ' ')}`;
-    const body = Object.entries(payload).map(([key, value]) => `${key.replaceAll('_', ' ')}: ${Array.isArray(value) ? value.join(', ') : value}`).join('\n\n');
-    return {
-      ok: true,
-      via: 'email',
-      mailto: `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    };
+    const response = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ type, ...payload })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Your message could not be sent. Please try again.');
+    return data;
   }
 
-  window.O32Data = {
-    config,
-    hasSupabase,
-    get,
-    submit,
-    serializeForm
-  };
+  window.O32Data = { config, hasSupabase, useDatabase, get, submit, serializeForm };
 })();

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the generated public website, content fallbacks, and admin release."""
+"""Release checks for public pages, content, backend source, and generated assets."""
 
 from __future__ import annotations
 
@@ -13,18 +13,15 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
+SRC = ROOT / "src"
 CONTENT = ROOT / "content"
-
-PUBLIC_PAGES = {
+EXPECTED_PAGES = {
     "index.html", "about.html", "pathway.html", "projects.html", "competition.html",
-    "leadership.html", "events.html", "opportunities.html", "resources.html", "impact.html",
-    "join.html", "contact.html", "media.html", "privacy.html", "404.html",
+    "leadership.html", "events.html", "opportunities.html", "resources.html",
+    "impact.html", "join.html", "contact.html", "media.html", "privacy.html", "404.html",
 }
-
-JSON_TYPES = {
+JSON_FILES = {
     "site.json": dict,
-    "competition.json": dict,
-    "impact.json": dict,
     "projects.json": list,
     "project_updates.json": list,
     "leaders.json": list,
@@ -32,238 +29,300 @@ JSON_TYPES = {
     "resources.json": list,
     "opportunities.json": list,
     "news.json": list,
-    "sponsors.json": list,
+    "competition.json": dict,
     "partners.json": list,
+    "impact.json": dict,
     "documents.json": list,
+    "sponsors.json": list,
+    "photo_credits.json": list,
 }
-
-REQUIRED_RELEASE_FILES = {
-    "CNAME", ".nojekyll", "robots.txt", "sitemap.xml", "site.webmanifest",
-    "service-worker.js", "feed.xml", "humans.txt", ".well-known/security.txt",
-    "assets/css/site.css", "assets/js/runtime-config.js", "assets/js/data-service.js",
-    "assets/js/site.js", "assets/js/pages.js", "assets/images/logo-mark.svg",
-    "assets/images/logo-wordmark.svg", "assets/images/icon-192.png",
-    "assets/images/icon-512.png", "assets/images/icon-maskable.png",
-    "assets/images/og-cover.png", "admin/index.html", "admin/admin.css", "admin/admin.js",
-}
-
-REQUIRED_REPOSITORY_FILES = {
-    "README.md", "LICENSE", "SECURITY.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md",
-    ".github/workflows/deploy-pages.yml", "database/schema.sql", "database/seed.sql",
-    "docs/ADMIN_SETUP.md", "docs/CONTENT_GUIDE.md", "docs/DEPLOYMENT.md",
-    "docs/DOMAIN_SETUP.md", "docs/OPERATIONS.md",
-}
-
-PROHIBITED_PUBLIC_PHRASES = {
-    "officially chartered",
-    "charter approved",
-    "funding confirmed",
-    "confirmed sponsor",
-    "spring 2027 · inaugural season",
-}
+PROHIBITED_COPY = [
+    "build the system", "hand it forward", "institutional memory", "command center",
+    "find your people. build what matters", "move the work forward", "turn ideas into evidence",
+    "design it. build it. defend it", "6 active briefs", "20+ ways to contribute",
+]
 
 
-class Parser(HTMLParser):
+class PageParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.refs: list[str] = []
-        self.img_missing_alt: list[str] = []
-        self.blank_missing_noopener: list[str] = []
-        self.h1 = 0
-        self.title = 0
-        self.descriptions = 0
-        self.canonicals = 0
-        self.ids: list[str] = []
-        self.html_lang = ""
+        self.h1_count = 0
+        self.title_count = 0
+        self.description = False
+        self.canonical = False
+        self.robots = ""
+        self.html_lang = False
+        self.images: list[tuple[str, str | None]] = []
+        self.links: list[dict[str, str]] = []
+        self.forms: list[dict[str, str]] = []
+        self.current_form: dict[str, object] | None = None
+        self.form_details: list[dict[str, object]] = []
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        values = {key: value or "" for key, value in attrs}
-        for name in ("href", "src"):
-            if values.get(name):
-                self.refs.append(values[name])
-        if tag == "html":
-            self.html_lang = values.get("lang", "")
-        if tag == "img" and "alt" not in values:
-            self.img_missing_alt.append(values.get("src", "<unknown>"))
-        if tag == "a" and values.get("target") == "_blank" and "noopener" not in values.get("rel", "").split():
-            self.blank_missing_noopener.append(values.get("href", "<unknown>"))
+    def handle_starttag(self, tag: str, attrs_list: list[tuple[str, str | None]]) -> None:
+        attrs = {key: value or "" for key, value in attrs_list}
+        if tag == "html" and attrs.get("lang"):
+            self.html_lang = True
         if tag == "h1":
-            self.h1 += 1
+            self.h1_count += 1
         if tag == "title":
-            self.title += 1
-        if tag == "meta" and values.get("name") == "description" and values.get("content"):
-            self.descriptions += 1
-        if tag == "link" and "canonical" in values.get("rel", "").split() and values.get("href"):
-            self.canonicals += 1
-        if values.get("id"):
-            self.ids.append(values["id"])
+            self.title_count += 1
+        if tag == "meta" and attrs.get("name") == "description" and attrs.get("content"):
+            self.description = True
+        if tag == "meta" and attrs.get("name") == "robots":
+            self.robots = attrs.get("content", "").lower()
+        if tag == "link" and attrs.get("rel") == "canonical" and attrs.get("href"):
+            self.canonical = True
+        if tag == "img":
+            self.images.append((attrs.get("src", ""), attrs.get("alt")))
+        if tag == "a":
+            self.links.append(attrs)
+        if tag == "form":
+            self.current_form = {"attrs": attrs, "honeypot": False, "status": False, "submit": False}
+            self.form_details.append(self.current_form)
+        if self.current_form is not None:
+            if tag == "input" and attrs.get("name") == "company":
+                self.current_form["honeypot"] = True
+            if attrs.get("data-form-status") is not None:
+                self.current_form["status"] = True
+            if tag == "button" and attrs.get("type", "submit") == "submit":
+                self.current_form["submit"] = True
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "form":
+            self.current_form = None
 
 
-def local_target(page: Path, ref: str) -> Path | None:
-    if not ref or ref.startswith(("#", "mailto:", "tel:", "data:", "javascript:")):
+def fail(errors: list[str], message: str) -> None:
+    errors.append(message)
+
+
+def local_target(page: Path, raw: str) -> Path | None:
+    if not raw or raw.startswith(("#", "mailto:", "tel:", "javascript:", "data:")):
         return None
-    parsed = urlsplit(ref)
-    if parsed.scheme or parsed.netloc or not parsed.path:
+    parsed = urlsplit(raw)
+    if parsed.scheme or parsed.netloc:
         return None
-    if parsed.path.startswith("/"):
-        candidate = SITE / parsed.path.lstrip("/")
+    path = parsed.path
+    if not path:
+        return None
+    if path.startswith("/"):
+        target = SITE / path.lstrip("/")
     else:
-        candidate = page.parent / parsed.path
-
-    # Vercel serves pages with cleanUrls, so internal links are extensionless.
-    # "/" is the home page and "contact" is contact.html on disk.
-    if candidate.exists():
-        return candidate
-    if parsed.path in ("", "/"):
-        return SITE / "index.html"
-    if not candidate.suffix:
-        with_html = candidate.with_suffix(".html")
-        if with_html.exists():
-            return with_html
-    return candidate
-
-
-def check_json(errors: list[str]) -> None:
-    for name, expected_type in JSON_TYPES.items():
-        path = CONTENT / name
-        if not path.exists():
-            errors.append(f"Missing content file: {name}")
-            continue
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"{name}: invalid JSON ({exc})")
-            continue
-        if not isinstance(data, expected_type):
-            errors.append(f"{name}: expected {expected_type.__name__}, found {type(data).__name__}")
-            continue
-        if isinstance(data, list):
-            ids = [row.get("id") for row in data if isinstance(row, dict)]
-            duplicates = sorted({item for item in ids if item and ids.count(item) > 1})
-            if duplicates:
-                errors.append(f"{name}: duplicate IDs: {', '.join(duplicates)}")
-            missing_ids = [str(index + 1) for index, row in enumerate(data) if not isinstance(row, dict) or not row.get("id")]
-            if missing_ids:
-                errors.append(f"{name}: records missing IDs at positions {', '.join(missing_ids)}")
-
-    site_data = json.loads((CONTENT / "site.json").read_text(encoding="utf-8"))
-    status = str(site_data.get("status", "")).lower()
-    if "formation" not in status and "founding" not in status:
-        errors.append("site.json: status must identify the Society as being in its founding or formation stage")
-    if site_data.get("domain") != "https://oberlin32engineeringsociety.com":
-        errors.append("site.json: domain does not match the production custom domain")
+        target = page.parent / path
+    if target.is_dir():
+        return target / "index.html"
+    if target.exists():
+        return target
+    if not target.suffix:
+        html_target = target.with_suffix(".html")
+        if html_target.exists():
+            return html_target
+        index_target = target / "index.html"
+        if index_target.exists():
+            return index_target
+    return target
 
 
 def check_html(errors: list[str]) -> None:
-    existing = {page.name for page in SITE.glob("*.html")}
-    for missing in sorted(PUBLIC_PAGES - existing):
-        errors.append(f"Missing public page: {missing}")
+    missing = EXPECTED_PAGES - {path.name for path in SITE.glob("*.html")}
+    for name in sorted(missing):
+        fail(errors, f"missing generated page: site/{name}")
 
-    for page in sorted(SITE.rglob("*.html")):
-        source = page.read_text(encoding="utf-8")
-        relative = page.relative_to(SITE)
-        if re.search(r"{{[A-Z0-9_]+}}", source):
-            errors.append(f"{relative}: unresolved template token")
-        lowered = source.lower()
-        for phrase in PROHIBITED_PUBLIC_PHRASES:
-            if phrase in lowered:
-                errors.append(f"{relative}: outdated public wording: {phrase}")
+    for page in sorted(SITE.glob("*.html")):
+        text = page.read_text(encoding="utf-8")
+        parser = PageParser()
+        parser.feed(text)
+        if parser.h1_count != 1:
+            fail(errors, f"{page.relative_to(ROOT)} must contain exactly one h1; found {parser.h1_count}")
+        if parser.title_count != 1:
+            fail(errors, f"{page.relative_to(ROOT)} must contain exactly one title element")
+        if not parser.description:
+            fail(errors, f"{page.relative_to(ROOT)} is missing a meta description")
+        if not parser.canonical:
+            fail(errors, f"{page.relative_to(ROOT)} is missing a canonical link")
+        if page.name == "404.html" and "noindex" not in parser.robots:
+            fail(errors, "site/404.html must be marked noindex")
+        if page.name != "404.html" and "index" not in parser.robots:
+            fail(errors, f"{page.relative_to(ROOT)} is missing an indexable robots directive")
+        if not parser.html_lang:
+            fail(errors, f"{page.relative_to(ROOT)} is missing html[lang]")
+        if "{{" in text or "}}" in text:
+            fail(errors, f"{page.relative_to(ROOT)} contains an unresolved template token")
+        lower = text.lower()
+        for phrase in PROHIBITED_COPY:
+            if phrase in lower:
+                fail(errors, f"{page.relative_to(ROOT)} contains retired copy: {phrase!r}")
+        if "forms.gle" in lower or "docs.google.com/forms" in lower:
+            fail(errors, f"{page.relative_to(ROOT)} still links to the old Google Form")
+        # Motion is allowed, but only the one scoped signature animation. The
+        # rule exists to stop scattered scroll-reveals coming back, so it now
+        # checks that motion.js is the only animation entry point rather than
+        # banning animation outright.
+        if "anime.min.js" in lower:
+            fail(errors, f"{page.relative_to(ROOT)} includes retired animation code")
+        if "motion.js" in lower and "vendor/anime.umd.min.js" not in lower:
+            fail(errors, f"{page.relative_to(ROOT)} loads motion.js without its library")
 
-        parser = Parser()
-        try:
-            parser.feed(source)
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"{relative}: HTML parser failure ({exc})")
-            continue
-
-        is_admin = relative.as_posix() == "admin/index.html"
-        if parser.html_lang != "en":
-            errors.append(f"{relative}: <html> must declare lang=\"en\"")
-        if not is_admin:
-            if parser.h1 != 1:
-                errors.append(f"{relative}: expected one h1, found {parser.h1}")
-            if parser.title != 1:
-                errors.append(f"{relative}: expected one title, found {parser.title}")
-            if parser.descriptions != 1:
-                errors.append(f"{relative}: expected one meta description, found {parser.descriptions}")
-            if parser.canonicals != 1:
-                errors.append(f"{relative}: expected one canonical link, found {parser.canonicals}")
-        else:
-            if parser.title != 1:
-                errors.append(f"{relative}: expected one title, found {parser.title}")
-            if parser.descriptions != 1:
-                errors.append(f"{relative}: expected one meta description, found {parser.descriptions}")
-
-        duplicate_ids = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
-        if duplicate_ids:
-            errors.append(f"{relative}: duplicate HTML IDs: {', '.join(duplicate_ids)}")
-        for src in parser.img_missing_alt:
-            errors.append(f"{relative}: image missing alt attribute: {src}")
-        for href in parser.blank_missing_noopener:
-            errors.append(f"{relative}: target=_blank link missing rel=noopener: {href}")
-        for ref in parser.refs:
-            target = local_target(page, ref)
+        for src, alt in parser.images:
+            if not src:
+                fail(errors, f"{page.relative_to(ROOT)} has an image without src")
+            if alt is None:
+                fail(errors, f"{page.relative_to(ROOT)} has an image without alt")
+            target = local_target(page, src)
             if target is not None and not target.exists():
-                errors.append(f"{relative}: missing local reference {ref}")
+                fail(errors, f"{page.relative_to(ROOT)} references missing image {src}")
+        for attrs in parser.links:
+            href = attrs.get("href", "")
+            if attrs.get("target") == "_blank" and "noopener" not in attrs.get("rel", "").split():
+                fail(errors, f"{page.relative_to(ROOT)} has target=_blank without rel=noopener: {href}")
+            target = local_target(page, href)
+            if target is not None and not target.exists():
+                fail(errors, f"{page.relative_to(ROOT)} references missing local target {href}")
+        for form in parser.form_details:
+            attrs = form["attrs"]
+            if "data-o32-form" not in attrs:
+                fail(errors, f"{page.relative_to(ROOT)} contains a public form without data-o32-form")
+            if not attrs.get("data-form-type"):
+                fail(errors, f"{page.relative_to(ROOT)} contains a public form without data-form-type")
+            if not form["honeypot"]:
+                fail(errors, f"{page.relative_to(ROOT)} contains a public form without the bot-trap field")
+            if not form["status"]:
+                fail(errors, f"{page.relative_to(ROOT)} contains a public form without an accessible status element")
+            if not form["submit"]:
+                fail(errors, f"{page.relative_to(ROOT)} contains a form without a submit button")
+
+
+def check_json(errors: list[str]) -> None:
+    loaded: dict[str, object] = {}
+    for filename, expected_type in JSON_FILES.items():
+        path = CONTENT / filename
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            fail(errors, f"{path.relative_to(ROOT)} is invalid JSON: {exc}")
+            continue
+        loaded[filename] = value
+        if not isinstance(value, expected_type):
+            fail(errors, f"{path.relative_to(ROOT)} must contain {expected_type.__name__}")
+
+    for filename in ["projects.json", "leaders.json", "events.json", "resources.json", "partners.json"]:
+        records = loaded.get(filename)
+        if not isinstance(records, list) or not records:
+            fail(errors, f"content/{filename} must contain at least one honest public record")
+            continue
+        ids = [str(item.get("id", "")) for item in records if isinstance(item, dict)]
+        if any(not value for value in ids):
+            fail(errors, f"content/{filename} has a record without id")
+        if len(ids) != len(set(ids)):
+            fail(errors, f"content/{filename} contains duplicate ids")
+
+    projects = loaded.get("projects.json", [])
+    for record in projects if isinstance(projects, list) else []:
+        if record.get("status") == "Active" and not record.get("team_names"):
+            fail(errors, f"project {record.get('id')} is marked Active without a team")
+        if record.get("progress", 0) and record.get("status") in {"Open for interest", "Needs a project lead", "Idea under review"}:
+            fail(errors, f"project {record.get('id')} has progress before an active scope")
+
+    events = loaded.get("events.json", [])
+    for record in events if isinstance(events, list) else []:
+        if record.get("status") == "Confirmed" and not record.get("start_at"):
+            fail(errors, f"event {record.get('id')} is Confirmed without start_at")
+        if not record.get("date_label"):
+            fail(errors, f"event {record.get('id')} needs a public date label")
+
+    resources = loaded.get("resources.json", [])
+    for record in resources if isinstance(resources, list) else []:
+        if record.get("published", True) and not record.get("reviewed_at"):
+            fail(errors, f"resource {record.get('id')} has no reviewed_at date")
+        url = str(record.get("url", ""))
+        if not url.startswith("https://"):
+            fail(errors, f"resource {record.get('id')} must use an https URL")
+
+    credits = loaded.get("photo_credits.json", [])
+    credit_map = {item.get("file"): item for item in credits if isinstance(item, dict)}
+    used = set()
+    pattern = re.compile(r"assets/images/photos/[A-Za-z0-9_.-]+")
+    for root in [SRC / "pages", CONTENT]:
+        for path in root.rglob("*"):
+            if path.is_file() and path.suffix in {".html", ".json"} and path.name != "photo_credits.json":
+                used.update(pattern.findall(path.read_text(encoding="utf-8")))
+    for image_path in sorted(used):
+        credit = credit_map.get(image_path)
+        if not credit:
+            fail(errors, f"used photograph has no license record: {image_path}")
+            continue
+        if credit.get("license") != "Unsplash License" or not str(credit.get("source", "")).startswith("https://unsplash.com/"):
+            fail(errors, f"photograph credit is incomplete: {image_path}")
+        if credit.get("depicts_identifiable_people"):
+            fail(errors, f"founding site should not imply stock people are society members: {image_path}")
+
+
+def check_source(errors: list[str]) -> None:
+    source_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in [
+        SRC / "assets/js/data-service.js", SRC / "assets/js/site.js", SRC / "assets/js/pages.js",
+    ])
+    if "/api/submit" not in source_text:
+        fail(errors, "public forms are not routed through /api/submit")
+    if "serviceWorker.register" not in source_text:
+        fail(errors, "the generated offline worker is never registered")
+    if re.search(r"from\(['\"]submissions['\"]\).*insert", source_text, re.S):
+        fail(errors, "browser source still inserts directly into submissions")
+
+    submit = (ROOT / "api/submit.js").read_text(encoding="utf-8")
+    for required in ["accept_public_submission", "started_at", "company", "ipHash", "16 * 1024"]:
+        if required not in submit:
+            fail(errors, f"api/submit.js is missing expected protection: {required}")
+
+    migration = (ROOT / "database/migrations/2026-08-07-complete-site.sql").read_text(encoding="utf-8").lower()
+    for required in [
+        "accept_public_submission", "allow_account_email", "accept_officer_invitation",
+        "revoke_officer_invitation", "revoke insert on public.submissions",
+        "grant execute", "pg_advisory_xact_lock", "for update",
+    ]:
+        if required not in migration:
+            fail(errors, f"database migration is missing: {required}")
+
+    members = (ROOT / "api/members.js").read_text(encoding="utf-8")
+    for required in [
+        "missingSchemaFeature", "localAccountEmailLimit", "society_role_id",
+        "acceptInvitation", "revokeInvitation", "status=eq.sent",
+    ]:
+        if required not in members:
+            fail(errors, f"api/members.js is missing cutover compatibility: {required}")
+
+    runtime = (SITE / "assets/js/runtime-config.js").read_text(encoding="utf-8")
+    if '"portalEnabled":false' not in runtime:
+        fail(errors, "safe default build must keep the officer portal disabled")
+    for forbidden in ["service_role", "resend", "submission_salt"]:
+        if forbidden in runtime.lower():
+            fail(errors, f"public runtime config exposes a server-only value: {forbidden}")
 
 
 def check_javascript(errors: list[str]) -> None:
-    files = sorted((ROOT / "src").rglob("*.js"))
-    for path in files:
-        try:
-            subprocess.run(["node", "--check", str(path)], check=True, capture_output=True, text=True)
-        except FileNotFoundError:
-            errors.append("Node.js is required to validate JavaScript syntax")
-            return
-        except subprocess.CalledProcessError as exc:
-            message = (exc.stderr or exc.stdout).strip().replace("\n", " | ")
-            errors.append(f"{path.relative_to(ROOT)}: JavaScript syntax error: {message}")
-
-
-def check_release_files(errors: list[str]) -> None:
-    for name in sorted(REQUIRED_RELEASE_FILES):
-        if not (SITE / name).exists():
-            errors.append(f"Missing generated file: {name}")
-    for name in sorted(REQUIRED_REPOSITORY_FILES):
-        if not (ROOT / name).exists():
-            errors.append(f"Missing repository file: {name}")
-
-    cname = SITE / "CNAME"
-    if cname.exists() and cname.read_text(encoding="utf-8").strip() != "oberlin32engineeringsociety.com":
-        errors.append("CNAME does not match oberlin32engineeringsociety.com")
-
-    runtime = SITE / "assets/js/runtime-config.js"
-    runtime_text = runtime.read_text(encoding="utf-8") if runtime.exists() else ""
-    for secret_marker in ("service_role", "service-role", "postgresql://", "SUPABASE_SERVICE"):
-        if secret_marker.lower() in runtime_text.lower():
-            errors.append("runtime-config.js appears to expose a private database credential")
-
-    workflow = ROOT / ".github/workflows/deploy-pages.yml"
-    if workflow.exists():
-        workflow_text = workflow.read_text(encoding="utf-8")
-        if "scripts/build.py" not in workflow_text or "scripts/check_site.py" not in workflow_text:
-            errors.append("Deployment workflow must build and validate the site before publishing")
+    paths = list((ROOT / "api").glob("*.js")) + list((SITE / "assets/js").glob("*.js")) + list((SITE / "admin").glob("*.js")) + [ROOT / "middleware.js"]
+    for path in paths:
+        result = subprocess.run(["node", "--check", str(path)], capture_output=True, text=True)
+        if result.returncode:
+            fail(errors, f"JavaScript syntax error in {path.relative_to(ROOT)}: {result.stderr.strip()}")
 
 
 def main() -> int:
     errors: list[str] = []
-    check_json(errors)
-    check_html(errors)
-    check_javascript(errors)
-    check_release_files(errors)
-
-    if errors:
-        print("Site checks failed:")
-        for error in errors:
-            print(f"  - {error}")
+    if not SITE.exists():
+        print("site/ does not exist. Run python scripts/build.py first.", file=sys.stderr)
         return 1
-
-    print(
-        f"Site checks passed: {len(PUBLIC_PAGES)} public pages, the officer command center, "
-        f"{len(JSON_TYPES)} content sources, deployment files, and required assets are valid."
-    )
+    check_html(errors)
+    check_json(errors)
+    check_source(errors)
+    check_javascript(errors)
+    if errors:
+        print(f"Release validation failed with {len(errors)} problem(s):", file=sys.stderr)
+        for error in errors:
+            print(f" - {error}", file=sys.stderr)
+        return 1
+    print(f"Release validation passed: {len(EXPECTED_PAGES)} pages, content data, forms, licenses, APIs, and JavaScript checked.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

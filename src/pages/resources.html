@@ -1,81 +1,22 @@
-<section class="page-hero resources-hero">
-  <div class="container page-hero-layout">
-    <div class="reveal"><span class="eyebrow">RESOURCE HUB</span><h1>Useful knowledge,<br><em>kept in one place.</em></h1></div>
-    <div class="page-hero-side reveal reveal-delay-1"><p>Official program information, academic planning, partner schools, career support, campus resources, and the peer knowledge future cohorts should inherit.</p><a class="button button-gold" href="#library">Open the library <span>↓</span></a></div>
-  </div>
-  <figure class="page-hero-figure">
-    <img src="assets/images/photos/motherboard-macro.jpg" width="1920" height="1281" loading="lazy" decoding="async"
-         alt="Close detail of a circuit board and its components.">
-  </figure>
-</section>
-
-<section class="section resource-feature-section">
-  <div class="container resource-feature-grid">
-    <div class="resource-feature-copy reveal"><span class="eyebrow">START WITH THE OFFICIAL PROGRAM</span><h2>Plan with peers.<br><em>Verify with advisors.</em></h2><p>The society helps students understand the questions, learn from experience, and organize the journey. Official Oberlin resources remain the source for current requirements, partner institutions, eligibility, and individual academic decisions.</p><a class="button button-gold" href="https://www.oberlin.edu/arts-and-sciences/departments/engineering" target="_blank" rel="noopener">Official 3-2 program page <span>↗</span></a></div>
-    <div class="resource-terminal reveal reveal-delay-1"><div class="terminal-top"><span>O32 KNOWLEDGE SYSTEM</span><i></i></div><div class="terminal-body"><p><b>01</b> Understand the five-year model</p><p><b>02</b> Map courses and prerequisites early</p><p><b>03</b> Compare partner-school pathways</p><p><b>04</b> Build experience through projects</p><p><b>05</b> Ask financial and transition questions</p><p><b>06</b> Learn from students and alumni</p><span class="terminal-cursor">_</span></div></div>
+<section class="page-hero">
+  <div class="container page-hero__grid">
+    <div><span class="eyebrow">Resource library</span><h1>Verified starting points for 3-2 planning, projects, research, and careers.</h1><p class="page-hero__lead">We link to original sources, explain what each one is useful for, and show when the link was last checked.</p></div>
+    <aside class="page-hero__aside"><strong>How to use this library</strong><p>Open the official source, check the date and audience, and save a copy of important requirements for your own records.</p></aside>
   </div>
 </section>
 
-<section class="section figure-band">
-  <div class="container figure-band-grid">
-    <figure>
-      <img src="assets/images/photos/audio-jack.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="Connector detail.">
-    </figure>
-    <figure>
-      <img src="assets/images/photos/handheld-device.jpg" width="1920" height="1281" loading="lazy" decoding="async" alt="Handheld electronics.">
-    </figure>
-  </div>
-</section>
-
-
-
-<section class="section section-ivory resource-library" id="library">
+<section class="section">
   <div class="container">
-    <div class="section-heading heading-row reveal"><div><span class="eyebrow dark">THE LIBRARY</span><h2>Search less.<br><em>Use more.</em></h2></div><p>Resources are grouped by the decision they help students make. The admin dashboard can add, revise, pin, or remove listings as information changes.</p></div>
-    <div class="resource-toolbar reveal">
-      <div class="filter-group" role="group" aria-label="Filter resources"><button class="filter-chip dark-chip active" data-resource-filter="all" type="button">All</button><button class="filter-chip dark-chip" data-resource-filter="3-2 planning" type="button">3-2 planning</button><button class="filter-chip dark-chip" data-resource-filter="academic planning" type="button">Academic</button><button class="filter-chip dark-chip" data-resource-filter="career" type="button">Career</button><button class="filter-chip dark-chip" data-resource-filter="partner schools" type="button">Partner schools</button><button class="filter-chip dark-chip" data-resource-filter="campus" type="button">Campus</button></div>
-      <label class="inline-search light-search"><span class="sr-only">Search resources</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-resource-search placeholder="Search the resource hub"></label>
-    </div>
-    <div class="resource-grid" data-resource-grid></div>
-    <div class="empty-state dark-empty" data-resource-empty hidden><span>NO MATCH</span><h2>No resources match that search.</h2><button class="button button-primary" type="button" data-resource-reset>Reset filters</button></div>
+    <div class="section-heading"><div><span class="eyebrow">Find a resource</span><h2>Search by topic or source.</h2></div><p>Suggested topics include partner schools, course planning, financial aid, research, careers, electronics, CAD, and project documentation.</p></div>
+    <label class="search-field"><span class="sr-only">Search resources</span><input type="search" data-resource-search placeholder="Search the resource library"></label>
+    <div class="filters" data-filter-group data-filter-target="#resource-grid"><button class="filter-button active" type="button" data-filter="all">All</button><button class="filter-button" type="button" data-filter="3-2 planning">3-2 planning</button><button class="filter-button" type="button" data-filter="partner school">Partner schools</button><button class="filter-button" type="button" data-filter="careers">Careers</button><button class="filter-button" type="button" data-filter="research">Research</button><button class="filter-button" type="button" data-filter="project skills">Project skills</button></div>
+    <div class="card-grid" id="resource-grid" data-resource-grid><div class="empty-state"><h3>Loading verified resources</h3><p>The library is loading.</p></div></div>
   </div>
 </section>
 
-<section class="section peer-knowledge-section">
-  <div class="container">
-    <div class="section-heading split-heading reveal"><div><span class="eyebrow">PEER KNOWLEDGE ARCHIVE</span><h2>The guide older students<br><em>wish they had.</em></h2></div><p class="heading-copy">The archive will grow through verified student and alumni contributions. It should capture experience without presenting individual stories as universal academic advice.</p></div>
-    <div class="knowledge-grid">
-      <article class="knowledge-card reveal"><span>ACADEMIC MAPS</span><h3>Example three-year plans</h3><p>Annotated pathways showing how different interests and prerequisites can shape course planning.</p><small>Archive begins 2026–27</small></article>
-      <article class="knowledge-card reveal reveal-delay-1"><span>TRANSITION NOTES</span><h3>What changed after Oberlin</h3><p>Student accounts of workload, culture, housing, finances, advising, and the transition into engineering study.</p><small>Contributors invited</small></article>
-      <article class="knowledge-card reveal reveal-delay-2"><span>APPLICATION LESSONS</span><h3>Questions worth asking early</h3><p>Timelines, documents, decisions, and points of confusion preserved for future applicants.</p><small>Reviewed before publishing</small></article>
-      <article class="knowledge-card reveal"><span>CAREER PATHS</span><h3>Engineering after 3-2</h3><p>Alumni fields, roles, projects, research, graduate study, and how the liberal arts shaped their engineering practice.</p><small>Alumni network in development</small></article>
-    </div>
-  </div>
-</section>
-
-<section class="section section-ivory pathway-questions">
-  <div class="container faq-layout">
-    <div class="reveal"><span class="eyebrow dark">QUESTIONS TO ASK EARLY</span><h2>Planning is not only<br><em>a course checklist.</em></h2><p>A complete decision includes academic, financial, personal, and professional questions. Use these prompts to prepare for advising conversations.</p></div>
-    <div class="question-stack">
-      <article class="reveal"><span>01</span><h3>Academic fit</h3><p>Which engineering fields interest me? What courses and grades are expected? How do requirements differ by partner institution?</p></article>
-      <article class="reveal"><span>02</span><h3>Application path</h3><p>What is the timeline? Which materials are required? What is guaranteed, conditional, or competitive?</p></article>
-      <article class="reveal"><span>03</span><h3>Financial reality</h3><p>How will tuition, aid, housing, travel, and other costs change during the engineering-school years?</p></article>
-      <article class="reveal"><span>04</span><h3>Student experience</h3><p>What support, community, research, internships, and advising will be available after the transition?</p></article>
-      <article class="reveal"><span>05</span><h3>Career direction</h3><p>What technical experience should I build at Oberlin now, and how can projects, research, and internships test my interests?</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="section request-resource-section">
-  <div class="container proposal-grid">
-    <div class="proposal-copy reveal"><span class="eyebrow">HELP IMPROVE THE HUB</span><h2>Missing something<br><em>students keep asking for?</em></h2><p>Request a guide, suggest a reliable resource, report an outdated link, or volunteer to contribute a peer or alumni perspective.</p></div>
-    <form class="public-form reveal reveal-delay-1" data-submission-form data-submission-type="resource_request">
-      <div class="form-row"><label>Your name<input name="full_name" required></label><label>Email<input name="email" type="email" required></label></div>
-      <label>Type of request<select name="request_type"><option>Suggest a resource</option><option>Request a new guide</option><option>Report outdated information</option><option>Contribute student experience</option><option>Contribute alumni experience</option></select></label>
-      <label>What should be added or changed?<textarea name="details" rows="5" required></textarea></label>
-      <label>Relevant link<input name="url" type="url" placeholder="Optional"></label>
-      <button class="button button-primary" type="submit">Send resource request <span>↗</span></button>
-      <p class="form-status" data-form-status aria-live="polite"></p>
-    </form>
+<section class="section section--soft">
+  <div class="container split">
+    <div><span class="eyebrow">Publication standard</span><h2>Useful beats impressive.</h2><p>A resource stays in the library only when it has a clear source, a working link, a short explanation, and a reasonable reason to trust it.</p></div>
+    <ul class="check-list"><li>Prefer official Oberlin, partner-school, government, or recognized educational sources.</li><li>Show a last-reviewed date for time-sensitive guidance.</li><li>Separate student tips from institutional requirements.</li><li>Remove dead, misleading, duplicated, or outdated links.</li><li>Do not copy full copyrighted guides when a direct link is available.</li></ul>
   </div>
 </section>
