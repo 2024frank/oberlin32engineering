@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const { $, $$, escapeHTML, initials, formatDate, initializeReveals } = window.O32UI || {};
+  const { $, $$, escapeHTML, sanitizeURL, initials, formatDate, initializeReveals } = window.O32UI || {};
   const data = window.O32Data;
 
   function list(value) {
@@ -115,7 +115,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     const href = event.registration_url || 'events.html';
     const external = /^https?:/i.test(href);
     return `
-      <a class="event-preview reveal" href="${escapeHTML(href)}" ${external ? 'target="_blank" rel="noopener"' : ''}>
+      <a class="event-preview reveal" href="${escapeHTML(sanitizeURL(href))}" ${external ? 'target="_blank" rel="noopener"' : ''}>
         <span>${String(index + 1).padStart(2, '0')} · ${escapeHTML(event.event_type || 'Event')}</span>
         <div><h3>${escapeHTML(event.title)}</h3><p>${escapeHTML(event.summary || '')}</p></div>
         <time>${escapeHTML(event.date_label || formatDate(event.start_at) || 'Details soon')}</time>
@@ -151,7 +151,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
   function leaderCard(leader) {
     const links = [];
     if (leader.email) links.push(`<a href="mailto:${escapeHTML(leader.email)}">Email ↗</a>`);
-    if (leader.linkedin_url) links.push(`<a href="${escapeHTML(leader.linkedin_url)}" target="_blank" rel="noopener">LinkedIn ↗</a>`);
+    if (leader.linkedin_url) links.push(`<a href="${escapeHTML(sanitizeURL(leader.linkedin_url))}" target="_blank" rel="noopener">LinkedIn ↗</a>`);
     return `
       <article class="leader-card reveal ${leader.advisor ? 'advisor-card' : ''}">
         <div class="leader-card-top"><span>${escapeHTML(leader.term || 'Current term')}</span><span>${leader.advisor ? 'ADVISOR' : 'BOARD'}</span></div>
@@ -187,8 +187,8 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
           <article><time datetime="${escapeHTML(item.published_at || '')}">${escapeHTML(formatDate(item.published_at) || 'Update')}</time><div><span>${escapeHTML(item.milestone || 'Milestone')}</span><h4>${escapeHTML(item.title || 'Project update')}</h4><p>${escapeHTML(item.summary || item.body || '')}</p></div></article>`).join('')}</div>
       </section>` : '';
     const links = [
-      project.project_url ? `<a class="button button-outline" href="${escapeHTML(project.project_url)}" target="_blank" rel="noopener">Project site ↗</a>` : '',
-      project.github_url ? `<a class="button button-outline" href="${escapeHTML(project.github_url)}" target="_blank" rel="noopener">Repository ↗</a>` : '',
+      project.project_url ? `<a class="button button-outline" href="${escapeHTML(sanitizeURL(project.project_url))}" target="_blank" rel="noopener">Project site ↗</a>` : '',
+      project.github_url ? `<a class="button button-outline" href="${escapeHTML(sanitizeURL(project.github_url))}" target="_blank" rel="noopener">Repository ↗</a>` : '',
       `<button class="button button-outline" type="button" data-download-project>Download brief ↓</button>`,
       `<button class="button button-outline" type="button" data-share-project>Share project ⧉</button>`,
       `<a class="button button-gold" href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Join this project ↗</a>`
@@ -336,7 +336,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     const sponsorSection = $('[data-sponsor-section]');
     const sponsorRoot = $('[data-sponsor-grid]');
     if (sponsorSection && sponsorRoot && sponsors.length) {
-      sponsorRoot.innerHTML = sponsors.map((item) => `<a class="sponsor-logo-card" href="${escapeHTML(item.url || 'contact.html')}" ${/^https?:/i.test(item.url || '') ? 'target="_blank" rel="noopener"' : ''}>${item.logo_url ? `<img src="${escapeHTML(item.logo_url)}" alt="${escapeHTML(item.name)} logo" loading="lazy">` : `<strong>${escapeHTML(item.name)}</strong>`}<span>${escapeHTML(item.tier || 'Partner')}</span></a>`).join('');
+      sponsorRoot.innerHTML = sponsors.map((item) => `<a class="sponsor-logo-card" href="${escapeHTML(sanitizeURL(item.url || 'contact.html'))}" ${/^https?:/i.test(item.url || '') ? 'target="_blank" rel="noopener"' : ''}>${item.logo_url ? `<img src="${escapeHTML(item.logo_url)}" alt="${escapeHTML(item.name)} logo" loading="lazy">` : `<strong>${escapeHTML(item.name)}</strong>`}<span>${escapeHTML(item.tier || 'Partner')}</span></a>`).join('');
       sponsorSection.hidden = false;
     }
   }
@@ -377,7 +377,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
         <span class="event-row-type">${escapeHTML(event.event_type || 'Event')}</span>
         <div><h3>${escapeHTML(event.title)}</h3><p>${escapeHTML(event.summary || '')}</p></div>
         <div><time>${escapeHTML(event.date_label || formatDate(event.start_at) || 'Details soon')}</time><div class="event-location">${escapeHTML(event.location || '')}</div></div>
-        <div class="event-row-actions"><a href="${escapeHTML(href)}" ${external ? 'target="_blank" rel="noopener"' : ''}>Details ↗</a>${calendar}</div>
+        <div class="event-row-actions"><a href="${escapeHTML(sanitizeURL(href))}" ${external ? 'target="_blank" rel="noopener"' : ''}>Details ↗</a>${calendar}</div>
       </article>`;
   }
 
@@ -388,7 +388,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     if (featureRoot && featured) {
       const href = featured.registration_url || '#calendar';
       const external = /^https?:/i.test(href);
-      featureRoot.innerHTML = `<div class="event-feature-art" data-code="${escapeHTML(codeFor(featured.title))}"><span class="event-badge">FEATURED EVENT</span></div><div class="event-feature-copy"><span>${escapeHTML(featured.event_type || 'EVENT')}</span><h2>${escapeHTML(featured.title)}</h2><p>${escapeHTML(featured.summary || '')}</p><div class="event-meta"><span>${escapeHTML(featured.date_label || 'Details soon')}</span><span>${escapeHTML(featured.location || '')}</span></div><a class="button button-gold" href="${escapeHTML(href)}" ${external ? 'target="_blank" rel="noopener"' : ''}>Event details <span>↗</span></a></div>`;
+      featureRoot.innerHTML = `<div class="event-feature-art" data-code="${escapeHTML(codeFor(featured.title))}"><span class="event-badge">FEATURED EVENT</span></div><div class="event-feature-copy"><span>${escapeHTML(featured.event_type || 'EVENT')}</span><h2>${escapeHTML(featured.title)}</h2><p>${escapeHTML(featured.summary || '')}</p><div class="event-meta"><span>${escapeHTML(featured.date_label || 'Details soon')}</span><span>${escapeHTML(featured.location || '')}</span></div><a class="button button-gold" href="${escapeHTML(sanitizeURL(href))}" ${external ? 'target="_blank" rel="noopener"' : ''}>Event details <span>↗</span></a></div>`;
     }
     const listRoot = $('[data-events-list]');
     if (listRoot) {
@@ -416,7 +416,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
       <article class="opportunity-card reveal" data-opportunity-type="${escapeHTML(String(item.type || '').toLowerCase())}" data-opportunity-search="${escapeHTML(`${item.title} ${item.organization} ${item.description} ${item.type}`.toLowerCase())}">
         <div class="opportunity-card-top"><span class="opportunity-card-type">${escapeHTML(item.type || 'Opportunity')}</span><span>${escapeHTML(item.location || '')}</span></div>
         <h3>${escapeHTML(item.title)}</h3><span class="org">${escapeHTML(item.organization || '')}</span><p>${escapeHTML(item.description || '')}</p>
-        <div class="opportunity-card-bottom"><span>${escapeHTML(item.deadline_label || formatDate(item.deadline) || 'Timing varies')}</span><a href="${escapeHTML(href)}" ${external ? 'target="_blank" rel="noopener"' : ''}>Open opportunity ↗</a></div>
+        <div class="opportunity-card-bottom"><span>${escapeHTML(item.deadline_label || formatDate(item.deadline) || 'Timing varies')}</span><a href="${escapeHTML(sanitizeURL(href))}" ${external ? 'target="_blank" rel="noopener"' : ''}>Open opportunity ↗</a></div>
       </article>`;
   }
 
@@ -455,7 +455,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     return `
       <article class="resource-card reveal ${item.pinned ? 'pinned' : ''}" data-resource-category="${escapeHTML(String(item.category || '').toLowerCase())}" data-resource-search="${escapeHTML(`${item.title} ${item.description} ${item.category} ${item.source}`.toLowerCase())}">
         <span>${escapeHTML(item.category || 'Resource')}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description || '')}</p>
-        <div class="resource-card-foot"><span>${escapeHTML(item.source || '')}</span><a href="${escapeHTML(item.url || '#')}" target="_blank" rel="noopener">Open ↗</a></div>
+        <div class="resource-card-foot"><span>${escapeHTML(item.source || '')}</span><a href="${escapeHTML(sanitizeURL(item.url || '#'))}" target="_blank" rel="noopener">Open ↗</a></div>
       </article>`;
   }
 
@@ -502,13 +502,13 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
         <h3>${escapeHTML(partner.short_name || partner.name)}</h3>
         <p>${escapeHTML(partner.location || '')}</p>
         <div class="partner-question-list">${list(partner.questions).map((question) => `<span>${escapeHTML(question)}</span>`).join('')}</div>
-        <a href="${escapeHTML(partner.url || '#')}" target="_blank" rel="noopener">Visit official institution site ↗</a>
+        <a href="${escapeHTML(sanitizeURL(partner.url || '#'))}" target="_blank" rel="noopener">Visit official institution site ↗</a>
       </article>`).join('');
   }
 
   function documentCard(item) {
     const external = /^https?:/i.test(item.url || '');
-    return `<article class="document-card reveal"><span>${escapeHTML(item.category || 'Document')}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description || '')}</p><div><small>${escapeHTML(item.format || 'Resource')}</small><a href="${escapeHTML(item.url || '#')}" ${external ? 'target="_blank" rel="noopener"' : 'download'}>Open resource ↗</a></div></article>`;
+    return `<article class="document-card reveal"><span>${escapeHTML(item.category || 'Document')}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description || '')}</p><div><small>${escapeHTML(item.format || 'Resource')}</small><a href="${escapeHTML(sanitizeURL(item.url || '#'))}" ${external ? 'target="_blank" rel="noopener"' : 'download'}>Open resource ↗</a></div></article>`;
   }
 
   async function renderImpact() {
@@ -524,7 +524,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     if (milestoneRoot) milestoneRoot.innerHTML = list(impact.milestones).map((item, index) => `<article class="milestone-row reveal ${escapeHTML(item.status || 'planned')}"><div><span>${String(index + 1).padStart(2, '0')}</span><i></i></div><time>${escapeHTML(item.period || '')}</time><section><small>${escapeHTML(item.status || 'planned')}</small><h3>${escapeHTML(item.title || '')}</h3><p>${escapeHTML(item.description || '')}</p></section></article>`).join('');
 
     const reportRoot = $('[data-report-grid]');
-    if (reportRoot) reportRoot.innerHTML = list(impact.reports).map((report) => `<article class="report-record reveal"><span>ANNUAL REPORT</span><strong>${escapeHTML(report.year || '')}</strong><h3>${escapeHTML(report.title || '')}</h3><p>${escapeHTML(report.status || '')}</p>${report.url ? `<a href="${escapeHTML(report.url)}">Read report ↗</a>` : '<small>Publication pending</small>'}</article>`).join('');
+    if (reportRoot) reportRoot.innerHTML = list(impact.reports).map((report) => `<article class="report-record reveal"><span>ANNUAL REPORT</span><strong>${escapeHTML(report.year || '')}</strong><h3>${escapeHTML(report.title || '')}</h3><p>${escapeHTML(report.status || '')}</p>${report.url ? `<a href="${escapeHTML(sanitizeURL(report.url))}">Read report ↗</a>` : '<small>Publication pending</small>'}</article>`).join('');
 
     const documentRoot = $('[data-document-grid]');
     if (documentRoot) documentRoot.innerHTML = (documents || []).filter((item) => item.published !== false).map(documentCard).join('');

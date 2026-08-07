@@ -9,6 +9,19 @@
     return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   }
 
+  function sanitizeURL(url = '') {
+    const trimmed = String(url).trim();
+    if (!trimmed) return '#';
+    const match = trimmed.match(/^([^:]+):/i);
+    if (match) {
+      const scheme = match[1].toLowerCase();
+      if (scheme !== 'http' && scheme !== 'https' && scheme !== 'mailto' && scheme !== 'tel') {
+        return '#';
+      }
+    }
+    return trimmed;
+  }
+
   function initials(name = '') {
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'O32';
   }
@@ -35,15 +48,15 @@
     try {
       const site = await window.O32Data.get('site_settings');
       if (!site || Array.isArray(site)) return;
-      $$('[data-join-link]').forEach((link) => { if (site.join_url) link.href = site.join_url; });
-      $$('[data-instagram-link]').forEach((link) => { if (site.instagram_url) link.href = site.instagram_url; });
-      $$('[data-email-link]').forEach((link) => { if (site.contact_email) link.href = `mailto:${site.contact_email}`; });
+      $$('[data-join-link]').forEach((link) => { if (site.join_url) link.href = sanitizeURL(site.join_url); });
+      $$('[data-instagram-link]').forEach((link) => { if (site.instagram_url) link.href = sanitizeURL(site.instagram_url); });
+      $$('[data-email-link]').forEach((link) => { if (site.contact_email) link.href = sanitizeURL(`mailto:${site.contact_email}`); });
       $$('[data-contact-email]').forEach((node) => { if (site.contact_email) node.textContent = site.contact_email; });
       $$('[data-instagram-handle]').forEach((node) => { if (site.instagram_handle) node.textContent = site.instagram_handle; });
       const announcement = $('[data-site-announcement]');
       const announcementLink = $('[data-announcement-link]');
       if (announcement && site.announcement) announcement.textContent = site.announcement;
-      if (announcementLink && site.announcement_link) announcementLink.href = site.announcement_link;
+      if (announcementLink && site.announcement_link) announcementLink.href = sanitizeURL(site.announcement_link);
     } catch (error) {
       console.warn('[O32] Site settings unavailable:', error.message);
     }
@@ -309,7 +322,7 @@
       }
       const matches = (index || []).filter((item) => `${item.title} ${item.description} ${item.type}`.toLowerCase().includes(normalized)).slice(0, 10);
       results.innerHTML = matches.length ? matches.map((item) => `
-        <a class="search-result" href="${escapeHTML(item.url)}" ${item.external ? 'target="_blank" rel="noopener"' : ''}>
+        <a class="search-result" href="${escapeHTML(sanitizeURL(item.url))}" ${item.external ? 'target="_blank" rel="noopener"' : ''}>
           <small>${escapeHTML(item.type)}</small><strong>${escapeHTML(item.title)}</strong><span>→</span>
         </a>`).join('') : '<p class="search-hint">No exact match. Try a shorter keyword.</p>';
     }
@@ -456,5 +469,5 @@
     initializeCopyTools();
   });
 
-  window.O32UI = { $, $$, escapeHTML, initials, formatDate, showToast, initializeReveals };
+  window.O32UI = { $, $$, escapeHTML, sanitizeURL, initials, formatDate, showToast, initializeReveals };
 })();

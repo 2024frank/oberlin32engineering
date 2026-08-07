@@ -1,0 +1,4 @@
+## 2024-11-20 - URL-Based XSS Prevention Pattern
+**Vulnerability:** XSS (Cross-Site Scripting) via unsanitized dynamic href attributes. Since site content is loaded from local fallback JSON or a public Supabase database, any maliciously crafted URL (e.g., using `javascript:` or `data:` schemes) would execute arbitrary scripts in the context of the user's browser.
+**Learning:** The public website renders dozens of dynamic links (external resources, partner sites, registration URLs, sponsor websites, social profiles, etc.) on the client side using JavaScript template strings. Standard `escapeHTML` only escapes HTML special characters like `<` or `"` but does not check the URL protocol/scheme.
+**Prevention:** Created a centralized `sanitizeURL` helper in `site.js` and exposed it via `O32UI`. It sanitizes URLs to ensure only safe schemes (`http`, `https`, `mailto`, `tel`) are allowed, falling back to `#` for any blocked or dangerous protocols.
