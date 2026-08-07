@@ -34,21 +34,21 @@
     "sort_order": 15
   },
   {
-    "id": "open-operations-coordinator",
-    "name": "Open position",
-    "role": "Operations and finance coordinator",
+    "id": "mina-stalhamer",
+    "name": "Mina Stalhamer",
+    "role": "Treasurer",
     "term": "2026–27",
     "class_year": "",
-    "major": "Any field",
-    "bio": "Keeps meeting notes, task ownership, simple budgets, reimbursements, room requests, and organizational records in order.",
+    "major": "",
+    "bio": "Mina manages the society's budget, funding requests, purchases, and reimbursements, and keeps the financial records the group will hand to next year's team.",
     "photo_url": "",
     "linkedin_url": "",
-    "email": "",
+    "email": "mstalham@oberlin.edu",
     "current": true,
     "advisor": false,
-    "open_seat": true,
+    "open_seat": false,
     "published": true,
-    "sort_order": 20
+    "sort_order": 18
   },
   {
     "id": "open-projects-coordinator",
