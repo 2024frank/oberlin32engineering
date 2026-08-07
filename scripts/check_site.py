@@ -299,8 +299,21 @@ def check_source(errors: list[str]) -> None:
             fail(errors, f"api/members.js is missing cutover compatibility: {required}")
 
     runtime = (SITE / "assets/js/runtime-config.js").read_text(encoding="utf-8")
-    if '"portalEnabled":false' not in runtime:
-        fail(errors, "safe default build must keep the officer portal disabled")
+    # The portal may be enabled once the database migrations are in. What must
+    # never ship is a half-configured one, so the guard now checks coherence
+    # rather than forbidding the cutover outright: if the portal is on, it needs
+    # a Supabase URL and key, and database-backed content needs the portal.
+    portal_on = '"portalEnabled":true' in runtime
+    database_on = '"useDatabase":true' in runtime
+    has_url = '"supabaseUrl":""' not in runtime
+    has_key = '"supabaseAnonKey":""' not in runtime
+
+    if portal_on and not (has_url and has_key):
+        fail(errors, "the officer portal is enabled but Supabase credentials are missing from the build")
+    if database_on and not portal_on:
+        fail(errors, "database-backed content is enabled without the officer portal")
+    if not portal_on and (has_url or has_key):
+        fail(errors, "Supabase credentials are baked in while the portal is disabled")
     for forbidden in ["service_role", "resend", "submission_salt"]:
         if forbidden in runtime.lower():
             fail(errors, f"public runtime config exposes a server-only value: {forbidden}")
