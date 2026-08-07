@@ -5,7 +5,7 @@
   "outputDirectory": "site",
   "framework": null,
   "cleanUrls": false,
-  "trailingSlash": false,
+  "trailingSlash": true,
   "headers": [
     {
       "source": "/service-worker.js",
