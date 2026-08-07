@@ -36,28 +36,16 @@
     var units = $$('.ratio-bar .ratio-unit');
     if (units.length !== 5) return;
 
-    var oberlin = units.slice(0, 3);
-    var partner = units.slice(3);
+    anime.utils.set(units, { transformOrigin: 'left center', scaleX: 0, opacity: 0 });
 
-    anime.utils.set(units, { scaleX: 0, opacity: 0 });
-    anime.utils.set(units, { transformOrigin: 'left center' });
-
-    animate(oberlin, {
-      scaleX: [0, 1],
-      opacity: [0, 1],
-      duration: 460,
-      delay: stagger(110, { start: 180 }),
-      ease: 'out(3)'
+    // A timeline, not two animate() calls offset by a magic delay. Chaining the
+    // second leg with '+=' is what actually guarantees it runs after the first;
+    // stagger's `start` option did not, and left the partner years invisible.
+    var tl = anime.createTimeline({
+      defaults: { duration: 460, ease: 'out(3)' }
     });
-
-    // the beat between "three years here" and "two years there"
-    animate(partner, {
-      scaleX: [0, 1],
-      opacity: [0, 1],
-      duration: 460,
-      delay: stagger(110, { start: 900 }),
-      ease: 'out(3)'
-    });
+    tl.add(units.slice(0, 3), { scaleX: [0, 1], opacity: [0, 1], delay: stagger(110) }, 180)
+      .add(units.slice(3),    { scaleX: [0, 1], opacity: [0, 1], delay: stagger(110) }, '+=240');
   }
 
   /* ---- 2. hero lines --------------------------------------------------- */
@@ -129,11 +117,28 @@
     io.observe(el);
   }
 
+  /* Nothing this file does may leave real content invisible. Whatever the
+   * cause - a mis-specified delay, a throttled background tab, an anime.js
+   * API change - anything still transparent after 3s gets its inline styles
+   * cleared and falls back to the stylesheet's visible default. */
+  function watchdog() {
+    var guarded = $$('.ratio-unit, .hero-copy h1 .line, .hero-kicker, .hero-lede, .hero-actions');
+    setTimeout(function () {
+      guarded.forEach(function (el) {
+        if (parseFloat(getComputedStyle(el).opacity) < 0.9) {
+          el.style.opacity = '';
+          el.style.transform = '';
+        }
+      });
+    }, 3000);
+  }
+
   function start() {
     try {
       ratioBar();
       heroLines();
       counters();
+      watchdog();
     } catch (err) {
       /* motion is decoration: never let it take the page down */
       if (window.console && console.warn) console.warn('motion disabled:', err);
