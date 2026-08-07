@@ -6,6 +6,23 @@
   "framework": null,
   "cleanUrls": false,
   "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/assets/:path*",
+      "has": [{ "type": "host", "value": "admin.oberlin32engineeringsociety.com" }],
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "admin.oberlin32engineeringsociety.com" }],
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "admin.oberlin32engineeringsociety.com" }],
+      "destination": "/admin/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/service-worker.js",
