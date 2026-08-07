@@ -779,11 +779,22 @@
       return false;
     }
 
+    /* The fragment carries tokens but no user object, and loadProfile() reads
+     * session.user.id. Without this the password saved fine and then sign-in
+     * failed with "No authenticated user was returned." */
+    let fragmentUser = null;
+    try {
+      fragmentUser = await request('/auth/v1/user', {
+        headers: { apikey: ANON, Authorization: `Bearer ${accessToken}` }
+      });
+    } catch (_) { /* handled below */ }
+
     saveSession({
       access_token: accessToken,
       refresh_token: params.get('refresh_token') || '',
       expires_at: Number(params.get('expires_at') || 0),
-      token_type: params.get('token_type') || 'bearer'
+      token_type: params.get('token_type') || 'bearer',
+      user: fragmentUser
     });
     // do not leave the token sitting in the address bar or in history
     history.replaceState(null, '', location.pathname);
