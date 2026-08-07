@@ -148,9 +148,16 @@ function fillTemplate(text, vars) {
   return String(text).replace(/\{\{(\w+)\}\}/g, (match, key) => (key in vars ? String(vars[key]) : ''));
 }
 
+/* No logo image, deliberately.
+ *
+ * The emblem was loaded from oberlin32engineeringsociety.com, which Google
+ * Workspace treats as an oberlin.edu lookalike. Referencing that domain in the
+ * message body reintroduced the filtering that moving the sender to
+ * uhurued.com had just fixed, and the mail was purged after delivery. Text
+ * only, so nothing in the message points at the flagged domain. */
 function wrapEmail({ bodyHtml, actionUrl, actionLabel, footerNote }) {
   const action = actionUrl ? `<p style="margin:18px 0"><a href="${escapeHtml(actionUrl)}" style="color:#7b1230;font-weight:700">${escapeHtml(actionLabel || 'Continue')}</a></p>` : '';
-  return `<!doctype html><html><body style="margin:0;padding:24px;background:#ffffff"><div style="max-width:540px;font:400 15px/1.65 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#17191d"><img src="${SITE}/assets/images/logo-email.png" width="40" height="40" alt="Oberlin 3-2 Engineering Society" style="display:block;width:40px;height:40px;border:0;margin-bottom:18px">${bodyHtml}${action}<p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #dfe2e7;font-size:13px;color:#707782">${escapeHtml(footerNote || 'Oberlin 3-2 Engineering Society, Oberlin College')}</p></div></body></html>`;
+  return `<!doctype html><html><body style="margin:0;padding:24px;background:#ffffff"><div style="max-width:540px;font:400 15px/1.65 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#17191d">${bodyHtml}${action}<p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #dfe2e7;font-size:13px;color:#707782">${escapeHtml(footerNote || 'Oberlin 3-2 Engineering Society, Oberlin College')}</p></div></body></html>`;
 }
 
 async function sendEmail({ to, subject, html, replyTo, tag }) {
