@@ -18,6 +18,11 @@
       "destination": "/api/:path*"
     },
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "admin.oberlin32engineeringsociety.com" }],
+      "destination": "/admin/index.html"
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "admin.oberlin32engineeringsociety.com" }],
       "destination": "/admin/:path*"
