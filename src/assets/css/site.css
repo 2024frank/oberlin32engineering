@@ -1516,9 +1516,15 @@ body,
 }
 
 /* Entrance animation and pointer-tilt gimmicks: content should just be there. */
-.reveal, .reveal-delay-1, .reveal-delay-2, .reveal-delay-3 {
-  opacity: 1 !important;
-  transform: none !important;
+/* `.js .reveal { opacity: 0 }` above hides every marked block until an observer
+   adds .is-visible. That is the scattered scroll-reveal pattern this redesign is
+   trying to get away from, and it fails closed: if the script never runs, real
+   content stays invisible forever. Matched at the same specificity so it wins,
+   and without !important so motion.js can still drive its few moments inline. */
+.reveal, .reveal-delay-1, .reveal-delay-2, .reveal-delay-3,
+.js .reveal, .js .reveal-delay-1, .js .reveal-delay-2, .js .reveal-delay-3 {
+  opacity: 1;
+  transform: none;
   animation: none !important;
   transition: none !important;
 }
@@ -1861,3 +1867,6 @@ figcaption { color: var(--ink-3); }
 .competition-hero-bottom,
 .event-feature { grid-template-columns: 1fr !important; }
 .manifesto-copy, .event-feature-copy { max-width: 72ch; }
+
+/* Status pills restate the copy and read as generated-UI furniture. */
+.status-chip, .competition-status-bar, .live-indicator { display: none !important; }
