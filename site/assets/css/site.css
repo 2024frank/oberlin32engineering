@@ -1872,9 +1872,8 @@ figcaption { color: var(--ink-3); }
 .status-chip, .competition-status-bar, .live-indicator { display: none !important; }
 
 /* --- figure band --------------------------------------------------------- */
-/* Photographs presented as numbered figures rather than decoration: it reads
-   like documentation, which is the register an engineering society should be
-   speaking in, and it gives every page a second and third image. */
+/* Two more photographs per page. No captions: labelling stock photos as
+   figures read as trying too hard. */
 .figure-band { background: var(--paper); padding: clamp(44px, 5vw, 76px) 0; }
 .section-ivory + .figure-band { background: var(--paper); }
 .figure-band + .section { border-top: 1px solid var(--line); }
