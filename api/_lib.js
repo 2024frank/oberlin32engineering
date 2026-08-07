@@ -177,9 +177,16 @@ async function sendEmail({ to, subject, html, replyTo, tag }) {
   if (replyTo) payload.reply_to = replyTo;
   if (tag) payload.tags = [{ name: 'kind', value: tag }];
 
+  /* Resend sits behind Cloudflare, which returned 403 "error code: 1010" to a
+   * default library user agent during testing. Identify ourselves explicitly. */
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${RESEND_KEY}`,
+      'Content-Type': 'application/json',
+      'User-Agent': 'oberlin32engineeringsociety.com (+https://www.oberlin32engineeringsociety.com)',
+      Accept: 'application/json',
+    },
     body: JSON.stringify(payload),
   });
   const data = await r.json().catch(() => ({}));
@@ -199,7 +206,22 @@ async function generateActionLink(type, email, redirectTo) {
     method: 'POST',
     body: JSON.stringify({ type, email, options: { redirect_to: redirectTo } }),
   });
-  return (data && (data.action_link || (data.properties && data.properties.action_link))) || null;
+  const link = (data && (data.action_link || (data.properties && data.properties.action_link))) || null;
+  if (!link || !redirectTo) return link;
+
+  /* Supabase ignores options.redirect_to and substitutes the project's Site
+   * URL, which is still the default localhost:3000. Rewriting the parameter on
+   * the returned verify URL is honoured, because it is validated against the
+   * Redirect URLs allow-list rather than against Site URL. Verified: the link
+   * 303s to the admin subdomain with a valid session. */
+  try {
+    const u = new URL(link);
+    if (u.searchParams.get('redirect_to') !== redirectTo) {
+      u.searchParams.set('redirect_to', redirectTo);
+      return u.toString();
+    }
+  } catch { /* if it will not parse, send what Supabase gave us */ }
+  return link;
 }
 
 function isEmail(v) {
