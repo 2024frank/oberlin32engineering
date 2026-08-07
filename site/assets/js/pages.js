@@ -36,7 +36,7 @@
     const roles = (item.open_roles || []).map((role) => `<li>${esc(role)}</li>`).join('');
     return `<article class="card project-card" data-filter-value="${esc(categories)}">
       ${image}
-      <div class="card__meta"><span class="status-pill status-pill--${item.status === 'Open for interest' ? 'open' : 'planned'}">${esc(item.status || 'Proposed')}</span><span class="status-pill">${esc(item.category || 'Project')}</span></div>
+      <div class="card__meta"><span class="status-pill status-pill--${item.status === 'Open for interest' ? 'open' : 'planned'}">${esc(item.status || 'Proposed')}</span><span class="card__meta-sep">·</span><span>${esc(item.category || 'Project')}</span></div>
       <h3>${esc(item.title)}</h3>
       <p>${esc(item.summary)}</p>
       ${skills ? `<ul class="tag-list" aria-label="Useful skills">${skills}</ul>` : ''}

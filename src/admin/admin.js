@@ -343,7 +343,17 @@
     const definition = collections[view]; if (!definition) return;
     editorContext = { view, originalId: forceNew ? '' : (record.id || ''), record };
     editorKicker.textContent = definition.label; editorTitle.textContent = `${forceNew || !record.id ? 'Create' : 'Edit'} ${definition.singular}`;
-    editorFields.innerHTML = definition.fields.map((field) => fieldMarkup(field, record)).join('');
+    // Record ID and URL slug are machine values. Asking a person to invent a
+    // primary key before they can name their project is the system's problem
+    // leaking into the interface, so both are generated on save. The slug stays
+    // editable on an existing record because changing it breaks a public URL.
+    const isNew = forceNew || !record.id;
+    const visible = definition.fields.filter((field) => {
+      if (field.name === 'id') return false;
+      if (field.name === 'slug' && isNew) return false;
+      return true;
+    });
+    editorFields.innerHTML = visible.map((field) => fieldMarkup(field, record)).join('');
     deleteRecord.hidden = forceNew || !record.id;
     deleteRecord.onclick = () => confirmAction(`Delete ${titleFor(definition, record)}?`, 'This cannot be undone.', async () => { await deleteTableRecord(view, record.id); editorDialog.close(); toast('Record deleted.'); await renderCollection(view); });
     $$('[data-upload]', editorFields).forEach((input) => input.addEventListener('change', async () => {
@@ -352,6 +362,34 @@
       catch (error) { toast(error.message, 'error'); }
     }));
     editorDialog.showModal();
+  }
+
+
+  /* Turn a title into a URL-safe slug. */
+  function toSlug(value) {
+    return String(value || '').toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60);
+  }
+
+  /* Fill in the machine fields the form no longer asks for. */
+  function applyGeneratedKeys(definition, record, existingRecord, isNew) {
+    const hasId = definition.fields.some((field) => field.name === 'id');
+    const hasSlug = definition.fields.some((field) => field.name === 'slug');
+    if (hasId) {
+      record.id = existingRecord?.id
+        || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+    }
+    if (hasSlug) {
+      if (isNew) {
+        const source = record[definition.titleField] || record.title || record.name || '';
+        record.slug = toSlug(source) || `item-${String(record.id).slice(0, 8)}`;
+      } else if (!record.slug) {
+        record.slug = existingRecord?.slug || toSlug(record[definition.titleField] || '');
+      }
+    }
+    return record;
   }
 
   function collectRecord(definition) {
@@ -442,7 +480,7 @@
     $('[data-editor-close]')?.addEventListener('click',()=>editorDialog.close()); $('[data-editor-cancel]')?.addEventListener('click',()=>editorDialog.close());
     $('[data-confirm-cancel]')?.addEventListener('click',()=>{pendingConfirm=null;confirmDialog.close();});
     $('[data-confirm-accept]')?.addEventListener('click',async()=>{const action=pendingConfirm;pendingConfirm=null;confirmDialog.close();if(!action)return;try{await action();}catch(error){toast(error.message,'error');}});
-    editorForm?.addEventListener('submit',async(event)=>{event.preventDefault();if(!editorContext)return;const definition=collections[editorContext.view];try{const record=collectRecord(definition);await saveRecord(editorContext.view,record,editorContext.originalId);editorDialog.close();toast('Record saved.');await renderCollection(editorContext.view);}catch(error){toast(error.message,'error');}});
+    editorForm?.addEventListener('submit',async(event)=>{event.preventDefault();if(!editorContext)return;const definition=collections[editorContext.view];try{const record=applyGeneratedKeys(definition,collectRecord(definition),editorContext.record,!editorContext.originalId);await saveRecord(editorContext.view,record,editorContext.originalId);editorDialog.close();toast('Record saved.');await renderCollection(editorContext.view);}catch(error){toast(error.message,'error');}});
   }
 
   async function enterPortal() {

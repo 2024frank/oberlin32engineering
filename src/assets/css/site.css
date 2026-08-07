@@ -55,7 +55,7 @@ h1, h2, h3, h4 {
   letter-spacing: -.025em;
 }
 h1 { font-size: clamp(2.1rem, 4.2vw, 3.4rem); }
-h2 { font-size: clamp(2rem, 4vw, 3.5rem); }
+h2 { font-size: clamp(1.55rem, 2.6vw, 2.2rem); }
 h3 { font-size: clamp(1.25rem, 2vw, 1.65rem); }
 p { color: var(--ink-650); }
 ::selection { background: var(--gold-200); color: var(--ink-950); }
@@ -187,22 +187,17 @@ p { color: var(--ink-650); }
   text-transform: uppercase;
 }
 .eyebrow::before { content: ""; width: 1.6rem; height: 2px; background: var(--gold-500); }
+/* A quiet text label, not a dashboard chip. The rounded outline plus a
+ * coloured status dot read as generated-template furniture, so the status is
+ * carried by the word itself. */
 .status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .35rem .62rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--ink-650);
-  background: white;
-  font-size: .76rem;
-  font-weight: 760;
+  display: inline-block;
+  color: var(--ink-500);
+  font-size: .78rem;
+  font-weight: 650;
+  letter-spacing: .01em;
 }
-.status-pill::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: var(--ink-500); }
-.status-pill--planned::before { background: var(--warning); }
-.status-pill--open::before { background: var(--success); }
-.status-pill--review::before { background: var(--gold-500); }
+.status-pill--open { color: var(--maroon-800); }
 .tag-list { display: flex; flex-wrap: wrap; gap: .45rem; padding: 0; margin: 0; list-style: none; }
 .tag-list li { padding: .3rem .55rem; border-radius: 999px; color: var(--ink-650); background: var(--paper-soft); font-size: .78rem; font-weight: 650; }
 
@@ -277,8 +272,9 @@ p { color: var(--ink-650); }
 }
 .card h3 { margin-bottom: .65rem; }
 .card p:last-child { margin-bottom: 0; }
-.card__number { display: block; margin-bottom: 2.8rem; color: var(--maroon-800); font-size: .78rem; font-weight: 800; letter-spacing: .1em; }
-.card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .9rem; }
+.card__number { display: block; margin-bottom: .45rem; color: var(--maroon-800); font-size: .82rem; font-weight: 700; }
+.card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-bottom: .9rem; color: var(--ink-500); font-size: .78rem; font-weight: 650; }
+.card__meta-sep { color: var(--line-strong); }
 .card__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .card--feature { padding: 0; overflow: hidden; }
 .card--feature img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
@@ -397,7 +393,7 @@ p { color: var(--ink-650); }
 .faq details[open] summary::after { content: "−"; }
 .faq details p { max-width: 46rem; padding-bottom: 1.2rem; }
 .legal { width: min(calc(100% - 2rem), 50rem); margin-inline: auto; padding: 4rem 0 7rem; }
-.legal h1 { font-size: clamp(2.6rem, 6vw, 4.5rem); }
+.legal h1 { font-size: clamp(1.9rem, 3.4vw, 2.7rem); }
 .legal h2 { margin-top: 2.5rem; font-size: 1.6rem; }
 .legal p, .legal li { color: var(--ink-650); }
 .legal .last-updated { color: var(--ink-500); font-size: .85rem; }
@@ -547,7 +543,8 @@ p { color: var(--ink-650); }
   /* .home-hero__copy p sets the lede at 21px/650; this is supporting text and
      needs to outrank it rather than sit at the same weight as the lede. */
   margin-top: 1.1rem;
-  color: var(--ink-500);
+  /* --ink-500 only reaches 4.1:1 on the hero's --paper-warm panel */
+  color: var(--ink-650);
   font-size: .88rem;
   font-weight: 400;
   line-height: 1.55;
@@ -557,3 +554,28 @@ p { color: var(--ink-650); }
    signature below the fold. Cap it so both sides read at a glance. */
 .hero-card figure img { aspect-ratio: 4 / 3; object-fit: cover; height: auto; }
 .hero-card { align-self: start; }
+
+/* Every page hero carries an image, not just the home page. The right column
+   holds the photograph above its note, matching the home hero rather than
+   leaving eleven pages with an empty half. */
+.page-hero__grid > div:first-child { min-width: 0; }
+.page-hero__figure { margin: 0 0 1rem; }
+.page-hero__figure img {
+  width: 100%;
+  /* height:auto is required: the markup carries height="900" as a
+     presentational hint, which otherwise beats aspect-ratio and stretched the
+     image to 900px tall against 426px of copy. */
+  height: auto;
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  display: block;
+}
+.page-hero__grid { align-items: start; }
+@media (max-width: 720px) {
+  .page-hero__figure img { aspect-ratio: 16 / 9; }
+}
+/* The photo and its note share the hero's right column. Without this wrapper
+   they became a third child of a two-column grid and the note wrapped onto a
+   new row underneath the copy. */
+.page-hero__side { display: grid; gap: 1rem; align-content: start; min-width: 0; }

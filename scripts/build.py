@@ -133,6 +133,14 @@ def build_pages(revision: str) -> None:
         }
         for token, value in replacements.items():
             output = output.replace(token, value)
+        # /assets/* is served immutable for a year, so a photo swapped in at the
+        # same path would never reach a returning visitor. Stamp the revision on
+        # image URLs the same way the template already stamps CSS and JS.
+        output = re.sub(
+            r'(src="assets/images/[^"?]+\.(?:jpg|png|svg))"',
+            rf'\1?v={revision}"',
+            output,
+        )
         filename = "index.html" if page_id == "index" else f"{page_id}.html"
         write(OUT / filename, output)
 
