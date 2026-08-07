@@ -3,45 +3,6 @@
 
 insert into public.site_settings (id, settings, published) values ('main', '{"name":"Oberlin 3-2 Engineering Society","short_name":"Oberlin 3-2","domain":"https://www.oberlin32engineeringsociety.com","founded":"2026","tagline":"A student community for engineering at Oberlin.","hero_title":"A place for Oberlin students who want to build.","hero_description":"A new student-led community for engineering, 3-2 planning, and collaborative technical projects.","join_url":"/join","instagram_url":"https://www.instagram.com/oberlin32engineering/","instagram_handle":"@oberlin32engineering","contact_email":"fkusiapp@oberlin.edu","founder":"Kwaku Kusi Appiah","advisor":"Not yet confirmed","announcement":"Launching in 2026–27. Founding members and student leaders are welcome.","announcement_link":"/join","status":"Founding stage","launch_term":"2026–27","content_version":"2026-08-07-rebuild"}'::jsonb, true) on conflict (id) do update set settings = excluded.settings, published = true;
 
-insert into public.projects (id, slug, title, kicker, summary, description, category, status, year, progress, featured, published, skills, open_roles, team_names, accent, cover_url, impact, project_url, github_url, sort_order) values
-  ('campus-climate-sensor-network', 'campus-climate-sensor-network', 'Campus Climate Sensor Network', 'Proposed first project', 'Build a small set of low-cost nodes that measure temperature, humidity, and another carefully chosen environmental variable.', 'The first version would use two or three sensor nodes, a documented calibration check, and a simple dashboard. The team would decide whether air quality, soil moisture, light, or another variable is useful and feasible. Deployment would happen only with permission from the relevant space owner.', 'Embedded systems', 'Open for interest', '2026–27', 0, true, true, '["ESP32","Sensors","Python","Data visualization","Enclosures"]'::jsonb, '["Firmware learner or lead","Sensor testing and calibration","Dashboard and data work","Enclosure or mounting design","Documentation"]'::jsonb, '[]'::jsonb, 'maroon', 'assets/images/photos/bench-multimeter.jpg', 'Give students a complete hardware-to-data project while producing measurements that can be checked, explained, and improved.', '', '', 10),
-  ('energy-use-visualizer', 'energy-use-visualizer', 'Energy Use Visualizer', 'Proposed first project', 'Create a physical or web-based display that makes an approved energy dataset easier to understand.', 'The team would begin with a public or permissioned dataset, define one audience and one decision the display should support, then prototype a clear visualization. A physical version could use addressable lights or a small screen; a web version could focus on accessibility and mobile use.', 'Data', 'Open for interest', '2026–27', 0, true, true, '["JavaScript","Python","Data storytelling","LEDs","Accessibility"]'::jsonb, '["Data source research","Web or display development","Visual and information design","User testing","Documentation"]'::jsonb, '[]'::jsonb, 'gold', 'assets/images/photos/circuit-board-blue.jpg', 'Practice turning technical measurements into information that a non-specialist can interpret.', '', '', 20),
-  ('assistive-reminder-device', 'assistive-reminder-device', 'Assistive Reminder Device', 'Proposed first project', 'Prototype a simple, customizable reminder device using light, sound, vibration, or a large physical control.', 'The project would start with interviews or published accessibility guidance rather than guessing at user needs. The first prototype should test one interaction, such as acknowledging a reminder with a large button, and should avoid medical claims or collection of sensitive health information.', 'Accessibility', 'Needs a project lead', '2026–27', 0, true, true, '["User research","Electronics","Interaction design","CAD","Testing"]'::jsonb, '["Accessibility research","Electronics prototyping","Industrial or interaction design","Testing plan","Project lead"]'::jsonb, '[]'::jsonb, 'ivory', 'assets/images/photos/audio-jack.jpg', 'Introduce human-centered engineering and accessibility without pretending a classroom prototype is a medical device.', '', '', 30),
-  ('robotics-starter-rover', 'robotics-starter-rover', 'Robotics Starter Rover', 'Proposed learning project', 'Build a small rover that can follow a line, avoid an obstacle, or complete another measurable beginner challenge.', 'The team would choose one behavior, document the wiring and code, and create a starter guide another student can reproduce. Advanced features such as mapping or computer vision would be treated as later extensions, not requirements for the first build.', 'Robotics', 'Needs a project lead', '2026–27', 0, false, true, '["Microcontrollers","C/C++","Motors","CAD","Testing"]'::jsonb, '["Mechanical assembly","Motor control","Sensor integration","Firmware","Beginner documentation"]'::jsonb, '[]'::jsonb, 'maroon', 'assets/images/photos/board-in-clamps.jpg', 'Give new members a shared platform for learning mechanics, electronics, programming, and test design.', '', '', 40)
-on conflict (id) do update set
-  slug = excluded.slug,
-  title = excluded.title,
-  kicker = excluded.kicker,
-  summary = excluded.summary,
-  description = excluded.description,
-  category = excluded.category,
-  status = excluded.status,
-  year = excluded.year,
-  progress = excluded.progress,
-  featured = excluded.featured,
-  published = excluded.published,
-  skills = excluded.skills,
-  open_roles = excluded.open_roles,
-  team_names = excluded.team_names,
-  accent = excluded.accent,
-  cover_url = excluded.cover_url,
-  impact = excluded.impact,
-  project_url = excluded.project_url,
-  github_url = excluded.github_url,
-  sort_order = excluded.sort_order;
-
-insert into public.project_updates (id, project_id, title, summary, body, milestone, published_at, image_url, published) values
-  ('project-selection-opens', 'campus-climate-sensor-network', 'Founding members will choose the first project', 'Four project briefs are published as proposals, not active teams.', 'Interest is now being collected. A project will move to active status only after a lead, team, scope, meeting time, safety check, and first milestone are confirmed.', 'Proposal stage', '2026-08-07', '', true)
-on conflict (id) do update set
-  project_id = excluded.project_id,
-  title = excluded.title,
-  summary = excluded.summary,
-  body = excluded.body,
-  milestone = excluded.milestone,
-  published_at = excluded.published_at,
-  image_url = excluded.image_url,
-  published = excluded.published;
-
 insert into public.leaders (id, name, role, term, class_year, major, bio, expected_time, photo_url, linkedin_url, email, current, advisor, open_seat, published, sort_order) values
   ('kwaku-kusi-appiah', 'Kwaku Kusi Appiah', 'Founding organizer', '2026–27', '', '3-2 Engineering', 'Starting the society, recruiting the first team, and coordinating the launch. Kwaku is interested in electrical engineering, robotics, embedded systems, and hardware-software projects.', '3–5 hours per week during launch', '', '', 'fkusiapp@oberlin.edu', true, false, false, true, 10),
   ('open-operations-coordinator', 'Open position', 'Operations and finance coordinator', '2026–27', '', 'Any field', 'Keeps meeting notes, task ownership, simple budgets, reimbursements, room requests, and organizational records in order.', 'About 2 hours per week', '', '', '', true, false, true, true, 20),
