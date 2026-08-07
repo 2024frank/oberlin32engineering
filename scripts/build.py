@@ -20,19 +20,19 @@ DOMAIN = "https://www.oberlin32engineeringsociety.com"
 
 PAGES: dict[str, dict[str, str]] = {
     "index": {
-        "title": "Oberlin 3-2 Engineering Society",
-        "description": "A student-led community for Oberlin students interested in engineering, the 3-2 pathway, and collaborative technical projects.",
+        "title": "Oberlin 3-2 Engineering Society | Oberlin College Student Group",
+        "description": "The student society for Oberlin College's 3-2 engineering program. Peer advice on the dual-degree pathway, partner schools, projects, and events. Open to any Oberlin student interested in engineering.",
     },
     "about": {
-        "title": "About · Oberlin 3-2 Engineering Society",
+        "title": "About the Oberlin 3-2 Engineering Society",
         "description": "Why the Oberlin 3-2 Engineering Society is being formed, what it will focus on, and who it is for.",
     },
     "pathway": {
-        "title": "Oberlin 3-2 Engineering Guide",
-        "description": "A practical student guide to planning Oberlin's 3-2 engineering pathway, using current official sources.",
+        "title": "Oberlin College 3-2 Engineering Program: A Student Guide",
+        "description": "A student guide to Oberlin College's 3-2 engineering program: three years at Oberlin, two at Caltech, Case Western, Columbia, or Washington University, and the BA plus BSE dual degree at the end.",
     },
     "projects": {
-        "title": "Project Proposals · Oberlin 3-2 Engineering Society",
+        "title": "Engineering Projects · Oberlin 3-2 Engineering Society",
         "description": "Explore realistic first-year engineering project proposals and tell the society how you would like to contribute.",
     },
     "competition": {
@@ -40,11 +40,11 @@ PAGES: dict[str, dict[str, str]] = {
         "description": "An honest look at a possible future Oberlin engineering showcase and what would need to be in place first.",
     },
     "leadership": {
-        "title": "Founding Leadership · Oberlin 3-2 Engineering Society",
-        "description": "Meet the founding organizer, review open student roles, and understand the expected responsibilities.",
+        "title": "Leadership and Open Roles · Oberlin 3-2 Engineering Society",
+        "description": "The students organizing the Oberlin 3-2 Engineering Society, the officer roles that are still open, and what each one involves.",
     },
     "events": {
-        "title": "Events · Oberlin 3-2 Engineering Society",
+        "title": "Events · Oberlin 3-2 Engineering Society | Oberlin College",
         "description": "Planned society meetups, project sessions, 3-2 conversations, and confirmed event details when available.",
     },
     "opportunities": {
@@ -52,16 +52,16 @@ PAGES: dict[str, dict[str, str]] = {
         "description": "Current society roles, project openings, and trusted external starting points for engineering opportunities.",
     },
     "resources": {
-        "title": "Engineering Resources · Oberlin 3-2 Engineering Society",
-        "description": "Verified official links for 3-2 planning, partner schools, internships, research, and technical learning.",
+        "title": "3-2 Engineering Resources for Oberlin Students",
+        "description": "Checked links for Oberlin College 3-2 engineering planning: official advising guides, the four partner schools, financial aid, internships, research, and technical learning.",
     },
     "impact": {
         "title": "Founding Roadmap · Oberlin 3-2 Engineering Society",
         "description": "A public roadmap of the society's concrete founding commitments, current status, and future reports.",
     },
     "join": {
-        "title": "Join · Oberlin 3-2 Engineering Society",
-        "description": "Join the Oberlin engineering community as a general member, project participant, volunteer, or founding leader.",
+        "title": "Join the Oberlin 3-2 Engineering Society",
+        "description": "Join the engineering community at Oberlin College as a member, project contributor, event volunteer, or officer. No experience required, and you do not have to be in the 3-2 program.",
     },
     "contact": {
         "title": "Contact · Oberlin 3-2 Engineering Society",
@@ -112,6 +112,52 @@ def page_url(page_id: str) -> str:
     return DOMAIN + ("/" if page_id == "index" else f"/{page_id}")
 
 
+# The pathway page answers the questions people actually search. Marking them
+# up as an FAQPage lets Google show the answer directly under the result.
+PATHWAY_FAQ = """  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Oberlin College's 3-2 engineering program?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It is a dual-degree pathway. A student spends three years at Oberlin College studying liberal arts along with the required pre-engineering coursework, then two years at an affiliated engineering school, and finishes with a Bachelor of Arts from Oberlin and a Bachelor of Science in Engineering from the partner institution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which engineering schools does Oberlin partner with for 3-2?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oberlin's affiliated engineering schools are the California Institute of Technology, Case Western Reserve University, Columbia University, and Washington University in St. Louis. Each has its own requirements, so confirm the current details with Oberlin advising and the partner school."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you have to commit to 3-2 to join the Oberlin 3-2 Engineering Society?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The society is open to any current Oberlin College student interested in engineering, including students who are still deciding and students who never intend to transfer. No prior technical experience is required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does the Oberlin 3-2 engineering pathway take?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Five years in total: three at Oberlin College and two at the partner engineering school, ending with two degrees."
+        }
+      }
+    ]
+  }
+  </script>"""
+
+PAGE_SCHEMA = {"pathway": PATHWAY_FAQ}
+
+
 def build_pages(revision: str) -> None:
     template = (SRC / "templates" / "base.html").read_text(encoding="utf-8")
     header = (SRC / "partials" / "header.html").read_text(encoding="utf-8")
@@ -130,6 +176,7 @@ def build_pages(revision: str) -> None:
             "{{HEADER}}": header,
             "{{MAIN}}": body,
             "{{FOOTER}}": footer,
+            "{{PAGE_SCHEMA}}": PAGE_SCHEMA.get(page_id, ""),
         }
         for token, value in replacements.items():
             output = output.replace(token, value)
@@ -183,7 +230,17 @@ def generate_manifest() -> str:
 
 def generate_sitemap() -> str:
     public_ids = [page_id for page_id in PAGES if page_id != "404"]
-    entries = "".join(f"<url><loc>{html.escape(page_url(page_id))}</loc></url>" for page_id in public_ids)
+    # lastmod and priority tell a crawler which pages are worth recrawling and
+    # which matter most. The date comes from the page source so it stays honest.
+    priority = {"index": "1.0", "pathway": "0.9", "join": "0.9", "about": "0.8", "leadership": "0.8"}
+    def entry(page_id: str) -> str:
+        source = SRC / "pages" / f"{page_id}.html"
+        stamp = datetime.fromtimestamp(source.stat().st_mtime, tz=timezone.utc).strftime("%Y-%m-%d")
+        return (f"<url><loc>{html.escape(page_url(page_id))}</loc>"
+                f"<lastmod>{stamp}</lastmod>"
+                f"<changefreq>weekly</changefreq>"
+                f"<priority>{priority.get(page_id, '0.6')}</priority></url>")
+    entries = "".join(entry(page_id) for page_id in public_ids)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{entries}</urlset>\n'
 
 

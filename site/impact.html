@@ -25,29 +25,74 @@
   <title>Founding Roadmap · Oberlin 3-2 Engineering Society</title>
   <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/images/icon-192.png">
-  <link rel="manifest" href="site.webmanifest?v=ea753b315aad">
+  <link rel="manifest" href="site.webmanifest?v=2813320035f9">
   <link rel="alternate" type="application/rss+xml" title="Oberlin 3-2 Engineering Society updates" href="feed.xml">
   <link rel="preload" href="assets/images/logo-mark.svg" as="image" type="image/svg+xml">
   <script>document.documentElement.classList.add('js')</script>
-  <link rel="stylesheet" href="assets/css/site.css?v=ea753b315aad">
-  <script src="assets/js/runtime-config.js?v=ea753b315aad" defer></script>
-  <script src="assets/js/data-service.js?v=ea753b315aad" defer></script>
-  <script src="assets/js/site.js?v=ea753b315aad" defer></script>
-  <script src="assets/js/pages.js?v=ea753b315aad" defer></script>
-  <script src="assets/js/vendor/anime.umd.min.js?v=ea753b315aad" defer></script>
-  <script src="assets/js/motion.js?v=ea753b315aad" defer></script>
+  <link rel="stylesheet" href="assets/css/site.css?v=2813320035f9">
+  <script src="assets/js/runtime-config.js?v=2813320035f9" defer></script>
+  <script src="assets/js/data-service.js?v=2813320035f9" defer></script>
+  <script src="assets/js/site.js?v=2813320035f9" defer></script>
+  <script src="assets/js/pages.js?v=2813320035f9" defer></script>
+  <script src="assets/js/vendor/anime.umd.min.js?v=2813320035f9" defer></script>
+  <script src="assets/js/motion.js?v=2813320035f9" defer></script>
+  <!-- Structured data. The point of parentOrganization and the sameAs list is
+       to let a search engine connect this site to Oberlin College as an entity,
+       so a query about Oberlin's 3-2 engineering program can surface the
+       student society alongside the college's own pages. alternateName covers
+       the ways people actually type the name. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "StudentOrganization"],
     "name": "Oberlin 3-2 Engineering Society",
+    "alternateName": [
+      "Oberlin College 3-2 Engineering Society",
+      "Oberlin Engineering Society",
+      "Oberlin 3+2 Engineering Society"
+    ],
     "url": "https://www.oberlin32engineeringsociety.com",
     "logo": "https://www.oberlin32engineeringsociety.com/assets/images/logo-mark.svg",
+    "image": "https://www.oberlin32engineeringsociety.com/assets/images/og-cover.png",
     "foundingDate": "2026",
+    "email": "fkusiapp@oberlin.edu",
     "sameAs": ["https://www.instagram.com/oberlin32engineering/"],
-    "description": "A student-led community for Oberlin students exploring engineering, the 3-2 pathway, and collaborative technical projects."
+    "description": "The student society for Oberlin College's 3-2 engineering program. Peer advice on the dual-degree pathway, partner schools, technical projects, and events, open to any Oberlin student interested in engineering.",
+    "knowsAbout": [
+      "3-2 engineering",
+      "Oberlin College 3-2 engineering program",
+      "dual degree engineering",
+      "engineering transfer pathway",
+      "student engineering projects"
+    ],
+    "parentOrganization": {
+      "@type": "CollegeOrUniversity",
+      "name": "Oberlin College",
+      "url": "https://www.oberlin.edu",
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/Oberlin_College",
+        "https://www.oberlin.edu/arts-and-sciences/departments/engineering"
+      ]
+    },
+    "location": {
+      "@type": "Place",
+      "name": "Oberlin College",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Oberlin",
+        "addressRegion": "OH",
+        "postalCode": "44074",
+        "addressCountry": "US"
+      }
+    },
+    "memberOf": {
+      "@type": "CollegeOrUniversity",
+      "name": "Oberlin College",
+      "url": "https://www.oberlin.edu"
+    }
   }
   </script>
+  
 </head>
 <body class="page page--impact" data-page="impact">
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -60,7 +105,7 @@
 <header class="site-header" data-header>
   <div class="container nav-shell">
     <a class="brand" href="/" aria-label="Oberlin 3-2 Engineering Society home">
-      <img src="assets/images/logo-mark.svg?v=ea753b315aad" alt="" width="48" height="48">
+      <img src="assets/images/logo-mark.svg?v=2813320035f9" alt="" width="48" height="48">
       <span><strong>Oberlin 3-2</strong><small>Engineering Society</small></span>
     </a>
     <nav class="primary-nav" aria-label="Primary navigation">
@@ -96,8 +141,8 @@
   <main id="main-content">
     <section class="page-hero">
   <div class="container page-hero__grid">
-    <div><span class="eyebrow">Founding roadmap</span><h1>Track the work before calling it impact.</h1><p class="page-hero__lead">This page records what the society is trying to establish, what is in progress, and what has actually been completed.</p></div>
-    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-boards-green.jpg?v=ea753b315aad" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A stack of finished circuit boards"></figure><aside class="page-hero__aside"><strong>Operating stage</strong><p data-impact-stage>Founding stage</p><p>Counts and outcomes will be published only when there is a clear source and date.</p></aside></div>
+    <div><span class="eyebrow">Founding roadmap</span><h1>What the society has done so far.</h1><p class="page-hero__lead">This page records what the society is trying to establish, what is in progress, and what has actually been completed.</p></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-board-dark.jpg?v=2813320035f9" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A black circuit board on a dark background"></figure><aside class="page-hero__aside"><strong>Operating stage</strong><p data-impact-stage>Founding stage</p><p>Counts and outcomes will be published only when there is a clear source and date.</p></aside></div>
   </div>
 </section>
 
@@ -110,7 +155,7 @@
 
 <section class="section section--soft">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">What we may report later</span><h2>Evidence, not vanity numbers.</h2></div><p>Once activities occur, the society can publish a small set of figures with dates and definitions.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">What we may report later</span><h2>What we are tracking.</h2></div><p>Once activities occur, the society can publish a small set of figures with dates and definitions.</p></div>
     <div class="card-grid">
       <article class="card"><h3>Participation</h3><p>Members who opted in, event attendance, and project-team participation, without exposing private student information.</p></article>
       <article class="card"><h3>Completed work</h3><p>Projects that reached a documented test or demonstration, plus links to code, files, photos, or build notes where appropriate.</p></article>
@@ -124,7 +169,7 @@
   <div class="container footer-grid">
     <div class="footer-intro">
       <a class="brand brand--footer" href="/">
-        <img src="assets/images/logo-mark.svg?v=ea753b315aad" alt="" width="52" height="52">
+        <img src="assets/images/logo-mark.svg?v=2813320035f9" alt="" width="52" height="52">
         <span><strong>Oberlin 3-2</strong><small>Engineering Society</small></span>
       </a>
       <p>A new student-led community for Oberlin students interested in engineering, whether they are committed to 3-2 or still exploring.</p>

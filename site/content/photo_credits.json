@@ -108,5 +108,15 @@
     "license_url": "https://unsplash.com/license",
     "attribution_required": false,
     "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/soldering-workshop.jpg",
+    "description": "hands soldering a wire onto a small circuit board",
+    "photographer": "Mariana B.",
+    "source": "https://unsplash.com/photos/person-using-soldering-iron-MCKz5KGAmdQ",
+    "license": "Unsplash License",
+    "license_url": "https://unsplash.com/license",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
   }
 ]
