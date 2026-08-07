@@ -956,6 +956,57 @@
 
   function showAuth(view) { loginView.hidden=view!=='login'; codeView.hidden=view!=='code'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
 
+  /* The setup link is the whole invitation.
+   *
+   * Supabase verifies the token, then redirects to the portal with the new
+   * session in the URL fragment: #access_token=...&refresh_token=...&type=invite.
+   * Nothing here read that fragment, so an invited officer landed on the sign-in
+   * screen holding a password they had never been asked to choose, and the only
+   * other door -- the one-time code box -- rejects them too because the email
+   * carries a link and no code. Every invitation was a dead end.
+   *
+   * The fragment is consumed and stripped from the URL immediately so the
+   * tokens do not sit in history or get copied out of the address bar. */
+  async function consumeAuthFragment() {
+    const raw = window.location.hash.slice(1);
+    if (!raw) return false;
+    const params = new URLSearchParams(raw);
+    const clear = () => window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+
+    const failure = params.get('error_description') || params.get('error');
+    if (failure) {
+      clear();
+      showAuth('login');
+      $('[data-login-message]').textContent = /expired|invalid/i.test(failure)
+        ? 'That setup link has expired. Ask an administrator to send a new invitation, or request a reset link below.'
+        : decodeURIComponent(failure).replace(/\+/g, ' ');
+      return true;
+    }
+
+    const accessToken = params.get('access_token');
+    if (!accessToken) return false;
+    clear();
+
+    const next = {
+      access_token: accessToken,
+      refresh_token: params.get('refresh_token') || '',
+      token_type: params.get('token_type') || 'bearer',
+      expires_at: Math.floor(Date.now() / 1000) + Number(params.get('expires_in') || 3600)
+    };
+    try {
+      // loadProfile needs session.user.id, and the fragment does not carry it.
+      next.user = await request('/auth/v1/user', { headers: { apikey: ANON, Authorization: `Bearer ${accessToken}` } });
+    } catch (_) { /* the password screen still works; enterPortal will retry */ }
+    saveSession(next);
+
+    // invite and recovery both mean "you have no usable password yet".
+    showAuth('password');
+    $('[data-password-message]').textContent = params.get('type') === 'recovery'
+      ? 'Choose a new password to finish signing in.'
+      : 'Welcome. Choose a password to finish setting up your account.';
+    return true;
+  }
+
   async function initialize() {
     bindShell(); if(!configured){showAuth('config');return;} showAuth('login');
     loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$('[data-login-message]');message.textContent='';const button=$('button[type="submit"]',loginForm);button.disabled=true;try{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();}catch(error){saveSession(null);message.textContent=error.message;}finally{button.disabled=false;}});
@@ -964,6 +1015,8 @@
     $('[data-send-reset]').addEventListener('click',async()=>{const email=String($('input[name="email"]',codeForm).value||'').trim();const message=$('[data-code-message]');if(!email){message.textContent='Enter your email address first.';return;}message.classList.remove('success');message.textContent='Sending…';try{const response=await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset',email})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not request a code.');message.textContent='If that address has an officer account, a code has been sent.';message.classList.add('success');}catch(error){message.textContent=error.message;}});
     codeForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(codeForm);const email=String(data.get('email')||'').trim();const token=String(data.get('code')||'').replace(/\s/g,'');const message=$('[data-code-message]');message.textContent='Checking…';try{await verifyCode(email,token);showAuth('password');}catch(error){message.textContent='That code was not accepted. Request a new code and try again.';}});
     passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$('[data-password-message]');if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();}catch(error){message.textContent=error.message;}});
+    // A setup or reset link in the URL wins over any stale stored session.
+    if (await consumeAuthFragment()) return;
     session=loadSession(); if(session){try{await ensureSession();await enterPortal();}catch(error){saveSession(null);$('[data-login-message]').textContent=error.message;}}
   }
 
