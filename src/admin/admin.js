@@ -703,9 +703,51 @@
           body: JSON.stringify({ action: 'reset', email })
         });
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Could not send the reset email.');
-        authMessage.textContent = 'Check your inbox for a link to set a new password.';
+        if (!response.ok) throw new Error(data.error || 'Could not send the code.');
+        showCodeStep(email);
       } catch (error) { authMessage.textContent = error.message; }
+    });
+
+    /* A code you type, not a link you click. Oberlin's mail filter fetches
+     * links to inspect them, which spends a single-use token before the
+     * recipient ever sees the message. */
+    const codeStep = $('[data-code-step]');
+    const codeForm = $('[data-code-form]');
+    const codeMessage = $('[data-code-message]');
+
+    function showCodeStep(email) {
+      if (!codeStep) return;
+      configuredLogin.hidden = true;
+      codeStep.hidden = false;
+      const field = $('input[name="email"]', codeForm);
+      if (field && email) field.value = email;
+      $('input[name="code"]', codeForm)?.focus();
+    }
+
+    $('[data-back-to-signin]')?.addEventListener('click', () => {
+      if (codeStep) codeStep.hidden = true;
+      configuredLogin.hidden = false;
+    });
+
+    codeForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const data = new FormData(codeForm);
+      const email = String(data.get('email') || '').trim();
+      const token = String(data.get('code') || '').replace(/\s/g, '');
+      if (!email || !token) { codeMessage.textContent = 'Enter your email and the code.'; return; }
+      codeMessage.textContent = 'Checking...';
+      try {
+        const next = await request('/auth/v1/verify', {
+          method: 'POST',
+          headers: { apikey: ANON, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'recovery', email, token })
+        });
+        saveSession(next);
+        codeStep.hidden = true;
+        openPasswordForm();
+      } catch (error) {
+        codeMessage.textContent = 'That code was not accepted. Ask for a new one.';
+      }
     });
 
     /* Supabase sends people back here with the session in the URL fragment.
@@ -752,16 +794,23 @@
       return true;
     }
 
+    if (!openPasswordForm()) {
+      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
+    }
+    return true;
+  }
+
+  /* Shown once a session exists but the account still needs a password. */
+  function openPasswordForm() {
     const panel = $('[data-set-password]');
     const form = $('[data-set-password-form]');
     const message = $('[data-set-password-message]');
-    if (!panel || !form) {
-      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
-      return true;
-    }
+    if (!panel || !form) return false;
 
-    configuredLogin.hidden = true;
-    setupState.hidden = true;
+    const configuredLogin = $('[data-configured-login]');
+    const setupState = $('[data-setup-state]');
+    if (configuredLogin) configuredLogin.hidden = true;
+    if (setupState) setupState.hidden = true;
     panel.hidden = false;
 
     form.addEventListener('submit', async (event) => {

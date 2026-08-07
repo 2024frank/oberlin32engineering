@@ -47,8 +47,8 @@ module.exports = async (req, res) => {
           const rows = await L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id,full_name`);
           const known = Array.isArray(rows) && rows[0];
           if (known) {
-            const link = await L.generateActionLink('recovery', email, RESET_REDIRECT);
-            if (link) {
+            const access = await L.generateAccess('recovery', email, RESET_REDIRECT);
+            if (access.code) {
               const tpl = await template(
                 'password_reset',
                 'Reset your password',
@@ -59,12 +59,10 @@ module.exports = async (req, res) => {
               await L.sendEmail({
                 to: email,
                 subject: tpl.subject,
-                tag: 'password-reset',
+                tag: 'access-code',
                 html: L.wrapEmail({
-                  title: 'Choose a new password',
                   bodyHtml: L.markdownToHtml(md),
-                  actionLabel: 'Set a new password',
-                  actionUrl: link,
+                  code: access.code,
                 }),
               });
             }
@@ -114,17 +112,17 @@ module.exports = async (req, res) => {
       /* Supabase creates the user and the single-use link in one step. If the
        * address already has an account, fall back to a recovery link so a
        * resend still gets them in rather than erroring. */
-      let link = null;
+      let access = { code: null, link: null };
       let reused = false;
       try {
-        link = await L.generateActionLink('invite', email, SETUP_REDIRECT);
+        access = await L.generateAccess('invite', email, SETUP_REDIRECT);
       } catch (err) {
         const already = /already|registered|exists/i.test(err.message || '');
         if (!already) throw err;
-        link = await L.generateActionLink('recovery', email, RESET_REDIRECT);
+        access = await L.generateAccess('recovery', email, RESET_REDIRECT);
         reused = true;
       }
-      if (!link) return L.send(res, 502, { error: 'Supabase did not return an invitation link.' });
+      if (!access.code) return L.send(res, 502, { error: 'Supabase did not return an access code.' });
 
       /* Give them the access level their role carries. */
       const who = await L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id`);
@@ -163,10 +161,8 @@ module.exports = async (req, res) => {
           tag: reused ? 'invite-existing' : 'invite',
           replyTo: admin.email || undefined,
           html: L.wrapEmail({
-            title: reused ? 'Your access has been updated' : `You are the society’s ${role.label}`,
             bodyHtml: L.markdownToHtml(md),
-            actionLabel: reused ? 'Set a new password' : 'Set your password',
-            actionUrl: link,
+            code: access.code,
           }),
         });
         resendId = sent && sent.id;

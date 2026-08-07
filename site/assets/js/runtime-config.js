@@ -1,1 +1,1 @@
-window.O32_CONFIG = Object.freeze({"supabaseUrl":"","supabaseAnonKey":"","contactEmail":"fkusiapp@oberlin.edu","repository":"2024frank/oberlin32engineering","storageBucket":"society-media","environment":"production","buildTime":"2026-08-07T05:43:43+00:00"});
+window.O32_CONFIG = Object.freeze({"supabaseUrl":"","supabaseAnonKey":"","contactEmail":"fkusiapp@oberlin.edu","repository":"2024frank/oberlin32engineering","storageBucket":"society-media","environment":"production","buildTime":"2026-08-07T05:48:53+00:00"});

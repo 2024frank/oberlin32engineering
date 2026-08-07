@@ -130,53 +130,31 @@ function fillTemplate(text, vars) {
   return String(text).replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? String(vars[k]) : ''));
 }
 
-/* House style, matching the site: white ground, Oberlin crimson, no ornament. */
-function wrapEmail({ title, bodyHtml, actionLabel, actionUrl, footerNote }) {
-  const action = actionUrl
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0">
-         <tr><td style="background:#a6192e;border-radius:4px">
-           <a href="${escapeHtml(actionUrl)}"
-              style="display:inline-block;padding:13px 22px;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px">
-             ${escapeHtml(actionLabel || 'Continue')}</a>
-         </td></tr>
-       </table>
-       <p style="font-size:12px;color:#6b7280;margin:0 0 18px">
-         If the button does not work, paste this into your browser:<br>
-         <span style="color:#a6192e;word-break:break-all">${escapeHtml(actionUrl)}</span>
-       </p>`
+/* Plain email on purpose.
+ *
+ * Two reasons. Oberlin's mail security detonates links in messages that look
+ * like credential phishing, which burns the single-use token before the
+ * recipient ever clicks, so we send a code to type instead of a button to
+ * press. And a nested table layout with a coloured masthead reads as a
+ * marketing template rather than a note from a student society.
+ *
+ * So: the emblem, a few sentences, the code. No tables, no button, no card.
+ */
+function wrapEmail({ bodyHtml, code, footerNote }) {
+  const codeBlock = code
+    ? `<p style="margin:22px 0"><span style="display:inline-block;padding:12px 18px;background:#f4f5f7;border:1px solid #e2e5ea;border-radius:4px;font:600 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:#14161a">${escapeHtml(code)}</span></p>`
     : '';
 
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#f4f5f7">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:28px 12px">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-             style="max-width:560px;background:#ffffff;border:1px solid #e2e5ea;border-radius:6px">
-        <tr><td style="height:6px;background:#a6192e;border-radius:6px 6px 0 0"></td></tr>
-        <tr><td style="padding:26px 30px 6px">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-            <td style="padding-right:12px" valign="middle">
-              <img src="${SITE}/assets/images/logo-email.png" width="44" height="44" alt=""
-                   style="display:block;width:44px;height:44px;border:0">
-            </td>
-            <td valign="middle" style="font:600 13px/1.3 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
-              Oberlin 3-2 Engineering Society<br>
-              <span style="font-weight:400;font-size:12px;color:#6b7280">Oberlin College</span>
-            </td>
-          </tr></table>
-          <h1 style="margin:22px 0 4px;font:700 21px/1.3 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
-            ${escapeHtml(title)}
-          </h1>
-        </td></tr>
-        <tr><td style="padding:6px 30px 26px;font:400 15px/1.62 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#333941">
-          ${bodyHtml}
-          ${action}
-        </td></tr>
-        <tr><td style="padding:16px 30px 26px;border-top:1px solid #e2e5ea;font:400 12px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#6b7280">
-          ${footerNote || `Sent by the Oberlin 3-2 Engineering Society. <a href="${SITE}" style="color:#a6192e">${SITE.replace('https://', '')}</a>`}
-        </td></tr>
-      </table>
-    </td></tr>
-  </table></body></html>`;
+  return `<!doctype html><html><body style="margin:0;padding:24px;background:#ffffff">
+  <div style="max-width:520px;font:400 15px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
+    <img src="${SITE}/assets/images/logo-email.png" width="40" height="40" alt="Oberlin 3-2 Engineering Society"
+         style="display:block;width:40px;height:40px;border:0;margin-bottom:18px">
+    ${bodyHtml}
+    ${codeBlock}
+    <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #e2e5ea;font-size:13px;color:#6b7280">
+      ${footerNote || `Oberlin 3-2 Engineering Society, Oberlin College<br><a href="${SITE}" style="color:#a6192e">oberlin32engineeringsociety.com</a>`}
+    </p>
+  </div></body></html>`;
 }
 
 async function sendEmail({ to, subject, html, replyTo, tag }) {
@@ -208,27 +186,20 @@ async function sendEmail({ to, subject, html, replyTo, tag }) {
 
 /* Ask Supabase for a signed action link. Supabase owns the token, its expiry
  * and its single use; we only put it in a nicer envelope. */
-async function generateActionLink(type, email, redirectTo) {
+/* Ask Supabase for a one-time code. It also returns a clickable link, but we
+ * do not send that: Oberlin's mail filter fetches links to inspect them, which
+ * spends the single-use token before the recipient sees the message. A code
+ * cannot be spent by a scanner reading the mail. */
+async function generateAccess(type, email, redirectTo) {
   const data = await sb('/auth/v1/admin/generate_link', {
     method: 'POST',
     body: JSON.stringify({ type, email, options: { redirect_to: redirectTo } }),
   });
-  const link = (data && (data.action_link || (data.properties && data.properties.action_link))) || null;
-  if (!link || !redirectTo) return link;
-
-  /* Supabase ignores options.redirect_to and substitutes the project's Site
-   * URL, which is still the default localhost:3000. Rewriting the parameter on
-   * the returned verify URL is honoured, because it is validated against the
-   * Redirect URLs allow-list rather than against Site URL. Verified: the link
-   * 303s to the admin subdomain with a valid session. */
-  try {
-    const u = new URL(link);
-    if (u.searchParams.get('redirect_to') !== redirectTo) {
-      u.searchParams.set('redirect_to', redirectTo);
-      return u.toString();
-    }
-  } catch { /* if it will not parse, send what Supabase gave us */ }
-  return link;
+  const props = (data && data.properties) || data || {};
+  return {
+    code: props.email_otp || null,
+    link: props.action_link || null,
+  };
 }
 
 function isEmail(v) {
@@ -239,5 +210,5 @@ module.exports = {
   SUPABASE_URL, SERVICE_KEY, ANON_KEY, RESEND_KEY, SITE, ADMIN_ORIGIN, FROM,
   missingConfig, send, cors, readJson, sb, requireAdmin,
   escapeHtml, markdownToHtml, fillTemplate, wrapEmail, sendEmail,
-  generateActionLink, isEmail,
+  generateAccess, isEmail,
 };
