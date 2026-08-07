@@ -4,7 +4,7 @@ const L = require('./_lib');
 
 const RULES = {
   membership_interest: {
-    fields: ['full_name','email','class_year','academic_interest','interests','experience','availability','motivation','access_needs','consent','started_at','company'],
+    fields: ['full_name','email','class_year','academic_interest','interests','role_interest','experience','availability','motivation','access_needs','consent','started_at','company'],
     required: ['full_name','email','consent'],
     message: 'Thanks. You are on the launch-interest list.'
   },

@@ -159,6 +159,36 @@
     } catch (_) { /* static page copy remains */ }
   }
 
+
+  /* The open officer roles come from the same leadership records the public
+   * page renders, so a vacancy that is filled stops being offered here without
+   * anyone remembering to edit the form. The picker only appears once someone
+   * says they are interested in helping organise. */
+  async function initOpenRoles() {
+    const field = $('[data-open-roles-field]');
+    const select = $('[data-open-roles]');
+    if (!field || !select) return;
+    try {
+      const leaders = await window.O32Data.get('leaders');
+      const open = (Array.isArray(leaders) ? leaders : []).filter((item) => item.open_seat && item.role);
+      if (!open.length) return;
+      select.insertAdjacentHTML('beforeend', open
+        .map((item) => `<option value="${esc(item.role)}">${esc(item.role)}</option>`).join(''));
+      const reveal = () => {
+        const wants = $$('input[name="interests"]:checked').some((box) => /leadership|communication/i.test(box.value));
+        field.hidden = !wants;
+      };
+      $$('input[name="interests"]').forEach((box) => box.addEventListener('change', reveal));
+      reveal();
+      // A link like join?interest=leadership should preselect the role too.
+      const asked = new URLSearchParams(location.search).get('role');
+      if (asked) {
+        const match = [...select.options].find((option) => option.value.toLowerCase() === asked.toLowerCase());
+        if (match) { select.value = match.value; field.hidden = false; }
+      }
+    } catch (_) { /* the form still submits without a role preference */ }
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
       renderList('[data-project-grid]', 'projects', projectCard, { emptyTitle: 'Project proposals are being collected', emptyCopy: 'Share an idea or join the launch list to help choose the first projects.' }),
@@ -179,6 +209,7 @@
       renderList('[data-partner-grid]', 'partner_schools', partnerCard),
       renderList('[data-news-grid]', 'news_posts', newsCard, { limit: 6 })
     ]);
+    initOpenRoles();
     initResourceSearch();
     initImpact();
     initCompetition();
