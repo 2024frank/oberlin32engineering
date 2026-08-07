@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b10">
-  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light">
   <meta name="description" content="A student-led home for engineering-minded Obies to connect, prepare, build, and create visible impact.">
   <meta name="author" content="Oberlin 3-2 Engineering Society">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -26,18 +26,18 @@
   <title>Oberlin 3-2 Engineering Society</title>
   <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/images/icon-192.png">
-  <link rel="manifest" href="site.webmanifest?v=c175792ed6">
+  <link rel="manifest" href="site.webmanifest?v=39b3ec97d7">
   <link rel="alternate" type="application/rss+xml" title="Oberlin 3-2 Engineering Society news" href="feed.xml">
   <link rel="preload" href="assets/images/logo-mark.svg" as="image" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js')</script>
-  <link rel="stylesheet" href="assets/css/site.css?v=c175792ed6">
-  <script src="assets/js/runtime-config.js?v=c175792ed6" defer></script>
-  <script src="assets/js/data-service.js?v=c175792ed6" defer></script>
-  <script src="assets/js/site.js?v=c175792ed6" defer></script>
-  <script src="assets/js/pages.js?v=c175792ed6" defer></script>
+  <link rel="stylesheet" href="assets/css/site.css?v=39b3ec97d7">
+  <script src="assets/js/runtime-config.js?v=39b3ec97d7" defer></script>
+  <script src="assets/js/data-service.js?v=39b3ec97d7" defer></script>
+  <script src="assets/js/site.js?v=39b3ec97d7" defer></script>
+  <script src="assets/js/pages.js?v=39b3ec97d7" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -54,9 +54,6 @@
 <body class="home" data-page="home">
   <noscript><div class="noscript-banner">This website works best with JavaScript enabled. Core pages and links remain available.</div></noscript>
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <div class="reading-progress" aria-hidden="true"><span></span></div>
-  <div class="page-noise" aria-hidden="true"></div>
-  <canvas class="engineering-canvas" data-engineering-canvas aria-hidden="true"></canvas>
   <div class="announcement-bar" data-announcement>
   <div class="container announcement-inner">
     <span class="announcement-pulse" aria-hidden="true"></span>
@@ -123,57 +120,44 @@
 
   <main id="main-content">
     <section class="home-hero" id="home">
-  <div class="hero-field" aria-hidden="true"></div>
-  <div class="hero-grid" aria-hidden="true"></div>
   <div class="container hero-layout">
-    <div class="hero-copy reveal">
-      <div class="status-chip"><span></span> Founded 2026 · Building the first chapter</div>
-      <h1>Engineering belongs<br>at the <em>center</em><br>of Oberlin.</h1>
-      <p class="hero-lede">A student-led home for engineering-minded Obies to find collaborators, navigate the 3-2 pathway, build ambitious projects, and turn ideas into visible impact.</p>
+    <div class="hero-copy">
+      <p class="hero-kicker">Oberlin College &middot; Founded 2026</p>
+      <h1>Three years here.<br>Two years there.<br>One engineer.</h1>
+      <p class="hero-lede">Oberlin&rsquo;s 3-2 pathway sends you through a liberal arts education and an engineering degree. The Society is the part that connects them: the people who have gone before you, the projects worth building now, and the planning that makes the transfer work.</p>
+
+      <ol class="ratio-bar" aria-label="The 3-2 pathway: three years at Oberlin, two at a partner engineering school">
+        <li class="ratio-unit is-oberlin"><span class="ratio-year">1</span></li>
+        <li class="ratio-unit is-oberlin"><span class="ratio-year">2</span></li>
+        <li class="ratio-unit is-oberlin"><span class="ratio-year">3</span></li>
+        <li class="ratio-unit is-partner"><span class="ratio-year">4</span></li>
+        <li class="ratio-unit is-partner"><span class="ratio-year">5</span></li>
+      </ol>
+      <div class="ratio-legend">
+        <span><i class="swatch-oberlin" aria-hidden="true"></i> Oberlin College</span>
+        <span><i class="swatch-partner" aria-hidden="true"></i> Partner engineering school</span>
+      </div>
+
       <div class="hero-actions">
-        <a class="button button-gold magnetic" data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Join the founding community <span aria-hidden="true">↗</span></a>
-        <a class="button button-outline" href="projects.html">Explore the project board <span aria-hidden="true">→</span></a>
-      </div>
-      <div class="hero-proof">
-        <div><strong data-count="4">4</strong><span>partner engineering schools</span></div>
-        <div><strong data-count="6">6</strong><span>initial project briefs</span></div>
-        <div><strong>01</strong><span>connected community</span></div>
+        <a class="button button-primary" data-join-link href="https://forms.gle/6pPoj3hqQMJADLjZ6" target="_blank" rel="noopener">Join the society</a>
+        <a class="button button-quiet" href="pathway.html">How the pathway works</a>
       </div>
     </div>
 
-    <div class="hero-machine reveal reveal-delay-1" data-tilt>
-      <div class="machine-shell">
-        <div class="machine-topline"><span>O32 // SYSTEM CORE</span><span class="live-indicator"><i></i> ACTIVE</span></div>
-        <div class="machine-grid" aria-hidden="true"></div>
-        <div class="orbit orbit-a" aria-hidden="true"></div>
-        <div class="orbit orbit-b" aria-hidden="true"></div>
-        <div class="orbit orbit-c" aria-hidden="true"></div>
-        <div class="machine-core">
-          <div class="core-pulse" aria-hidden="true"></div>
-          <img src="assets/images/logo-mark.svg" width="290" height="290" alt="Oberlin 3-2 Engineering Society emblem">
-        </div>
-        <div class="discipline-node node-one"><span></span>ROBOTICS</div>
-        <div class="discipline-node node-two"><span></span>ENERGY</div>
-        <div class="discipline-node node-three"><span></span>DESIGN</div>
-        <div class="discipline-node node-four"><span></span>AI + DATA</div>
-        <div class="machine-readout readout-a"><small>MISSION</small><strong>CONNECT → PREPARE → BUILD</strong></div>
-        <div class="machine-readout readout-b"><small>NETWORK</small><strong>OPEN TO ALL OBIES</strong></div>
-        <svg class="machine-wire wire-a" viewBox="0 0 180 90" aria-hidden="true"><path d="M0 78h54V22h72v35h54"/><circle cx="54" cy="78" r="4"/><circle cx="54" cy="22" r="4"/><circle cx="126" cy="22" r="4"/></svg>
-        <svg class="machine-wire wire-b" viewBox="0 0 210 120" aria-hidden="true"><path d="M0 18h60v40h72v44h78"/><circle cx="60" cy="18" r="4"/><circle cx="60" cy="58" r="4"/><circle cx="132" cy="58" r="4"/></svg>
-      </div>
-    </div>
+    <figure class="hero-figure">
+      <img src="assets/images/photos/engineer-wiring.jpg"
+           width="1920" height="1281" fetchpriority="high" decoding="async"
+           alt="An engineer bent over a workbench, routing wiring by hand.">
+      <figcaption>Stock photograph &middot; ThisisEngineering</figcaption>
+    </figure>
   </div>
-  <div class="container hero-foot reveal reveal-delay-2">
-    <p><span>01</span> Community across departments</p>
-    <p><span>02</span> Knowledge that stays</p>
-    <p><span>03</span> Projects with public outcomes</p>
-    <a href="#mission">Scroll to explore ↓</a>
-  </div>
-</section>
 
-<section class="kinetic-strip" aria-label="Society focus areas">
-  <div class="kinetic-track">
-    <span>BUILD TOGETHER</span><i>✦</i><span>LEARN ACROSS DISCIPLINES</span><i>✦</i><span>MAKE KNOWLEDGE LAST</span><i>✦</i><span>ENGINEER FOR REAL PEOPLE</span><i>✦</i><span>BUILD TOGETHER</span><i>✦</i><span>LEARN ACROSS DISCIPLINES</span><i>✦</i>
+  <div class="container hero-facts">
+    <dl>
+      <div><dt>Partner engineering schools</dt><dd data-count="4">4</dd></div>
+      <div><dt>Project briefs open now</dt><dd data-count="6">6</dd></div>
+      <div><dt>Years from first class to degree</dt><dd>5</dd></div>
+    </dl>
   </div>
 </section>
 
