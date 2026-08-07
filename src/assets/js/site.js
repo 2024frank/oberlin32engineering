@@ -220,8 +220,11 @@
         if (pointer.active) {
           const dx = node.x - pointer.x;
           const dy = node.y - pointer.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance < 150 && distance > 0) {
+          const distSq = dx * dx + dy * dy;
+          // 150 * 150 = 22500
+          if (distSq < 22500 && distSq > 0) {
+            // Optimization: Only compute square root (Math.sqrt) if the distance check passes
+            const distance = Math.sqrt(distSq);
             node.x += (dx / distance) * .15;
             node.y += (dy / distance) * .15;
           }
@@ -233,8 +236,12 @@
           const b = nodes[j];
           const dx = a.x - b.x;
           const dy = a.y - b.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance < 125) {
+          const distSq = dx * dx + dy * dy;
+          // 125 * 125 = 15625
+          if (distSq < 15625) {
+            // Optimization: Only compute square root (Math.sqrt) if the distance check passes.
+            // This avoids thousands of Math.sqrt calls per frame for nodes that are far apart.
+            const distance = Math.sqrt(distSq);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
@@ -288,6 +295,11 @@
         window.O32Data.get('resources'), window.O32Data.get('opportunities'), window.O32Data.get('news_posts'),
         window.O32Data.get('project_updates')
       ]);
+      // Optimization: Create a Map of projects by ID for O(1) lookups.
+      // This avoids a nested O(N) lookup inside the mapping loop of project updates,
+      // reducing the time complexity of the buildIndex function from O(M * N) to O(M + N).
+      const projectMap = new Map((projects || []).map((p) => [p.id, p]));
+
       index = [
         ...staticItems,
         ...(projects || []).map((item) => ({ type: 'Project', title: item.title, description: item.summary, url: `projects.html?project=${encodeURIComponent(item.slug)}` })),
@@ -296,7 +308,7 @@
         ...(resources || []).map((item) => ({ type: 'Resource', title: item.title, description: item.description, url: item.url, external: true })),
         ...(opportunities || []).map((item) => ({ type: 'Opportunity', title: item.title, description: item.description, url: item.url })),
         ...(news || []).map((item) => ({ type: 'News', title: item.title, description: item.excerpt, url: 'events.html#news' })),
-        ...(projectUpdates || []).map((item) => ({ type: 'Build log', title: item.title, description: item.summary || item.body, url: `projects.html?project=${encodeURIComponent((projects || []).find((project) => project.id === item.project_id)?.slug || '')}#build-log` }))
+        ...(projectUpdates || []).map((item) => ({ type: 'Build log', title: item.title, description: item.summary || item.body, url: `projects.html?project=${encodeURIComponent(projectMap.get(item.project_id)?.slug || '')}#build-log` }))
       ];
       return index;
     }
