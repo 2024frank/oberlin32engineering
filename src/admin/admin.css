@@ -96,3 +96,14 @@ body { background: #fff; }
 .skeleton-line { background: linear-gradient(90deg, #eef0f3, #e2e5ea, #eef0f3); background-size: 200% 100%; }
 .admin-loading span { border-color: var(--line); border-top-color: var(--crimson); }
 .dialog-close { background: #fff; color: var(--ink); border-color: var(--line-strong); }
+
+/* Hardcoded light-on-dark colours that survived the re-skin. */
+.admin-brand small { color: var(--soft); }
+.auth-form label, .field { color: var(--ink); font-weight: 600; }
+.sidebar-close, .sidebar-open { color: var(--ink); }
+.admin-topbar h1, .auth-card h2, .editor-head h2, .confirm-card h2 { color: var(--ink); }
+.record-table th { color: var(--soft); }
+.activity-item time, .submission-data b, .media-card small, .record-title small,
+.nav-section-label, .sidebar-user small, .toolbar .search-control span { color: var(--soft); }
+.editor-field small, .panel-head span, .metric-card span { color: var(--soft); }
+.admin-toast { color: var(--ink); }
