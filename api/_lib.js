@@ -17,7 +17,10 @@ const RESEND_KEY = process.env.RESEND_API_KEY;
 
 const SITE = 'https://www.oberlin32engineeringsociety.com';
 const ADMIN_ORIGIN = 'https://admin.oberlin32engineeringsociety.com';
-const FROM = process.env.RESEND_FROM_EMAIL || 'Oberlin 3-2 Engineering Society <society@oberlin32engineeringsociety.com>';
+/* Google Workspace treats oberlin32engineeringsociety.com as a lookalike of
+ * oberlin.edu and silently removes the mail after delivery, whatever the
+ * content. Verified by sending the same plain message from both domains. */
+const FROM = process.env.RESEND_FROM_EMAIL || 'Oberlin 3-2 Engineering Society <hello@uhurued.com>';
 
 function missingConfig() {
   const missing = [];
@@ -130,19 +133,13 @@ function fillTemplate(text, vars) {
   return String(text).replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? String(vars[k]) : ''));
 }
 
-/* Plain email on purpose.
+/* Plain email: the emblem, a few sentences, a hyperlink.
  *
- * Two reasons. Oberlin's mail security detonates links in messages that look
- * like credential phishing, which burns the single-use token before the
- * recipient ever clicks, so we send a code to type instead of a button to
- * press. And a nested table layout with a coloured masthead reads as a
- * marketing template rather than a note from a student society.
- *
- * So: the emblem, a few sentences, the code. No tables, no button, no card.
- */
-function wrapEmail({ bodyHtml, code, footerNote }) {
-  const codeBlock = code
-    ? `<p style="margin:22px 0"><span style="display:inline-block;padding:12px 18px;background:#f4f5f7;border:1px solid #e2e5ea;border-radius:4px;font:600 24px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:#14161a">${escapeHtml(code)}</span></p>`
+ * No table layout, no masthead, no call-to-action button. That furniture reads
+ * as a marketing template rather than a note from a student society. */
+function wrapEmail({ bodyHtml, actionUrl, actionLabel, footerNote }) {
+  const action = actionUrl
+    ? `<p style="margin:18px 0"><a href="${escapeHtml(actionUrl)}" style="color:#a6192e">${escapeHtml(actionLabel || 'Set up your account here')}</a></p>`
     : '';
 
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#ffffff">
@@ -150,9 +147,9 @@ function wrapEmail({ bodyHtml, code, footerNote }) {
     <img src="${SITE}/assets/images/logo-email.png" width="40" height="40" alt="Oberlin 3-2 Engineering Society"
          style="display:block;width:40px;height:40px;border:0;margin-bottom:18px">
     ${bodyHtml}
-    ${codeBlock}
+    ${action}
     <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #e2e5ea;font-size:13px;color:#6b7280">
-      ${footerNote || `Oberlin 3-2 Engineering Society, Oberlin College<br><a href="${SITE}" style="color:#a6192e">oberlin32engineeringsociety.com</a>`}
+      ${footerNote || 'Oberlin 3-2 Engineering Society, Oberlin College'}
     </p>
   </div></body></html>`;
 }

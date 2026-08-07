@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
           const known = Array.isArray(rows) && rows[0];
           if (known) {
             const access = await L.generateAccess('recovery', email, RESET_REDIRECT);
-            if (access.code) {
+            if (access.link) {
               const tpl = await template(
                 'password_reset',
                 'Reset your password',
@@ -59,10 +59,11 @@ module.exports = async (req, res) => {
               await L.sendEmail({
                 to: email,
                 subject: tpl.subject,
-                tag: 'access-code',
+                tag: 'password-reset',
                 html: L.wrapEmail({
                   bodyHtml: L.markdownToHtml(md),
-                  code: access.code,
+                  actionUrl: access.link,
+                  actionLabel: 'Set a new password here',
                 }),
               });
             }
@@ -122,7 +123,7 @@ module.exports = async (req, res) => {
         access = await L.generateAccess('recovery', email, RESET_REDIRECT);
         reused = true;
       }
-      if (!access.code) return L.send(res, 502, { error: 'Supabase did not return an access code.' });
+      if (!access.link) return L.send(res, 502, { error: 'Supabase did not return a setup link.' });
 
       /* Give them the access level their role carries. */
       const who = await L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id`);
@@ -162,7 +163,8 @@ module.exports = async (req, res) => {
           replyTo: admin.email || undefined,
           html: L.wrapEmail({
             bodyHtml: L.markdownToHtml(md),
-            code: access.code,
+            actionUrl: access.link,
+            actionLabel: 'Set up your account here',
           }),
         });
         resendId = sent && sent.id;
