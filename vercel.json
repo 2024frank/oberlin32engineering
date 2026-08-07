@@ -11,6 +11,12 @@
       "maxDuration": 10
     }
   },
+  "crons": [
+    {
+      "path": "/api/dispatch",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

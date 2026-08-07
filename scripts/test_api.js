@@ -80,6 +80,7 @@ async function main() {
   global.fetch = async (url, options = {}) => {
     rpcCalls.push({ url: String(url), options });
     if (String(url).includes('/rest/v1/rpc/accept_public_submission')) return response(200, 'submission-id');
+    if (String(url).endsWith('/rest/v1/subscribers')) return response(201, []);
     if (String(url) === 'https://api.resend.com/emails') return response(200, { id: 'mail-id' });
     throw new Error(`unexpected request: ${url}`);
   };
@@ -88,6 +89,11 @@ async function main() {
   }));
   assert.equal(res.statusCode, 201);
   assert.equal(res.payload.ok, true);
+  // Consenting to be contacted is what puts someone on the mailing list.
+  const subscribeCall = rpcCalls.find((call) => call.url.endsWith('/rest/v1/subscribers'));
+  assert.ok(subscribeCall, 'membership submission should add the person to subscribers');
+  assert.equal(JSON.parse(subscribeCall.options.body).email, 'student@oberlin.edu');
+  assert.match(subscribeCall.options.headers.Prefer, /ignore-duplicates/);
   assert.equal(rpcCalls.filter((call) => call.url.includes('/rest/v1/rpc/accept_public_submission')).length, 1);
   assert.equal(rpcCalls.filter((call) => call.url === 'https://api.resend.com/emails').length, 1);
   const rpcBody = JSON.parse(rpcCalls.find((call) => call.url.includes('/rest/v1/rpc/accept_public_submission')).options.body);
@@ -302,7 +308,144 @@ async function main() {
   assert.equal(res.statusCode, 409);
   assert.equal(lostRaceCalls.filter((call) => call.url.includes('/auth/v1/admin/users/')).length, 0);
 
-  console.log('API tests passed: validation, storage, cutover compatibility, atomic invitation access, revocation, roles, and reset privacy.');
+  // --- Newsletters -------------------------------------------------------
+  const broadcasts = require('../api/broadcasts.js');
+  const dispatch = require('../api/dispatch.js');
+  const unsubscribe = require('../api/unsubscribe.js');
+
+  const BROADCAST = {
+    id: 'bc-1', subject: 'First update', preheader: 'What we are doing',
+    body_markdown: 'Hi {{name}}, here is the news.', audience: 'subscribers',
+    status: 'draft', recipient_count: 0
+  };
+  const SUBSCRIBERS = [
+    { id: 'sub-1', email: 'one@oberlin.edu', full_name: 'One Person', unsub_token: '11111111-1111-4111-8111-111111111111' },
+    { id: 'sub-2', email: 'two@oberlin.edu', full_name: 'Two Person', unsub_token: '22222222-2222-4222-8222-222222222222' }
+  ];
+
+  function broadcastBackend({ deliveredIds = [], failEmails = [] } = {}) {
+    const calls = [];
+    const delivered = new Set(deliveredIds);
+    global.fetch = async (url, options = {}) => {
+      const value = String(url);
+      calls.push({ url: value, options });
+      if (value.endsWith('/auth/v1/user')) return response(200, { id: 'admin-id', email: 'admin@oberlin.edu' });
+      if (value.includes('/rest/v1/profiles?') && value.includes('id=eq.admin-id')) {
+        return response(200, [{ id: 'admin-id', role: 'admin', email: 'admin@oberlin.edu', full_name: 'Admin' }]);
+      }
+      if (value.includes('/rest/v1/broadcasts?id=eq.bc-1') && options.method === 'PATCH') return response(200, []);
+      if (value.includes('/rest/v1/broadcasts?id=eq.bc-1')) return response(200, [BROADCAST]);
+      if (value.includes('/rest/v1/broadcast_deliveries') && options.method === 'POST') {
+        delivered.add(JSON.parse(options.body).subscriber_id);
+        return response(201, []);
+      }
+      if (value.includes('/rest/v1/broadcast_deliveries')) {
+        return response(200, [...delivered].map((id) => ({
+          subscriber_id: id,
+          status: failEmails.includes(SUBSCRIBERS.find((s) => s.id === id)?.email) ? 'failed' : 'sent'
+        })));
+      }
+      if (value.includes('/rest/v1/subscribers')) return response(200, SUBSCRIBERS);
+      if (value === 'https://api.resend.com/emails') {
+        const to = JSON.parse(options.body).to[0];
+        if (failEmails.includes(to)) return response(422, { message: 'Invalid recipient' });
+        return response(200, { id: `mail-${to}` });
+      }
+      throw new Error(`unexpected request: ${url}`);
+    };
+    return calls;
+  }
+
+  // A send delivers one message per subscriber, personalised, each carrying its
+  // own unsubscribe token.
+  let calls = broadcastBackend();
+  res = await runHandler(broadcasts, { ...request('POST', {}, { authorization: 'Bearer valid' }), url: '/api/broadcasts?id=bc-1&action=send' });
+  assert.equal(res.statusCode, 200);
+  const sends = calls.filter((call) => call.url === 'https://api.resend.com/emails').map((call) => JSON.parse(call.options.body));
+  assert.equal(sends.length, 2);
+  assert.ok(sends[0].html.includes('Hi One'), 'first name should be filled in');
+  assert.ok(sends[0].html.includes('11111111-1111-4111-8111-111111111111'), 'unsubscribe token should be per recipient');
+  assert.ok(sends[1].html.includes('22222222-2222-4222-8222-222222222222'));
+  assert.equal(res.payload.status, 'sent');
+
+  // Anyone already delivered to is skipped, which is what makes a resumed or
+  // retried send safe.
+  calls = broadcastBackend({ deliveredIds: ['sub-1'] });
+  res = await runHandler(broadcasts, { ...request('POST', {}, { authorization: 'Bearer valid' }), url: '/api/broadcasts?id=bc-1&action=send' });
+  assert.equal(res.statusCode, 200);
+  const resend = calls.filter((call) => call.url === 'https://api.resend.com/emails').map((call) => JSON.parse(call.options.body).to[0]);
+  assert.deepEqual(resend, ['two@oberlin.edu']);
+
+  // A rejected address is recorded as failed rather than retried forever.
+  calls = broadcastBackend({ failEmails: ['one@oberlin.edu'] });
+  res = await runHandler(broadcasts, { ...request('POST', {}, { authorization: 'Bearer valid' }), url: '/api/broadcasts?id=bc-1&action=send' });
+  assert.equal(res.statusCode, 200);
+  const failureRecord = calls
+    .filter((call) => call.url.includes('/rest/v1/broadcast_deliveries') && call.options.method === 'POST')
+    .map((call) => JSON.parse(call.options.body))
+    .find((row) => row.email === 'one@oberlin.edu');
+  assert.equal(failureRecord.status, 'failed');
+
+  // Sending is admin-only.
+  global.fetch = async (url) => {
+    if (String(url).endsWith('/auth/v1/user')) return response(200, { id: 'editor-id', email: 'editor@oberlin.edu' });
+    if (String(url).includes('/rest/v1/profiles?')) return response(200, [{ id: 'editor-id', role: 'editor', email: 'editor@oberlin.edu' }]);
+    throw new Error(`unexpected request: ${url}`);
+  };
+  res = await runHandler(broadcasts, { ...request('POST', {}, { authorization: 'Bearer valid' }), url: '/api/broadcasts?id=bc-1&action=send' });
+  assert.equal(res.statusCode, 403);
+
+  // The cron endpoint refuses callers without the shared secret, and refuses
+  // everyone when no secret is configured at all.
+  delete process.env.CRON_SECRET;
+  global.fetch = async () => { throw new Error('network should not be called'); };
+  res = await runHandler(dispatch, { ...request('GET', {}, { authorization: 'Bearer anything' }), url: '/api/dispatch' });
+  assert.equal(res.statusCode, 401);
+  process.env.CRON_SECRET = 'cron-secret-value';
+  res = await runHandler(dispatch, { ...request('GET', {}, { authorization: 'Bearer wrong-length' }), url: '/api/dispatch' });
+  assert.equal(res.statusCode, 401);
+
+  // With the secret it picks up due and part-sent broadcasts.
+  const dispatchCalls = [];
+  global.fetch = async (url, options = {}) => {
+    const value = String(url);
+    dispatchCalls.push({ url: value, options });
+    if (value.includes('/rest/v1/broadcasts?or=')) return response(200, []);
+    throw new Error(`unexpected request: ${url}`);
+  };
+  res = await runHandler(dispatch, { ...request('GET', {}, { authorization: 'Bearer cron-secret-value' }), url: '/api/dispatch' });
+  assert.equal(res.statusCode, 200);
+  assert.ok(dispatchCalls.some((call) => call.url.includes('status.eq.sending')), 'a part-sent broadcast should be resumed');
+
+  // Unsubscribing needs only the token, and an unknown token is answered the
+  // same way as a real one so the endpoint cannot be used to probe for tokens.
+  const unsubCalls = [];
+  global.fetch = async (url, options = {}) => {
+    const value = String(url);
+    unsubCalls.push({ url: value, options });
+    if (value.includes('unsub_token=eq.11111111-1111-4111-8111-111111111111')) {
+      return response(200, [{ id: 'sub-1', unsubscribed: false }]);
+    }
+    if (value.includes('/rest/v1/subscribers?id=eq.sub-1')) return response(200, []);
+    if (value.includes('unsub_token=eq.')) return response(200, []);
+    throw new Error(`unexpected request: ${url}`);
+  };
+  const htmlResult = () => { const r = result(); r.end = function (raw = '') { this.payload = raw; }; return r; };
+  let page = htmlResult();
+  await unsubscribe({ ...request('GET'), url: '/api/unsubscribe?token=11111111-1111-4111-8111-111111111111' }, page);
+  assert.equal(page.statusCode, 200);
+  assert.ok(unsubCalls.some((call) => call.options.method === 'PATCH' && JSON.parse(call.options.body).unsubscribed === true));
+  const knownBody = page.payload;
+
+  page = htmlResult();
+  await unsubscribe({ ...request('GET'), url: '/api/unsubscribe?token=99999999-9999-4999-8999-999999999999' }, page);
+  assert.equal(page.payload, knownBody, 'an unknown token must be indistinguishable from a real one');
+
+  page = htmlResult();
+  await unsubscribe({ ...request('GET'), url: '/api/unsubscribe?token=not-a-uuid' }, page);
+  assert.equal(page.statusCode, 400);
+
+  console.log('API tests passed: validation, storage, cutover compatibility, atomic invitation access, revocation, roles, reset privacy, and newsletter sending.');
 }
 
 main().catch((error) => {

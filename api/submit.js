@@ -137,6 +137,29 @@ module.exports = async function handler(req, res) {
       result = await saveWithLegacySchema({ type, fullName, email, payload, sourcePath, userAgent });
     }
 
+    // Only the membership form asks for consent to be contacted, so it is the
+    // only one that puts a person on the mailing list. An address that is
+    // already there keeps its existing unsubscribe state.
+    if (type === 'membership_interest' && payload.consent === 'yes') {
+      try {
+        await L.sb('/rest/v1/subscribers', {
+          method: 'POST',
+          headers: { Prefer: 'resolution=ignore-duplicates' },
+          body: JSON.stringify({
+            email,
+            full_name: fullName,
+            source: 'membership form',
+            confirmed: true,
+            confirmed_at: new Date().toISOString(),
+          }),
+        });
+      } catch (error) {
+        // The submission itself is saved; failing to list them is not a reason
+        // to tell the student their form did not go through.
+        console.error('[submit] subscriber upsert failed', error.message);
+      }
+    }
+
     if (L.RESEND_KEY) {
       try {
         await L.sendEmail({

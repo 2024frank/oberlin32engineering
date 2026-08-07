@@ -458,14 +458,127 @@
     $$('[data-deactivate-role]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Deactivate this role?','Existing officer profiles remain. The role will disappear from new invitations.',async()=>{await apiCall('/api/roles',{method:'DELETE',body:JSON.stringify({id:button.dataset.deactivateRole})});toast('Role deactivated.');await renderMembers();})));
   }
 
+  /* Newsletters. A draft can be tested against your own address, sent now, or
+   * scheduled; scheduled sends are picked up by /api/dispatch on a cron, and a
+   * send that does not finish inside one function call simply continues on the
+   * next tick, so nothing here has to wait for a whole list to go out. */
+  let broadcastDraftId = '';
+
+  function broadcastStatusLabel(broadcast) {
+    if (broadcast.status === 'scheduled' && broadcast.scheduled_for) {
+      return `Scheduled for ${formatDate(broadcast.scheduled_for, true)}`;
+    }
+    if (broadcast.status === 'sent') {
+      return `Sent to ${broadcast.recipient_count} ${broadcast.recipient_count === 1 ? 'person' : 'people'}`;
+    }
+    if (broadcast.status === 'sending') return `Sending, ${broadcast.recipient_count} done so far`;
+    if (broadcast.status === 'failed') return `Failed: ${broadcast.last_error || 'unknown error'}`;
+    return 'Draft';
+  }
+
+  async function renderBroadcasts() {
+    const data = await apiCall('/api/broadcasts');
+    const broadcasts = data.broadcasts || [];
+    const audienceSize = data.audienceSize || 0;
+    const editing = broadcasts.find((item) => item.id === broadcastDraftId) || null;
+    const locked = editing && (editing.status === 'sent' || editing.status === 'sending');
+
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Outreach</p><h2>Newsletters</h2><p>${audienceSize} ${audienceSize === 1 ? 'person is' : 'people are'} on the list. Everyone who joins through the membership form is added, and every message carries an unsubscribe link.</p></div></div>
+      <section class="panel"><header class="panel__head"><div><h3>${editing ? 'Edit message' : 'Write a message'}</h3><p>Blank lines start a new paragraph. Use <code>**bold**</code>, <code>[text](https://link)</code>, and <code>{{name}}</code> for the recipient's first name.</p></div>${editing ? '<button class="button secondary" type="button" data-new-broadcast>Start a new one</button>' : ''}</header>
+        <form style="display:grid;gap:.8rem;padding:1rem" data-broadcast-form>
+          <label>Subject<input type="text" name="subject" maxlength="180" required value="${escapeHTML(editing?.subject || '')}"${locked ? ' disabled' : ''}></label>
+          <label>Preview line<input type="text" name="preheader" maxlength="240" value="${escapeHTML(editing?.preheader || '')}"${locked ? ' disabled' : ''}></label>
+          <label>Message<textarea name="body_markdown" rows="10" required${locked ? ' disabled' : ''}>${escapeHTML(editing?.body_markdown || '')}</textarea></label>
+          <label>Send to<select name="audience"${locked ? ' disabled' : ''}><option value="subscribers"${editing?.audience === 'subscribers' ? ' selected' : ''}>Everyone on the list</option><option value="members"${editing?.audience === 'members' ? ' selected' : ''}>Confirmed members only</option></select></label>
+          ${locked ? '<p class="form-message">This message has already started sending and can no longer be edited.</p>' : '<button class="button primary" type="submit">Save draft</button>'}
+          <p class="form-message" data-broadcast-message aria-live="polite"></p>
+        </form>
+        ${editing && !locked ? `<div style="display:flex;flex-wrap:wrap;gap:.6rem;padding:0 1rem 1rem">
+          <button class="button secondary" type="button" data-broadcast-test>Send a test to me</button>
+          <label style="display:flex;align-items:center;gap:.5rem;margin:0"><span>Schedule</span><input type="datetime-local" data-broadcast-when value="${editing.scheduled_for ? escapeHTML(new Date(editing.scheduled_for).toISOString().slice(0, 16)) : ''}"></label>
+          <button class="button secondary" type="button" data-broadcast-schedule>Set schedule</button>
+          <button class="button primary" type="button" data-broadcast-send>Send now</button>
+        </div>` : ''}
+      </section>
+      <section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>All messages</h3><p>${broadcasts.length} total</p></div></header>
+        <div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Subject</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>${broadcasts.map((item) => `<tr><td><strong>${escapeHTML(item.subject)}</strong>${item.preheader ? `<br><small>${escapeHTML(item.preheader)}</small>` : ''}</td><td>${escapeHTML(broadcastStatusLabel(item))}</td><td>${escapeHTML(formatDate(item.created_at, true))}</td><td><button class="link-button" type="button" data-open-broadcast="${escapeHTML(item.id)}">Open</button>${item.status === 'draft' || item.status === 'scheduled' ? ` <button class="link-button" type="button" data-delete-broadcast="${escapeHTML(item.id)}">Delete</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="4">No messages yet.</td></tr>'}</tbody></table></div>
+      </section>`;
+
+    const form = $('[data-broadcast-form]');
+    const message = $('[data-broadcast-message]');
+    const say = (text, ok) => { message.textContent = text; message.classList.toggle('success', !!ok); };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(event.currentTarget));
+      say('Saving…');
+      try {
+        const path = editing ? `/api/broadcasts?id=${encodeURIComponent(editing.id)}` : '/api/broadcasts';
+        const result = await apiCall(path, { method: editing ? 'PATCH' : 'POST', body: JSON.stringify(payload) });
+        broadcastDraftId = result.broadcast?.id || broadcastDraftId;
+        toast('Draft saved.');
+        await renderBroadcasts();
+      } catch (error) { say(error.message); }
+    });
+
+    $('[data-new-broadcast]')?.addEventListener('click', async () => { broadcastDraftId = ''; await renderBroadcasts(); });
+
+    $('[data-broadcast-test]')?.addEventListener('click', async () => {
+      say('Sending a test…');
+      try {
+        const result = await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=test`, { method: 'POST' });
+        say(result.message, true);
+      } catch (error) { say(error.message); }
+    });
+
+    $('[data-broadcast-schedule]')?.addEventListener('click', async () => {
+      const value = $('[data-broadcast-when]').value;
+      say(value ? 'Scheduling…' : 'Clearing the schedule…');
+      try {
+        // The input gives local wall-clock time; send an absolute instant.
+        const when = value ? new Date(value).toISOString() : null;
+        await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=schedule`, { method: 'POST', body: JSON.stringify({ scheduled_for: when }) });
+        toast(when ? 'Scheduled.' : 'Back to draft.');
+        await renderBroadcasts();
+      } catch (error) { say(error.message); }
+    });
+
+    $('[data-broadcast-send]')?.addEventListener('click', () => confirmAction(
+      `Send "${editing.subject}" now?`,
+      `This goes to ${audienceSize} ${audienceSize === 1 ? 'person' : 'people'} and cannot be recalled.`,
+      async () => {
+        say('Sending…');
+        const result = await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=send`, { method: 'POST' });
+        toast(result.message);
+        await renderBroadcasts();
+      }
+    ));
+
+    $$('[data-open-broadcast]', content).forEach((button) => button.addEventListener('click', async () => {
+      broadcastDraftId = button.dataset.openBroadcast;
+      await renderBroadcasts();
+      content.scrollIntoView({ block: 'start' });
+    }));
+
+    $$('[data-delete-broadcast]', content).forEach((button) => button.addEventListener('click', () => confirmAction(
+      'Delete this message?', 'The draft and its schedule are removed.',
+      async () => {
+        await apiCall(`/api/broadcasts?id=${encodeURIComponent(button.dataset.deleteBroadcast)}`, { method: 'DELETE' });
+        if (broadcastDraftId === button.dataset.deleteBroadcast) broadcastDraftId = '';
+        toast('Message deleted.');
+        await renderBroadcasts();
+      }
+    )));
+  }
+
   async function switchView(view) {
     activeView=view; $$('[data-view]').forEach((button)=>button.classList.toggle('active',button.dataset.view===view)); document.body.classList.remove('sidebar-open');
-    const labels={dashboard:'Officer overview',submissions:'Public submissions',site_settings:'Site settings',members:'Officers and roles',media:'Media library',content_audit:'Change history'};
+    const labels={dashboard:'Officer overview',submissions:'Public submissions',site_settings:'Site settings',members:'Officers and roles',broadcasts:'Newsletters',media:'Media library',content_audit:'Change history'};
     const title=labels[view]||collections[view]?.label||pretty(view); viewTitle.textContent=title; breadcrumb.textContent=view==='dashboard'?'Overview':title;
     primaryAction.hidden=!collections[view]; primaryAction.textContent=collections[view]?`Create ${collections[view].singular}`:'Create';
     content.innerHTML='<div class="loading"><span></span><p>Loading…</p></div>';
     try {
-      if(view==='dashboard') await renderDashboard(); else if(view==='submissions') await renderSubmissions(); else if(view==='site_settings') await renderSiteSettings(); else if(view==='members') await renderMembers(); else if(view==='media') await renderMedia(); else if(view==='content_audit') await renderAudit(); else if(collections[view]) await renderCollection(view); else throw new Error('Unknown portal view.');
+      if(view==='dashboard') await renderDashboard(); else if(view==='submissions') await renderSubmissions(); else if(view==='site_settings') await renderSiteSettings(); else if(view==='members') await renderMembers(); else if(view==='broadcasts') await renderBroadcasts(); else if(view==='media') await renderMedia(); else if(view==='content_audit') await renderAudit(); else if(collections[view]) await renderCollection(view); else throw new Error('Unknown portal view.');
     } catch(error){content.innerHTML=`<div class="empty"><div><h3>This section could not load</h3><p>${escapeHTML(error.message)}</p><button class="button secondary" type="button" data-retry>Try again</button></div></div>`;$('[data-retry]')?.addEventListener('click',()=>switchView(view));}
   }
 
