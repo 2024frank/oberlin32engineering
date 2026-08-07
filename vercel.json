@@ -4,8 +4,8 @@
   "installCommand": "echo \"no package dependencies\"",
   "outputDirectory": "site",
   "framework": null,
-  "cleanUrls": false,
-  "trailingSlash": true,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/admin/(.*)",

@@ -106,8 +106,21 @@ def local_target(page: Path, ref: str) -> Path | None:
     if parsed.scheme or parsed.netloc or not parsed.path:
         return None
     if parsed.path.startswith("/"):
-        return SITE / parsed.path.lstrip("/")
-    return page.parent / parsed.path
+        candidate = SITE / parsed.path.lstrip("/")
+    else:
+        candidate = page.parent / parsed.path
+
+    # Vercel serves pages with cleanUrls, so internal links are extensionless.
+    # "/" is the home page and "contact" is contact.html on disk.
+    if candidate.exists():
+        return candidate
+    if parsed.path in ("", "/"):
+        return SITE / "index.html"
+    if not candidate.suffix:
+        with_html = candidate.with_suffix(".html")
+        if with_html.exists():
+            return with_html
+    return candidate
 
 
 def check_json(errors: list[str]) -> None:

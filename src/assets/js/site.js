@@ -279,13 +279,13 @@
 
     let index = null;
     const staticItems = [
-      { type: 'Page', title: 'About the Society', description: 'Mission, operating model, values, and continuity.', url: 'about.html' },
-      { type: 'Page', title: '3-2 Pathway', description: 'Five-year planning workspace, partner institutions, and advising questions.', url: 'pathway.html' },
-      { type: 'Page', title: 'Oberlin Engineering Challenge', description: 'Future challenge concept, possible tracks, review standards, and updates.', url: 'competition.html' },
-      { type: 'Page', title: 'Leadership and Governance', description: 'Organizing team, open roles, and leadership archive.', url: 'leadership.html' },
-      { type: 'Page', title: 'Impact and Archive', description: 'Milestones, annual reports, public outcomes, and organizational memory.', url: 'impact.html' },
-      { type: 'Page', title: 'Media Kit', description: 'Logos, brand colors, organization boilerplate, and media contact.', url: 'media.html' },
-      { type: 'Page', title: 'Join the Society', description: 'Membership, projects, leadership, mentors, and partners.', url: 'join.html' }
+      { type: 'Page', title: 'About the Society', description: 'Mission, operating model, values, and continuity.', url: 'about' },
+      { type: 'Page', title: '3-2 Pathway', description: 'Five-year planning workspace, partner institutions, and advising questions.', url: 'pathway' },
+      { type: 'Page', title: 'Oberlin Engineering Challenge', description: 'Future challenge concept, possible tracks, review standards, and updates.', url: 'competition' },
+      { type: 'Page', title: 'Leadership and Governance', description: 'Organizing team, open roles, and leadership archive.', url: 'leadership' },
+      { type: 'Page', title: 'Impact and Archive', description: 'Milestones, annual reports, public outcomes, and organizational memory.', url: 'impact' },
+      { type: 'Page', title: 'Media Kit', description: 'Logos, brand colors, organization boilerplate, and media contact.', url: 'media' },
+      { type: 'Page', title: 'Join the Society', description: 'Membership, projects, leadership, mentors, and partners.', url: 'join' }
     ];
 
     async function buildIndex() {
@@ -302,13 +302,13 @@
 
       index = [
         ...staticItems,
-        ...(projects || []).map((item) => ({ type: 'Project', title: item.title, description: item.summary, url: `projects.html?project=${encodeURIComponent(item.slug)}` })),
-        ...(leaders || []).filter((item) => !item.open_seat).map((item) => ({ type: 'Leadership', title: item.name, description: item.role, url: 'leadership.html' })),
-        ...(events || []).map((item) => ({ type: 'Event', title: item.title, description: item.summary, url: 'events.html' })),
+        ...(projects || []).map((item) => ({ type: 'Project', title: item.title, description: item.summary, url: `projects?project=${encodeURIComponent(item.slug)}` })),
+        ...(leaders || []).filter((item) => !item.open_seat).map((item) => ({ type: 'Leadership', title: item.name, description: item.role, url: 'leadership' })),
+        ...(events || []).map((item) => ({ type: 'Event', title: item.title, description: item.summary, url: 'events' })),
         ...(resources || []).map((item) => ({ type: 'Resource', title: item.title, description: item.description, url: item.url, external: true })),
         ...(opportunities || []).map((item) => ({ type: 'Opportunity', title: item.title, description: item.description, url: item.url })),
-        ...(news || []).map((item) => ({ type: 'News', title: item.title, description: item.excerpt, url: 'events.html#news' })),
-        ...(projectUpdates || []).map((item) => ({ type: 'Build log', title: item.title, description: item.summary || item.body, url: `projects.html?project=${encodeURIComponent(projectMap.get(item.project_id)?.slug || '')}#build-log` }))
+        ...(news || []).map((item) => ({ type: 'News', title: item.title, description: item.excerpt, url: 'events#news' })),
+        ...(projectUpdates || []).map((item) => ({ type: 'Build log', title: item.title, description: item.summary || item.body, url: `projects?project=${encodeURIComponent(projectMap.get(item.project_id)?.slug || '')}#build-log` }))
       ];
       return index;
     }

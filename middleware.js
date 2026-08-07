@@ -19,6 +19,19 @@ export default function middleware(request) {
   const url = new URL(request.url);
   const host = request.headers.get('host') || url.hostname;
 
+  // One canonical admin URL. With cleanUrls on and trailing slashes off,
+  // /admin/ on the public host would 308 to /admin and its relative
+  // admin.css / admin.js would then resolve against the site root and 404.
+  // Sending it to the subdomain avoids that whole class of bug.
+  if (host !== ADMIN_HOST && /^\/admin(\/|$)/.test(url.pathname)) {
+    const to = new URL(url);
+    to.host = ADMIN_HOST;
+    to.hostname = ADMIN_HOST;
+    to.port = '';
+    to.pathname = url.pathname.replace(/^\/admin\/?/, '/');
+    return new Response(null, { status: 308, headers: { Location: to.toString() } });
+  }
+
   if (host !== ADMIN_HOST) return;
   if (url.pathname.startsWith('/admin/')) return;
   if (SHARED_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return;

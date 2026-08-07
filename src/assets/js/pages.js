@@ -112,7 +112,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
   }
 
   function eventPreview(event, index = 0) {
-    const href = event.registration_url || 'events.html';
+    const href = event.registration_url || 'events';
     const external = /^https?:/i.test(href);
     return `
       <a class="event-preview reveal" href="${escapeHTML(href)}" ${external ? 'target="_blank" rel="noopener"' : ''}>
@@ -129,7 +129,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
         <time datetime="${escapeHTML(post.published_at || '')}">${escapeHTML(formatDate(post.published_at) || 'Update')}</time>
         <h3>${escapeHTML(post.title)}</h3>
         <p>${escapeHTML(post.excerpt || '')}</p>
-        <a href="events.html#news">Read field note →</a>
+        <a href="events#news">Read field note →</a>
       </article>`;
   }
 
@@ -208,7 +208,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     });
     $('[data-share-project]', content)?.addEventListener('click', async () => {
       const url = new URL(window.location.href);
-      url.pathname = url.pathname.replace(/[^/]*$/, 'projects.html');
+      url.pathname = url.pathname.replace(/[^/]*$/, 'projects');
       url.search = `?project=${encodeURIComponent(project.slug)}`;
       try {
         if (navigator.share) await navigator.share({ title: project.title, text: project.summary || '', url: url.toString() });
@@ -336,7 +336,7 @@ Join or ask about this project through the Oberlin 3-2 Engineering Society.
     const sponsorSection = $('[data-sponsor-section]');
     const sponsorRoot = $('[data-sponsor-grid]');
     if (sponsorSection && sponsorRoot && sponsors.length) {
-      sponsorRoot.innerHTML = sponsors.map((item) => `<a class="sponsor-logo-card" href="${escapeHTML(item.url || 'contact.html')}" ${/^https?:/i.test(item.url || '') ? 'target="_blank" rel="noopener"' : ''}>${item.logo_url ? `<img src="${escapeHTML(item.logo_url)}" alt="${escapeHTML(item.name)} logo" loading="lazy">` : `<strong>${escapeHTML(item.name)}</strong>`}<span>${escapeHTML(item.tier || 'Partner')}</span></a>`).join('');
+      sponsorRoot.innerHTML = sponsors.map((item) => `<a class="sponsor-logo-card" href="${escapeHTML(item.url || 'contact')}" ${/^https?:/i.test(item.url || '') ? 'target="_blank" rel="noopener"' : ''}>${item.logo_url ? `<img src="${escapeHTML(item.logo_url)}" alt="${escapeHTML(item.name)} logo" loading="lazy">` : `<strong>${escapeHTML(item.name)}</strong>`}<span>${escapeHTML(item.tier || 'Partner')}</span></a>`).join('');
       sponsorSection.hidden = false;
     }
   }

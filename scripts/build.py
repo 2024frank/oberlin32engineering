@@ -155,6 +155,12 @@ def asset_revision() -> str:
     return digest.hexdigest()[:10]
 
 
+def clean_path(path: str) -> str:
+    """about.html -> about, index.html -> '' (the site root)."""
+    stem = path[:-5] if path.endswith(".html") else path
+    return "" if stem == "index" else stem
+
+
 def build_pages(revision: str) -> None:
     base = read(SRC / "templates" / "base.html")
     header = read(SRC / "partials" / "header.html")
@@ -164,7 +170,9 @@ def build_pages(revision: str) -> None:
         source = SRC / "pages" / f"{stem}.html"
         if not source.exists():
             raise FileNotFoundError(f"Missing page body: {source}")
-        canonical = f"{DOMAIN}/{meta['path']}"
+        # Vercel serves these without the .html extension (cleanUrls), so the
+        # canonical, sitemap and feed must use the extensionless form.
+        canonical = f"{DOMAIN}/{clean_path(meta['path'])}"
         rendered = (
             base.replace("{{TITLE}}", meta["title"])
             .replace("{{DESCRIPTION}}", meta["description"])
@@ -225,7 +233,7 @@ def generate_sitemap() -> str:
         if stem in {"404", "privacy"}:
             continue
         priority = "1.0" if stem == "index" else ("0.9" if stem in {"projects", "competition", "join"} else "0.7")
-        location = f"{DOMAIN}/{meta['path']}"
+        location = f"{DOMAIN}/{clean_path(meta['path'])}"
         urls.append(f"  <url><loc>{html.escape(location)}</loc><changefreq>weekly</changefreq><priority>{priority}</priority></url>")
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" + "\n".join(urls) + "\n</urlset>\n"
 
