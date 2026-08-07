@@ -1841,3 +1841,23 @@ figcaption { color: var(--ink-3); }
 
 /* the dark gold/near-black wash behind the mission block */
 .mission-home { background-image: none; background-color: var(--paper-2); }
+
+/* Both of these heroes are flex containers, so the photo I appended became a
+   sibling column of the copy instead of stacking under it, and the inner
+   .container lost its centring. Same defect as .page-hero. */
+.competition-hero, .join-hero { display: block; }
+.competition-hero-inner, .join-hero-grid { display: block; }
+.competition-hero .page-hero-figure, .join-hero .page-hero-figure { margin-top: clamp(24px, 3vw, 40px); }
+.competition-title h1 { font-size: clamp(1.9rem, 4vw, 3.1rem); }
+.competition-title h1 em { color: var(--crimson); }
+.competition-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.competition-kicker i { flex: 0 1 90px; height: 1px; background: var(--line-strong); }
+
+/* Grids that reserved a column for ornament I removed.
+   display:none takes the child out of grid flow but the column track remains,
+   so the surviving content was squeezed into the narrow leftover track. On the
+   About page that pushed a whole paragraph into a 262px column. */
+.manifesto-grid,
+.competition-hero-bottom,
+.event-feature { grid-template-columns: 1fr !important; }
+.manifesto-copy, .event-feature-copy { max-width: 72ch; }
