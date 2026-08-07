@@ -691,23 +691,100 @@
       }
     });
 
+    /* Reset goes through our own endpoint so the mail comes from Resend on the
+     * society's domain, not from Supabase's default sender. */
     $('[data-reset-password]')?.addEventListener('click', async () => {
       const email = String($('input[name="email"]', loginForm)?.value || '').trim();
       if (!email) { authMessage.textContent = 'Enter your email address first.'; return; }
       try {
-        await request('/auth/v1/recover', {
-          method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, redirect_to: `${location.origin}/admin/` })
+        const response = await fetch('/api/members', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset', email })
         });
-        authMessage.textContent = 'Password reset email sent.';
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Could not send the reset email.');
+        authMessage.textContent = 'Check your inbox for a link to set a new password.';
       } catch (error) { authMessage.textContent = error.message; }
     });
+
+    /* Supabase sends people back here with the session in the URL fragment.
+     * Without this the recovery link just showed the sign-in form again, which
+     * is useless to someone who does not have a password yet. */
+    const handled = await consumeAuthFragment();
+    if (handled) return;
 
     session = loadSession();
     if (session && await ensureSession()) {
       try { await enterAdmin(); }
       catch (error) { saveSession(null); authMessage.textContent = error.message; }
     }
+  }
+
+  /* Read #access_token=...&type=recovery from the URL, adopt the session, and
+   * put the password form up. Returns true when it took over the screen. */
+  async function consumeAuthFragment() {
+    const raw = location.hash.startsWith('#') ? location.hash.slice(1) : '';
+    if (!raw) return false;
+    const params = new URLSearchParams(raw);
+    const accessToken = params.get('access_token');
+    if (!accessToken) {
+      if (params.get('error_description')) {
+        authMessage.textContent = decodeURIComponent(params.get('error_description'))
+          + ' Ask for a new link.';
+        history.replaceState(null, '', location.pathname);
+      }
+      return false;
+    }
+
+    saveSession({
+      access_token: accessToken,
+      refresh_token: params.get('refresh_token') || '',
+      expires_at: Number(params.get('expires_at') || 0),
+      token_type: params.get('token_type') || 'bearer'
+    });
+    // do not leave the token sitting in the address bar or in history
+    history.replaceState(null, '', location.pathname);
+
+    const kind = params.get('type');
+    if (kind !== 'recovery' && kind !== 'invite' && kind !== 'signup') {
+      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
+      return true;
+    }
+
+    const panel = $('[data-set-password]');
+    const form = $('[data-set-password-form]');
+    const message = $('[data-set-password-message]');
+    if (!panel || !form) {
+      try { await enterAdmin(); } catch (error) { authMessage.textContent = error.message; }
+      return true;
+    }
+
+    configuredLogin.hidden = true;
+    setupState.hidden = true;
+    panel.hidden = false;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const password = String(data.get('password') || '');
+      const confirm = String(data.get('confirm') || '');
+      if (password.length < 8) { message.textContent = 'Use at least 8 characters.'; return; }
+      if (password !== confirm) { message.textContent = 'Those two do not match.'; return; }
+      message.textContent = 'Saving...';
+      try {
+        await request('/auth/v1/user', {
+          method: 'PUT',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        panel.hidden = true;
+        await enterAdmin();
+      } catch (error) {
+        message.textContent = error.message || 'Could not save that password.';
+      }
+    });
+    return true;
   }
 
   document.addEventListener('DOMContentLoaded', initialize);

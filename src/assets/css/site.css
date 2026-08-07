@@ -1908,3 +1908,9 @@ figcaption { color: var(--ink-3); }
 }
 .build-stage-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important; }
 .final-stage-visual { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; }
+
+/* The hamburger bars were still white from the dark theme, so on the white
+   header the mobile menu button rendered as an empty circle outline. */
+.menu-toggle span { background: var(--ink); }
+.menu-toggle { border-color: var(--line-strong); }
+.menu-toggle[aria-expanded="true"] { background: var(--paper-2); }

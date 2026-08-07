@@ -50,6 +50,16 @@
           </form>
           <button class="text-button" type="button" data-reset-password>Send password reset email</button>
         </div>
+        <div data-set-password hidden>
+          <h2>Choose a password</h2>
+          <p>Set a password for your account. You will be signed in straight afterwards.</p>
+          <form class="auth-form" data-set-password-form>
+            <label>New password<input type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"></label>
+            <label>Confirm password<input type="password" name="confirm" autocomplete="new-password" required minlength="8" placeholder="Type it again"></label>
+            <button class="admin-button primary" type="submit"><span>Save and continue</span><b>→</b></button>
+            <p class="form-message" data-set-password-message aria-live="polite"></p>
+          </form>
+        </div>
         <div class="setup-state" data-setup-state hidden>
           <span class="setup-code">CONFIG_REQUIRED</span>
           <h2>Connect the content system</h2>

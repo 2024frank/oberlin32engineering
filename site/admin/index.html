@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=d5307fa71f">
-  <script src="../assets/js/runtime-config.js?v=d5307fa71f" defer></script>
-  <script src="admin.js?v=d5307fa71f" defer></script>
+  <link rel="stylesheet" href="admin.css?v=a1750f550f">
+  <script src="../assets/js/runtime-config.js?v=a1750f550f" defer></script>
+  <script src="admin.js?v=a1750f550f" defer></script>
 </head>
 <body>
 
@@ -49,6 +49,16 @@
             <p class="form-message" data-auth-message aria-live="polite"></p>
           </form>
           <button class="text-button" type="button" data-reset-password>Send password reset email</button>
+        </div>
+        <div data-set-password hidden>
+          <h2>Choose a password</h2>
+          <p>Set a password for your account. You will be signed in straight afterwards.</p>
+          <form class="auth-form" data-set-password-form>
+            <label>New password<input type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"></label>
+            <label>Confirm password<input type="password" name="confirm" autocomplete="new-password" required minlength="8" placeholder="Type it again"></label>
+            <button class="admin-button primary" type="submit"><span>Save and continue</span><b>→</b></button>
+            <p class="form-message" data-set-password-message aria-live="polite"></p>
+          </form>
         </div>
         <div class="setup-state" data-setup-state hidden>
           <span class="setup-code">CONFIG_REQUIRED</span>

@@ -34,6 +34,50 @@ module.exports = async (req, res) => {
   if (missing.length) return L.send(res, 500, { error: `Server not configured: ${missing.join(', ')}` });
 
   try {
+    /* Password reset runs before the admin check: the whole point is that the
+     * person asking cannot sign in. It always reports success, so the endpoint
+     * cannot be used to discover which addresses have accounts. */
+    if (req.method === 'POST') {
+      const early = await L.readJson(req);
+      if (String(early.action || '') === 'reset') {
+        const email = String(early.email || '').trim().toLowerCase();
+        if (!L.isEmail(email)) return L.send(res, 400, { error: 'That email address does not look right.' });
+
+        try {
+          const rows = await L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id,full_name`);
+          const known = Array.isArray(rows) && rows[0];
+          if (known) {
+            const link = await L.generateActionLink('recovery', email, RESET_REDIRECT);
+            if (link) {
+              const tpl = await template(
+                'password_reset',
+                'Reset your password',
+                'Hi {{name}},\n\nUse the button below to choose a new password.'
+              );
+              const name = known.full_name || email.split('@')[0];
+              const md = L.fillTemplate(splitAction(tpl.body_markdown), { name, action: '' });
+              await L.sendEmail({
+                to: email,
+                subject: tpl.subject,
+                tag: 'password-reset',
+                html: L.wrapEmail({
+                  title: 'Choose a new password',
+                  bodyHtml: L.markdownToHtml(md),
+                  actionLabel: 'Set a new password',
+                  actionUrl: link,
+                }),
+              });
+            }
+          }
+        } catch (err) {
+          /* Log-shaped, but never leak whether the address exists. */
+          console.error('reset failed', err && err.message);
+        }
+        return L.send(res, 200, { ok: true });
+      }
+      req.body = early;   // hand the parsed body to the admin paths below
+    }
+
     const admin = await L.requireAdmin(req);
 
     /* ---------------------------------------------------------- list ---- */
@@ -49,32 +93,6 @@ module.exports = async (req, res) => {
 
     const body = await L.readJson(req);
     const action = String(body.action || 'invite');
-
-    /* ------------------------------------------------ password reset ---- */
-    if (action === 'reset') {
-      const email = String(body.email || '').trim().toLowerCase();
-      if (!L.isEmail(email)) return L.send(res, 400, { error: 'That email address does not look right.' });
-
-      const link = await L.generateActionLink('recovery', email, RESET_REDIRECT);
-      if (!link) return L.send(res, 502, { error: 'Supabase did not return a reset link.' });
-
-      const tpl = await template('password_reset', 'Reset your password', 'Use the button below to choose a new password.');
-      const name = String(body.full_name || '').trim() || email.split('@')[0];
-      const md = L.fillTemplate(splitAction(tpl.body_markdown), { name, action: '' });
-
-      await L.sendEmail({
-        to: email,
-        subject: tpl.subject,
-        tag: 'password-reset',
-        html: L.wrapEmail({
-          title: 'Choose a new password',
-          bodyHtml: L.markdownToHtml(md),
-          actionLabel: 'Set a new password',
-          actionUrl: link,
-        }),
-      });
-      return L.send(res, 200, { ok: true, sent: email });
-    }
 
     /* ------------------------------------------------------- invite ---- */
     if (action === 'invite' || action === 'resend') {
