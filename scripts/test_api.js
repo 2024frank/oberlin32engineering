@@ -147,11 +147,33 @@ async function main() {
     const value = String(url);
     if (value.includes('/rest/v1/rpc/allow_account_email')) return response(200, true);
     if (value.includes('/rest/v1/profiles?')) return response(200, []);
+    if (value.includes('/rest/v1/invitations?email=')) return response(200, []);
     throw new Error(`unexpected request: ${url}`);
   };
   res = await runHandler(members, request('POST', { action: 'reset', email: 'nobody@oberlin.edu' }));
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.payload, { ok: true });
+
+  // An invited officer who never finished setup has no profiles row. That is
+  // the person most likely to need a link, and the lookup used to skip them
+  // while still reporting success, so nothing arrived and nothing complained.
+  const pendingSends = [];
+  global.fetch = async (url, options = {}) => {
+    const value = String(url);
+    if (value.includes('/rest/v1/rpc/allow_account_email')) return response(200, true);
+    if (value.includes('/rest/v1/profiles?')) return response(200, []);
+    if (value.includes('/rest/v1/invitations?email=')) return response(200, [{ id: 'inv-1', full_name: 'Invited Officer' }]);
+    if (value.includes('/auth/v1/admin/generate_link')) {
+      return response(200, { id: 'u-1', email: 'invited@oberlin.edu', action_link: 'https://stub/verify?token=x', email_otp: '000000' });
+    }
+    if (value.includes('api.resend.com')) { pendingSends.push(JSON.parse(options.body)); return response(200, { id: 'sent-1' }); }
+    throw new Error(`unexpected request: ${url}`);
+  };
+  res = await runHandler(members, request('POST', { action: 'reset', email: 'invited@oberlin.edu' }));
+  assert.equal(res.statusCode, 200);
+  assert.equal(pendingSends.length, 1, 'an invited officer with no profile must still receive a reset email');
+  assert.ok(pendingSends[0].html.includes('https://stub/verify?token=x'), 'the reset email must carry the link');
+  assert.ok(!/one-time code|Enter this/i.test(pendingSends[0].html), 'the reset email must not contain a code');
 
   // A deployment made before the SQL migration still uses bounded, in-process
   // account-email limits instead of disabling password recovery or invitations.
@@ -162,6 +184,7 @@ async function main() {
       return response(404, { code: 'PGRST202', message: 'Could not find the function allow_account_email in the schema cache' });
     }
     if (value.includes('/rest/v1/profiles?')) { fallbackProfileChecks += 1; return response(200, []); }
+    if (value.includes('/rest/v1/invitations?email=')) return response(200, []);
     throw new Error(`unexpected request: ${url}`);
   };
   for (let index = 0; index < 4; index += 1) {

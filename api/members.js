@@ -42,11 +42,15 @@ async function maySendAccountEmail(req, email, kind) {
   }
 }
 
-function codeEmail(name, code) {
-  const safeName = L.escapeHtml(name);
-  const safeCode = L.escapeHtml(code);
+function resetEmail(name, link) {
   return L.wrapEmail({
-    bodyHtml: `<p>Hi ${safeName},</p><p>Enter this one-time code in the officer portal to choose a new password:</p><p style="font:700 28px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;color:#7b1230;margin:22px 0">${safeCode}</p><p>The code is temporary. If you did not request it, you can ignore this message.</p>`
+    bodyHtml:
+      `<p>Hi ${L.escapeHtml(name)},</p>` +
+      `<p>Use the link below to choose a new password for the officer portal. It works once and lasts an hour.</p>` +
+      `<p>If you did not ask for this, you can ignore this message and nothing will change.</p>`,
+    actionUrl: link,
+    actionLabel: 'Choose a new password',
+    footerNote: 'Oberlin 3-2 Engineering Society, Oberlin College'
   });
 }
 
@@ -241,17 +245,21 @@ module.exports = async (req, res) => {
 
         try {
           if (await maySendAccountEmail(req, email, 'password_reset')) {
-            const rows = await L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id,full_name`);
-            const known = Array.isArray(rows) ? rows[0] : null;
+            const [profileRows, inviteRows] = await Promise.all([
+              L.sb(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id,full_name`),
+              L.sb(`/rest/v1/invitations?email=eq.${encodeURIComponent(email)}&status=eq.sent&select=id,full_name&order=sent_at.desc&limit=1`)
+            ]);
+            const known = (Array.isArray(profileRows) ? profileRows[0] : null)
+              || (Array.isArray(inviteRows) ? inviteRows[0] : null);
             if (known) {
               const access = await L.generateAccess('recovery', email, RESET_REDIRECT);
-              if (!access.code) throw new Error('Supabase did not return a recovery code.');
+              if (!access.link) throw new Error('Supabase did not return a recovery link.');
               const name = known.full_name || email.split('@')[0];
               await L.sendEmail({
                 to: email,
-                subject: 'Your Oberlin 3-2 officer-portal code',
+                subject: 'Set a new password for the officer portal',
                 tag: 'password-reset',
-                html: codeEmail(name, access.code)
+                html: resetEmail(name, access.link)
               });
             }
           }
@@ -312,7 +320,7 @@ module.exports = async (req, res) => {
         access = await L.generateAccess('recovery', email, RESET_REDIRECT);
         reused = true;
       }
-      if (!access.link || !access.user?.id) return L.send(res, 502, { error: 'Supabase did not return a complete account setup code.' });
+      if (!access.link || !access.user?.id) return L.send(res, 502, { error: 'Supabase did not return a complete account setup link.' });
 
       const name = fullName || access.user.user_metadata?.full_name || email.split('@')[0];
       let resendId = null;

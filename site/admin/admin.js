@@ -31,11 +31,11 @@
   const authScreen = $('[data-auth-screen]');
   const portal = $('[data-portal]');
   const loginView = $('[data-login-view]');
-  const codeView = $('[data-code-view]');
+  const recoverView = $('[data-recover-view]');
   const passwordView = $('[data-password-view]');
   const configView = $('[data-config-view]');
   const loginForm = $('[data-login-form]');
-  const codeForm = $('[data-code-form]');
+  const recoverForm = $('[data-recover-form]');
   const passwordForm = $('[data-password-form]');
   const content = $('[data-content]');
   const viewTitle = $('[data-view-title]');
@@ -260,21 +260,6 @@
     saveSession(next);
   }
 
-  async function verifyCode(email, token) {
-    let lastError = null;
-    for (const type of ['invite', 'recovery']) {
-      try {
-        const next = await request('/auth/v1/verify', {
-          method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ type, email, token })
-        });
-        next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
-        saveSession(next);
-        return type;
-      } catch (error) { lastError = error; }
-    }
-    throw lastError || new Error('That code was not accepted.');
-  }
-
   async function loadProfile() {
     if (!session?.user?.id && session?.access_token) {
       session.user = await request('/auth/v1/user', { headers: authHeaders() });
@@ -298,7 +283,7 @@
   async function signOut() {
     try { if (session?.access_token) await request('/auth/v1/logout', { method: 'POST', headers: authHeaders() }); }
     catch (_) { /* local sign-out still succeeds */ }
-    saveSession(null); profile = null; portal.hidden = true; authScreen.hidden = false; loginView.hidden = false; codeView.hidden = true; passwordView.hidden = true;
+    saveSession(null); profile = null; portal.hidden = true; authScreen.hidden = false; showAuth('login');
   }
 
   async function rows(table, order = '') {
@@ -954,7 +939,7 @@
     }).catch(() => {});
   }
 
-  function showAuth(view) { loginView.hidden=view!=='login'; codeView.hidden=view!=='code'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
+  function showAuth(view) { loginView.hidden=view!=='login'; recoverView.hidden=view!=='recover'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
 
   /* The setup link is the whole invitation.
    *
@@ -1010,10 +995,26 @@
   async function initialize() {
     bindShell(); if(!configured){showAuth('config');return;} showAuth('login');
     loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$('[data-login-message]');message.textContent='';const button=$('button[type="submit"]',loginForm);button.disabled=true;try{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();}catch(error){saveSession(null);message.textContent=error.message;}finally{button.disabled=false;}});
-    $('[data-request-code]').addEventListener('click',()=>{const email=$('input[name="email"]',loginForm).value;$('input[name="email"]',codeForm).value=email;showAuth('code');});
-    $('[data-back-login]').addEventListener('click',()=>showAuth('login'));
-    $('[data-send-reset]').addEventListener('click',async()=>{const email=String($('input[name="email"]',codeForm).value||'').trim();const message=$('[data-code-message]');if(!email){message.textContent='Enter your email address first.';return;}message.classList.remove('success');message.textContent='Sending…';try{const response=await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset',email})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not request a code.');message.textContent='If that address has an officer account, a code has been sent.';message.classList.add('success');}catch(error){message.textContent=error.message;}});
-    codeForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(codeForm);const email=String(data.get('email')||'').trim();const token=String(data.get('code')||'').replace(/\s/g,'');const message=$('[data-code-message]');message.textContent='Checking…';try{await verifyCode(email,token);showAuth('password');}catch(error){message.textContent='That code was not accepted. Request a new code and try again.';}});
+    $('[data-request-recover]').addEventListener('click',()=>{$('input[name="email"]',recoverForm).value=$('input[name="email"]',loginForm).value;showAuth('recover');});
+    $$('[data-back-login]').forEach((button)=>button.addEventListener('click',()=>showAuth('login')));
+    recoverForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = String(new FormData(recoverForm).get('email') || '').trim();
+      const message = $('[data-recover-message]');
+      message.classList.remove('success');
+      message.textContent = 'Sending…';
+      try {
+        const response = await fetch('/api/members', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset', email })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Could not send the link.');
+        message.textContent = 'If that address has an officer account, a link is on its way. Check your spam folder if it does not arrive.';
+        message.classList.add('success');
+      } catch (error) { message.textContent = error.message; }
+    });
+
     passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$('[data-password-message]');if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();}catch(error){message.textContent=error.message;}});
     // A setup or reset link in the URL wins over any stale stored session.
     if (await consumeAuthFragment()) return;

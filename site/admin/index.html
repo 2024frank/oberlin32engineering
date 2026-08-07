@@ -40,20 +40,19 @@
           <button class="button primary" type="submit">Sign in</button>
           <p class="form-message" data-login-message aria-live="polite"></p>
         </form>
-        <button class="link-button" type="button" data-request-code>Trouble signing in?</button>
+        <button class="link-button" type="button" data-request-recover>Forgot your password?</button>
       </div>
 
-      <div class="auth-card" data-code-view hidden>
-        <p class="eyebrow">One-time code</p>
-        <h2>Enter the code from your email</h2>
-        <p>If you were sent a numeric code rather than a link, enter it here. Invitation links from your email do not need a code.</p>
-        <form data-code-form>
+      <div class="auth-card" data-recover-view hidden>
+        <p class="eyebrow">Password help</p>
+        <h2>Send me a sign-in link</h2>
+        <p>We will email a link that lets you choose a new password. It works once and lasts an hour.</p>
+        <form data-recover-form>
           <label>Email address<input type="email" name="email" autocomplete="username" required placeholder="name@oberlin.edu"></label>
-          <label>One-time code<input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="10" required></label>
-          <button class="button primary" type="submit">Verify code</button>
-          <p class="form-message" data-code-message aria-live="polite"></p>
+          <button class="button primary" type="submit">Email me a link</button>
+          <p class="form-message" data-recover-message aria-live="polite"></p>
         </form>
-        <div class="auth-card__links"><button class="link-button" type="button" data-send-reset>Email me a reset link</button><button class="link-button" type="button" data-back-login>Back to sign in</button></div>
+        <div class="auth-card__links"><button class="link-button" type="button" data-back-login>Back to sign in</button></div>
       </div>
 
       <div class="auth-card" data-password-view hidden>
