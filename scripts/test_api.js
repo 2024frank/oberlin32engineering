@@ -194,7 +194,18 @@ async function main() {
       return response(404, { code: 'PGRST202', message: 'Could not find the function allow_account_email in the schema cache' });
     }
     if (value.endsWith('/auth/v1/admin/generate_link')) {
-      return response(200, { properties: { email_otp: '123456', action_link: 'https://example.supabase.co/auth/v1/verify?token=stub' }, user: { id: 'new-user', user_metadata: {} } });
+      // The real Supabase response puts the account's fields at the top
+      // level next to action_link, with no nested `user` object. Stubbing the
+      // nested shape is what let a 502 on every invitation ship green.
+      return response(200, {
+        id: 'new-user',
+        email: 'invitee@oberlin.edu',
+        user_metadata: {},
+        action_link: 'https://example.supabase.co/auth/v1/verify?token=stub',
+        email_otp: '123456',
+        hashed_token: 'stub',
+        verification_type: 'invite'
+      });
     }
     if (value === 'https://api.resend.com/emails') return response(200, { id: 'invite-mail' });
     if (value.includes('/rest/v1/invitations?email=')) return response(200, []);

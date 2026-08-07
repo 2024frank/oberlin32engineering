@@ -189,11 +189,19 @@ async function generateAccess(type, email, redirectTo) {
     method: 'POST',
     body: JSON.stringify({ type, email, options: { redirect_to: redirectTo } }),
   });
+  /* Supabase returns the invited account's own fields at the top level of the
+   * response, next to action_link and email_otp. There is no nested `user`
+   * object, so reading data.user came back undefined and every invitation
+   * failed the completeness check in members.js with a 502. Older and
+   * self-hosted versions do nest under `properties`/`user`, so accept all
+   * three shapes rather than swapping one assumption for another. */
   const properties = (data && data.properties) || data || {};
+  const nested = data?.user || properties?.user || null;
+  const flat = data && data.id ? { id: data.id, email: data.email, user_metadata: data.user_metadata } : null;
   return {
     code: properties.email_otp || null,
     link: properties.action_link || null,
-    user: data?.user || properties?.user || null,
+    user: nested || flat,
   };
 }
 
