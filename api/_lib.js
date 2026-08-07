@@ -152,11 +152,18 @@ function wrapEmail({ title, bodyHtml, actionLabel, actionUrl, footerNote }) {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:560px;background:#ffffff;border:1px solid #e2e5ea;border-radius:6px">
         <tr><td style="height:6px;background:#a6192e;border-radius:6px 6px 0 0"></td></tr>
-        <tr><td style="padding:30px 30px 8px">
-          <div style="font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#6b7280;text-transform:uppercase">
-            Oberlin 3-2 Engineering Society
-          </div>
-          <h1 style="margin:14px 0 4px;font:700 22px/1.25 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
+        <tr><td style="padding:26px 30px 6px">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="padding-right:12px" valign="middle">
+              <img src="${SITE}/assets/images/logo-email.png" width="44" height="44" alt=""
+                   style="display:block;width:44px;height:44px;border:0">
+            </td>
+            <td valign="middle" style="font:600 13px/1.3 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
+              Oberlin 3-2 Engineering Society<br>
+              <span style="font-weight:400;font-size:12px;color:#6b7280">Oberlin College</span>
+            </td>
+          </tr></table>
+          <h1 style="margin:22px 0 4px;font:700 21px/1.3 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14161a">
             ${escapeHtml(title)}
           </h1>
         </td></tr>
