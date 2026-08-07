@@ -1888,3 +1888,24 @@ figcaption { color: var(--ink-3); }
 }
 .figure-band figcaption b { color: var(--crimson); font-weight: 700; margin-right: 8px; letter-spacing: .08em; }
 @media (max-width: 720px) { .figure-band-grid { grid-template-columns: 1fr; } }
+
+/* Numbered lists whose article has three direct children (number, heading,
+   body) inside a two-column grid: the body wraps onto row 2 and lands back in
+   the ~60px number column, so it renders one word per line. Pin everything
+   after the number to column 2. */
+.continuity-stack article > *:not(span),
+.problem-list article > *:not(span),
+.standards-list article > *:not(span),
+.step-stack article > *:not(span),
+.question-stack article > *:not(span) { grid-column: 2; }
+
+/* Card grids that packed more columns than their copy can hold. A 158px track
+   fits about two words per line, which reads as vertical text. */
+.pathway-year-system { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; }
+.pathway-year-system .pathway-transfer-gate { grid-column: 1 / -1; }
+.method-grid, .standards-grid, .judging-grid, .criteria-grid,
+.process-grid, .step-grid, .track-grid {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+}
+.build-stage-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important; }
+.final-stage-visual { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; }
