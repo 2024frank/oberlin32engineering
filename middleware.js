@@ -36,8 +36,10 @@ export default function middleware(request) {
   if (url.pathname.startsWith('/admin/')) return;
   if (SHARED_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return;
 
+  // Target '/admin', not '/admin/index.html': with cleanUrls on, Vercel strips
+  // the extension, so pointing at the .html file no longer resolves.
   const target = new URL(url);
-  target.pathname = url.pathname === '/' ? '/admin/index.html' : `/admin${url.pathname}`;
+  target.pathname = url.pathname === '/' ? '/admin' : `/admin${url.pathname}`;
 
   return new Response(null, {
     headers: { 'x-middleware-rewrite': target.toString() },
