@@ -1797,3 +1797,47 @@ figcaption { color: var(--ink-3); }
 .join-hero, .competition-hero { min-height: 0; padding: clamp(34px, 4vw, 56px) 0 0; overflow: visible; }
 .join-hero-grid, .competition-hero-inner { grid-template-columns: 1fr; }
 .compact-page-hero .page-hero-figure { margin-top: clamp(24px, 3vw, 36px); }
+
+/* ============================================================================
+   Full-bleed decorative layers.
+   These paint OVER a section rather than setting its background-color, so
+   re-grounding the sections left them untouched and my contrast audit, which
+   only sampled background-color, could not see them. The Challenge block on the
+   home page stayed fully dark under a circuit-trace overlay because of this.
+   ========================================================================== */
+.competition-home::after,
+.competition-hero-art::after,
+.path-stage::after,
+.track-card::after,
+.competition-process::before,
+.leader-card::after,
+.event-feature-art::before,
+.resource-card.pinned::after,
+.join-form-callout::after,
+.pathway-year::after,
+.pathway-transfer-gate::after,
+.official-pathway-banner::after,
+.impact-hero::before,
+.media-hero::before,
+.roadmap-line::before,
+.machine-shell::after,
+.orbit::before,
+.project-card-visual::before,
+.project-card-visual::after { content: none !important; }
+
+.competition-visual,
+.competition-hero-art,
+.event-feature-art,
+.hero-field,
+.join-hero-art { display: none !important; }
+
+/* the Challenge block, re-grounded on paper */
+.competition-home { background: var(--paper-2); min-height: 0; padding: clamp(56px, 7vw, 96px) 0; }
+.competition-home :is(h1,h2,h3,h4,p,span,strong,small,li,b) { color: var(--ink); }
+.competition-home .eyebrow, .competition-home .micro-label,
+.competition-home [class*="kicker"] { color: var(--ink-3); }
+.competition-home em { color: var(--crimson); }
+.competition-home .button-primary, .competition-home .button-gold { color: #fff; }
+
+/* the dark gold/near-black wash behind the mission block */
+.mission-home { background-image: none; background-color: var(--paper-2); }
