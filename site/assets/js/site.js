@@ -324,6 +324,49 @@
     $('[data-search-close]')?.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
     input.addEventListener('input', () => render(input.value));
+
+    dialog.addEventListener('keydown', (event) => {
+      if (!dialog.open) return;
+      const key = event.key;
+      const isArrowDown = key === 'ArrowDown';
+      const isArrowUp = key === 'ArrowUp';
+
+      if (isArrowDown || isArrowUp) {
+        const active = document.activeElement;
+        const links = $$('.search-result', results);
+        if (!links.length) return;
+
+        event.preventDefault();
+
+        if (active === input) {
+          if (isArrowDown) {
+            links[0].focus();
+          } else {
+            links[links.length - 1].focus();
+          }
+        } else {
+          const idx = links.indexOf(active);
+          if (idx !== -1) {
+            if (isArrowDown) {
+              if (idx === links.length - 1) {
+                input.focus();
+              } else {
+                links[idx + 1].focus();
+              }
+            } else if (isArrowUp) {
+              if (idx === 0) {
+                input.focus();
+              } else {
+                links[idx - 1].focus();
+              }
+            }
+          } else {
+            links[0].focus();
+          }
+        }
+      }
+    });
+
     document.addEventListener('keydown', (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
