@@ -109,6 +109,8 @@
     return `<svg class="icon ${extraClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
   }
 
+  const reference = (name, label, table, options = {}) => ({ name, label, type: 'select', reference: table, options: [], ...options });
+
   const collections = {
     projects: {
       label: 'Projects', singular: 'project', titleField: 'title', subtitleField: 'status', imageField: 'cover_url', order: 'sort_order.asc,title.asc',
@@ -118,7 +120,7 @@
     project_updates: {
       label: 'Project updates', singular: 'project update', titleField: 'title', subtitleField: 'milestone', imageField: 'image_url', order: 'published_at.desc,title.asc',
       description: 'Record dated decisions, tests, setbacks, and milestones for real project work.',
-      fields: [text('id','Record ID',{required:true}), text('project_id','Project ID',{required:true}), text('title','Title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('body','Update',{required:true,rows:8}), text('milestone','Milestone label'), date('published_at','Publication date'), image('image_url','Image'), check('published','Visible on the public site')]
+      fields: [text('id','Record ID',{required:true}), reference('project_id','Project','projects',{required:true,placeholder:'Choose the project this update belongs to'}), text('title','Title',{required:true}), area('summary','Summary',{required:true,rows:3}), area('body','Update',{required:true,rows:8}), text('milestone','Milestone label'), date('published_at','Publication date'), image('image_url','Image'), check('published','Visible on the public site')]
     },
     events: {
       label: 'Events', singular: 'event', titleField: 'title', subtitleField: 'date_label', imageField: 'cover_url', order: 'start_at.asc,title.asc',
@@ -440,13 +442,17 @@
     const minmax = `${field.min !== undefined ? ` min="${field.min}"` : ''}${field.max !== undefined ? ` max="${field.max}"` : ''}`;
     if (field.type === 'checkbox') return `<label class="checkbox"><input type="checkbox" name="${escapeHTML(field.name)}" ${value ? 'checked' : ''}><span>${escapeHTML(field.label)}</span></label>`;
     if (field.type === 'textarea' || field.type === 'json') return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><textarea class="${field.type === 'json' ? 'code' : ''}" name="${escapeHTML(field.name)}" rows="${field.rows || 5}"${required}>${escapeHTML(value)}</textarea>${help}</label>`;
-    if (field.type === 'select') return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><select name="${escapeHTML(field.name)}"${required}>${field.options.map((option) => `<option value="${escapeHTML(option)}" ${String(value) === option ? 'selected' : ''}>${escapeHTML(option)}</option>`).join('')}</select>${help}</label>`;
+    if (field.type === 'select') {
+      const options = (field.options || []).map((option) => (typeof option === 'string' ? { value: option, label: option } : option));
+      const placeholder = field.placeholder ? `<option value="">${escapeHTML(field.placeholder)}</option>` : '';
+      return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><select name="${escapeHTML(field.name)}"${required}>${placeholder}${options.map((option) => `<option value="${escapeHTML(option.value)}" ${String(value) === String(option.value) ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${help}</label>`;
+    }
     if (field.type === 'image') return `<div class="image-field" data-image-field="${escapeHTML(field.name)}"><span>${escapeHTML(field.label)}</span><div class="image-control"><img src="${escapeHTML(value || '../assets/images/engineering-field.svg')}" alt=""><div><input type="url" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="Image URL"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload="${escapeHTML(field.name)}"><small>Use a licensed image and keep its credit in content/photo_credits.json.</small></div></div></div>`;
     const inputType = field.type === 'array' ? 'text' : field.type;
     return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><input type="${escapeHTML(inputType)}" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}"${required}${minmax}>${help}</label>`;
   }
 
-  function openEditor(view, record = {}, forceNew = false) {
+  async function openEditor(view, record = {}, forceNew = false) {
     const definition = collections[view]; if (!definition) return;
     editorContext = { view, originalId: forceNew ? '' : (record.id || ''), record };
     editorKicker.textContent = definition.label; editorTitle.textContent = `${forceNew || !record.id ? 'Create' : 'Edit'} ${definition.singular}`;
@@ -464,6 +470,18 @@
     // The first field is the one the officer is here to fill in, and the one an
     // empty-form save should point at. Previously that was Record ID, so the
     // browser sent them to a plumbing field to explain what was missing.
+    // A reference field needs the other collection's records before it can be
+    // drawn, so resolve them first. A failed lookup leaves an empty picker
+    // rather than blocking the whole editor.
+    await Promise.all(visible.filter((field) => field.reference).map(async (field) => {
+      const other = collections[field.reference];
+      try {
+        const items = await rows(field.reference, other?.order || 'title.asc');
+        field.options = (items || []).map((item) => ({ value: item.id, label: titleFor(other || {}, item) }));
+      } catch (_) { field.options = []; }
+      if (!field.options.length) field.help = `No ${escapeHTML(other?.label.toLowerCase() || field.reference)} exist yet. Create one first.`;
+    }));
+
     const titleIndex = visible.findIndex((field) => field.name === definition.titleField);
     if (titleIndex > 0) visible.unshift(...visible.splice(titleIndex, 1));
     const slugField = visible.find((field) => field.name === 'slug');
