@@ -3,7 +3,13 @@
 /* Cron entry point. Vercel calls this on the schedule in vercel.json with
  * `Authorization: Bearer $CRON_SECRET`. It picks up broadcasts whose send time
  * has arrived, plus any that ran out of function time mid-send, and continues
- * them. Everything about actually sending lives in api/broadcasts.js. */
+ * them. Everything about actually sending lives in api/broadcasts.js.
+ *
+ * This project is on a Hobby plan, where Vercel permits one cron run per day,
+ * so this is a once-daily sweep rather than a fine-grained scheduler. The
+ * portal is the other trigger: it resumes anything mid-send when an officer
+ * signs in, and drives "send now" to completion in the browser. The scheduling
+ * UI says plainly that a scheduled message goes out on the next daily sweep. */
 
 const L = require('./_lib');
 const { runSend, SEND_BUDGET_MS } = require('./broadcasts');

@@ -19,6 +19,14 @@
     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}) }).format(date);
   };
   const pretty = (value = '') => String(value).replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  /* datetime-local wants local wall-clock time. toISOString would hand it UTC,
+   * which silently shifts the value the officer sees by their offset. */
+  const localInputValue = (value) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
 
   const authScreen = $('[data-auth-screen]');
   const portal = $('[data-portal]');
@@ -464,6 +472,27 @@
    * next tick, so nothing here has to wait for a whole list to go out. */
   let broadcastDraftId = '';
 
+  /* A send request only delivers as many people as fit in the function's time
+   * budget. This keeps asking until the server reports nothing left, so a list
+   * of any size finishes while the officer watches. Each call is safe to repeat
+   * because the server skips anyone who already has a delivery record. */
+  async function driveSend(id, say) {
+    let total = 0;
+    for (let pass = 0; pass < 60; pass += 1) {
+      const result = await apiCall(`/api/broadcasts?id=${encodeURIComponent(id)}&action=send`, { method: 'POST' });
+      total += result.sent || 0;
+      if (!result.remaining) {
+        toast(result.message);
+        return result;
+      }
+      say(`Sent ${total} so far…`);
+    }
+    // Sixty passes is far past any realistic society mailing list; stopping
+    // here means something is wrong rather than slow.
+    toast('Still sending. It will continue in the background.', 'error');
+    return null;
+  }
+
   function broadcastStatusLabel(broadcast) {
     if (broadcast.status === 'scheduled' && broadcast.scheduled_for) {
       return `Scheduled for ${formatDate(broadcast.scheduled_for, true)}`;
@@ -495,10 +524,11 @@
         </form>
         ${editing && !locked ? `<div style="display:flex;flex-wrap:wrap;gap:.6rem;padding:0 1rem 1rem">
           <button class="button secondary" type="button" data-broadcast-test>Send a test to me</button>
-          <label style="display:flex;align-items:center;gap:.5rem;margin:0"><span>Schedule</span><input type="datetime-local" data-broadcast-when value="${editing.scheduled_for ? escapeHTML(new Date(editing.scheduled_for).toISOString().slice(0, 16)) : ''}"></label>
+          <label style="display:flex;align-items:center;gap:.5rem;margin:0"><span>Schedule</span><input type="datetime-local" data-broadcast-when value="${editing.scheduled_for ? escapeHTML(localInputValue(editing.scheduled_for)) : ''}"></label>
           <button class="button secondary" type="button" data-broadcast-schedule>Set schedule</button>
           <button class="button primary" type="button" data-broadcast-send>Send now</button>
-        </div>` : ''}
+        </div>
+        <p class="form-message" style="padding:0 1rem 1rem">Scheduled messages go out on the daily 9:00am sweep at or after the time you pick. For an exact time, use Send now.</p>` : ''}
       </section>
       <section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>All messages</h3><p>${broadcasts.length} total</p></div></header>
         <div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Subject</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>${broadcasts.map((item) => `<tr><td><strong>${escapeHTML(item.subject)}</strong>${item.preheader ? `<br><small>${escapeHTML(item.preheader)}</small>` : ''}</td><td>${escapeHTML(broadcastStatusLabel(item))}</td><td>${escapeHTML(formatDate(item.created_at, true))}</td><td><button class="link-button" type="button" data-open-broadcast="${escapeHTML(item.id)}">Open</button>${item.status === 'draft' || item.status === 'scheduled' ? ` <button class="link-button" type="button" data-delete-broadcast="${escapeHTML(item.id)}">Delete</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="4">No messages yet.</td></tr>'}</tbody></table></div>
@@ -546,12 +576,7 @@
     $('[data-broadcast-send]')?.addEventListener('click', () => confirmAction(
       `Send "${editing.subject}" now?`,
       `This goes to ${audienceSize} ${audienceSize === 1 ? 'person' : 'people'} and cannot be recalled.`,
-      async () => {
-        say('Sending…');
-        const result = await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=send`, { method: 'POST' });
-        toast(result.message);
-        await renderBroadcasts();
-      }
+      async () => { await driveSend(editing.id, say); await renderBroadcasts(); }
     ));
 
     $$('[data-open-broadcast]', content).forEach((button) => button.addEventListener('click', async () => {
@@ -600,6 +625,19 @@
     try { await apiCall('/api/members', { method: 'POST', body: JSON.stringify({ action: 'accept_self' }) }); } catch (_) { /* existing officers can still continue */ }
     await loadProfile();
     authScreen.hidden=true; portal.hidden=false; $('[data-user-name]').textContent=profile.full_name||profile.email; $('[data-user-role]').textContent=profile.role; $('[data-user-initials]').textContent=initials(profile.full_name||profile.email); await switchView('dashboard');
+    resumeStalledBroadcasts();
+  }
+
+  /* The daily cron is the only scheduled trigger this plan allows, so a
+   * broadcast left part-sent would otherwise wait until tomorrow. Signing in
+   * nudges it along. Failures here are not the officer's problem. */
+  function resumeStalledBroadcasts() {
+    if (profile?.role !== 'admin') return;
+    apiCall('/api/broadcasts').then(async (data) => {
+      const stalled = (data.broadcasts || []).find((item) => item.status === 'sending');
+      if (!stalled) return;
+      await driveSend(stalled.id, () => {});
+    }).catch(() => {});
   }
 
   function showAuth(view) { loginView.hidden=view!=='login'; codeView.hidden=view!=='code'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
