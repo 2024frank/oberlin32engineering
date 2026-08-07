@@ -73,6 +73,22 @@ function invitationEmail(name, role, description, link, note, inviter) {
   }).replace('</div></body>', (from ? from : '') + '</div></body>');
 }
 
+/* The rate limit is a rolling hour from the oldest send still inside the
+ * window, so the retry time is knowable rather than a shrug. Only queried on
+ * the rejection path, which is rare. */
+async function retryAfterMinutes(email, kind) {
+  try {
+    const salt = process.env.SUBMISSION_SALT || L.SERVICE_KEY;
+    const emailHash = L.sha256(`${salt}:${email}`);
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const rows = await L.sb(`/rest/v1/account_email_events?email_hash=eq.${emailHash}&kind=eq.${encodeURIComponent(kind)}&created_at=gt.${encodeURIComponent(since)}&select=created_at&order=created_at.asc&limit=1`);
+    const oldest = Array.isArray(rows) && rows[0] ? rows[0].created_at : null;
+    if (!oldest) return 60;
+    const minutes = Math.ceil((new Date(oldest).getTime() + 60 * 60 * 1000 - Date.now()) / 60000);
+    return Math.min(60, Math.max(1, minutes));
+  } catch (_) { return 60; }
+}
+
 async function seatUsage(roleId, email) {
   let profiles = [];
   try {
@@ -309,7 +325,10 @@ module.exports = async (req, res) => {
       if (!role) return L.send(res, 400, { error: 'That role no longer exists.' });
       if (!role.active) return L.send(res, 400, { error: `${role.label} is not currently active.` });
       if (await seatUsage(role.id, email) >= Number(role.seats || 1)) return L.send(res, 409, { error: `${role.label} has no open seats. Increase the seat count or choose another role.` });
-      if (!await maySendAccountEmail(req, email, 'invitation')) return L.send(res, 429, { error: 'Too many recent emails were requested for this address. Try again later.' });
+      if (!await maySendAccountEmail(req, email, 'invitation')) {
+        const wait = await retryAfterMinutes(email, 'invitation');
+        return L.send(res, 429, { error: `This address has already been emailed three times in the last hour. You can send another invitation in about ${wait} minute${wait === 1 ? '' : 's'}. If they already have a link, they can use it or request a new one from the sign-in page.` });
+      }
 
       let access;
       let reused = false;
