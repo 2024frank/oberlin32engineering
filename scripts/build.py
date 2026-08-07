@@ -141,11 +141,17 @@ def write(path: Path, text: str) -> None:
 
 
 def asset_revision() -> str:
+    """Hash every deployable asset, including the admin.
+
+    src/admin was excluded, so editing admin.css never changed the revision.
+    A correct build shipped while browsers kept serving the cached stylesheet.
+    """
     digest = hashlib.sha256()
-    for path in sorted((SRC / "assets").rglob("*")):
-        if path.is_file():
-            digest.update(path.relative_to(ROOT).as_posix().encode())
-            digest.update(path.read_bytes())
+    for root in (SRC / "assets", SRC / "admin"):
+        for path in sorted(root.rglob("*")):
+            if path.is_file():
+                digest.update(path.relative_to(ROOT).as_posix().encode())
+                digest.update(path.read_bytes())
     return digest.hexdigest()[:10]
 
 
