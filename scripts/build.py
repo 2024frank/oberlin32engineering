@@ -20,7 +20,7 @@ DOMAIN = "https://www.oberlin32engineeringsociety.com"
 
 PAGES: dict[str, dict[str, str]] = {
     "index": {
-        "title": "Oberlin 3-2 Engineering Society | Oberlin College Student Group",
+        "title": "Oberlin 3-2 Engineering Society",
         "description": "The student society for Oberlin College's 3-2 engineering program. Peer advice on the dual-degree pathway, partner schools, projects, and events. Open to any Oberlin student interested in engineering.",
     },
     "about": {
