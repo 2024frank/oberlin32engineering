@@ -1,4 +1,4 @@
-const CACHE = 'o32-399c092ada2c';
+const CACHE = 'o32-daadff2c59d4';
 const SHELL = ["./", "./index.html", "./about.html", "./pathway.html", "./projects.html", "./events.html", "./resources.html", "./join.html", "./contact.html", "./assets/css/site.css", "./assets/js/data-service.js", "./assets/js/site.js", "./assets/js/pages.js", "./assets/images/logo-mark.svg", "./content/site.json", "./content/projects.json", "./content/events.json", "./content/resources.json"];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
