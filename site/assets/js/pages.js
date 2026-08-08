@@ -193,8 +193,8 @@
     await Promise.all([
       renderList('[data-project-grid]', 'projects', projectCard, { emptyTitle: 'No project briefs yet', emptyCopy: 'The founding members will add them after the club begins.' }),
       renderList('[data-featured-projects]', 'projects', projectCard, { limit: 3 }),
-      renderList('[data-event-grid]', 'events', eventCard, { emptyTitle: 'The first event is being scheduled', emptyCopy: 'Join the list to receive the confirmed date and room.' }),
-      renderList('[data-home-events]', 'events', eventCard, { limit: 2 }),
+      renderList('[data-event-grid]', 'events', eventCard, { emptyTitle: 'No events announced', emptyCopy: 'Confirmed dates, locations, and registration information will be published here.' }),
+      renderList('[data-home-events]', 'events', eventCard, { limit: 2, emptyTitle: 'No events announced', emptyCopy: 'Confirmed dates and locations will be published here.' }),
       renderList('[data-resource-grid]', 'resources', resourceCard, { emptyTitle: 'Resources are being checked', emptyCopy: 'Only verified links will be published here.' }),
       renderList('[data-opportunity-grid]', 'opportunities', opportunityCard),
       renderList('[data-leader-grid]', 'leaders', leaderCard),
@@ -207,7 +207,7 @@
         emptyCopy: 'Officer records appear here once roles are confirmed.'
       }),
       renderList('[data-partner-grid]', 'partner_schools', partnerCard),
-      renderList('[data-news-grid]', 'news_posts', newsCard, { limit: 6 })
+      renderList('[data-news-grid]', 'news_posts', newsCard, { limit: 6, emptyTitle: 'No updates published', emptyCopy: 'Society news will appear here after it is confirmed.' })
     ]);
     initOpenRoles();
     initResourceSearch();

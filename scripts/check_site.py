@@ -205,10 +205,10 @@ def check_json(errors: list[str]) -> None:
         if not isinstance(value, expected_type):
             fail(errors, f"{path.relative_to(ROOT)} must contain {expected_type.__name__}")
 
-    # A founding society legitimately has no projects yet. An empty board with a
-    # truthful empty state beats inventing work that does not exist, so projects
-    # are allowed to be empty; the rest still have to be real.
-    for filename in ["leaders.json", "events.json", "resources.json", "partners.json"]:
+    # A founding society may legitimately have no projects, events, or news yet.
+    # Honest empty states are preferable to publishing work or dates that have
+    # not been selected and confirmed.
+    for filename in ["leaders.json", "resources.json", "partners.json"]:
         records = loaded.get(filename)
         if not isinstance(records, list) or not records:
             fail(errors, f"content/{filename} must contain at least one honest public record")
