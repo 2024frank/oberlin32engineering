@@ -18,7 +18,7 @@ CONTENT = ROOT / "content"
 EXPECTED_PAGES = {
     "index.html", "about.html", "pathway.html", "projects.html", "competition.html",
     "leadership.html", "events.html", "opportunities.html", "resources.html",
-    "impact.html", "join.html", "contact.html", "media.html", "privacy.html", "404.html",
+    "impact.html", "join.html", "contact.html", "media.html", "404.html",
 }
 JSON_FILES = {
     "site.json": dict,
@@ -259,7 +259,9 @@ def check_json(errors: list[str]) -> None:
         if not credit:
             fail(errors, f"used photograph has no license record: {image_path}")
             continue
-        if credit.get("license") != "Unsplash License" or not str(credit.get("source", "")).startswith("https://unsplash.com/"):
+        is_unsplash = credit.get("license") == "Unsplash License" and str(credit.get("source", "")).startswith("https://unsplash.com/")
+        is_generated = credit.get("license") == "Generated project asset" and "OpenAI image generation" in str(credit.get("source", ""))
+        if not is_unsplash and not is_generated:
             fail(errors, f"photograph credit is incomplete: {image_path}")
         if credit.get("depicts_identifiable_people"):
             fail(errors, f"founding site should not imply stock people are society members: {image_path}")

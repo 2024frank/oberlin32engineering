@@ -1,7 +1,7 @@
 {
   "name": "Oberlin 3-2 Engineering Society",
   "short_name": "Oberlin 3-2",
-  "description": "A student-led engineering community at Oberlin College.",
+  "description": "A student group for engineering projects and 3-2 planning at Oberlin College.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

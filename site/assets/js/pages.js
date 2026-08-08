@@ -31,7 +31,7 @@
 
   function projectCard(item) {
     const categories = [item.category, ...(item.skills || [])].filter(Boolean).join('|').toLowerCase();
-    const image = item.cover_url ? `<div class="project-card__image"><img src="${esc(safeUrl(item.cover_url))}" alt="" loading="eager" decoding="async"></div>` : '';
+    const image = item.cover_url ? `<div class="project-card__image"><img src="${esc(safeUrl(item.cover_url))}" alt="" width="1200" height="800" loading="lazy" decoding="async"></div>` : '';
     const skills = (item.skills || []).slice(0, 5).map((skill) => `<li>${esc(skill)}</li>`).join('');
     const roles = (item.open_roles || []).map((role) => `<li>${esc(role)}</li>`).join('');
     return `<article class="card project-card" data-filter-value="${esc(categories)}">
@@ -83,7 +83,7 @@
     // Not lazy. These cards are injected after page load, and the browser's
     // lazy-load check can miss an image that is already in view by the time it
     // arrives, leaving an uploaded portrait permanently blank.
-    const avatar = item.photo_url ? `<img src="${esc(safeUrl(item.photo_url))}" alt="${esc(item.name)}" loading="eager" decoding="async">` : esc(initials(item.name || item.role));
+    const avatar = item.photo_url ? `<img src="${esc(safeUrl(item.photo_url))}" alt="${esc(item.name)}" width="640" height="640" loading="lazy" decoding="async">` : esc(initials(item.name || item.role));
     const action = item.open_seat ? '<a class="text-link" href="join?interest=leadership">Express interest →</a>' : (item.email ? `<a class="text-link" href="mailto:${esc(item.email)}">Email →</a>` : '');
     return `<article class="card leader-card" data-filter-value="${item.open_seat ? 'open' : 'current'}">
       <div class="leader-card__avatar">${avatar}</div>
@@ -191,7 +191,7 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
-      renderList('[data-project-grid]', 'projects', projectCard, { emptyTitle: 'Project proposals are being collected', emptyCopy: 'Share an idea or join the launch list to help choose the first projects.' }),
+      renderList('[data-project-grid]', 'projects', projectCard, { emptyTitle: 'No project briefs yet', emptyCopy: 'The founding members will add them after the club begins.' }),
       renderList('[data-featured-projects]', 'projects', projectCard, { limit: 3 }),
       renderList('[data-event-grid]', 'events', eventCard, { emptyTitle: 'The first event is being scheduled', emptyCopy: 'Join the list to receive the confirmed date and room.' }),
       renderList('[data-home-events]', 'events', eventCard, { limit: 2 }),

@@ -1,136 +1,124 @@
-<section class="home-hero">
-  <div class="container home-hero__grid">
+<section class="home-hero home-hero--redesign" data-engine-hero>
+  <div class="home-hero__photo" aria-hidden="true"></div>
+  <div class="container home-hero__inner">
     <div class="home-hero__copy">
-      <span class="eyebrow">Oberlin College · Founding 2026–27</span>
-      <h1>A place for Oberlin students who want to <span>build.</span></h1>
-      <p>The Oberlin 3-2 Engineering Society is a new student group for anyone interested in engineering, whether you are committed to the 3-2 pathway or still figuring out where you fit.</p>
-      <figure class="ratio" aria-labelledby="ratio-caption">
-        <ol class="ratio__bar">
-          <li class="ratio__unit ratio__unit--here"><span>1</span></li>
-          <li class="ratio__unit ratio__unit--here"><span>2</span></li>
-          <li class="ratio__unit ratio__unit--here"><span>3</span></li>
-          <li class="ratio__unit ratio__unit--there"><span>4</span></li>
-          <li class="ratio__unit ratio__unit--there"><span>5</span></li>
-        </ol>
-        <figcaption id="ratio-caption" class="ratio__key">
-          <span><i class="ratio__swatch ratio__swatch--here"></i>Three years at Oberlin</span>
-          <span><i class="ratio__swatch ratio__swatch--there"></i>Two at an engineering school</span>
-        </figcaption>
-      </figure>
+      <h1>Oberlin 3-2 Engineering Society</h1>
+      <p class="home-hero__lead">A home for Oberlin students who want to explore engineering, build with other people, and understand the 3-2 pathway.</p>
       <div class="home-hero__actions">
         <a class="button button--primary" href="join">Join the launch list</a>
-        <a class="button button--secondary" href="pathway">Read the 3-2 guide</a>
+        <a class="button button--secondary button--glass" href="projects">Explore projects</a>
       </div>
-      <p class="home-hero__proof">No experience required. All class years welcome. You do not have to be in 3-2.</p>
     </div>
-    <aside class="hero-card" aria-label="Current society status">
-      <div class="hero-core" data-hero-core>
-        <div class="hero-core__chrome"><span>O32 / FIELD NOTE 01</span><b>BUILDING IN PUBLIC</b></div>
-        <div class="hero-core__grid" aria-hidden="true"></div>
-        <div class="hero-core__stage" aria-hidden="true">
-          <div class="hero-core__ring hero-core__ring--one"></div><div class="hero-core__ring hero-core__ring--two"></div>
-          <div class="hero-core__plate hero-core__plate--base"></div><div class="hero-core__plate hero-core__plate--middle"></div><div class="hero-core__plate hero-core__plate--top"></div>
-          <div class="hero-core__cube"><span>O</span><span>32</span></div>
-          <span class="hero-core__node hero-core__node--one">INPUT / PEOPLE</span><span class="hero-core__node hero-core__node--two">OUTPUT / PROTOTYPE</span>
-          <span class="hero-core__dot hero-core__dot--one"></span><span class="hero-core__dot hero-core__dot--two"></span>
+  </div>
+  <div class="hero-scroll-hint" aria-hidden="true"><span></span>Projects · Pathway · Events</div>
+</section>
+
+<section class="section aim-section">
+  <div class="container aim-grid">
+    <div class="aim-section__intro">
+      <span class="eyebrow">Aim</span>
+      <h2>Bring Oberlin’s engineering community into one room.</h2>
+      <p>The Oberlin 3-2 Engineering Society exists so that students at Oberlin who are interested in engineering can find each other, build things together, and get clear answers about the 3-2 pathway.</p>
+      <p>Engineering interest at Oberlin is spread across physics, computer science, mathematics, chemistry, environmental studies, TIMARA, and other departments. That range is a strength, but it means students often work alone and learn what they need by accident. The society brings them into one place.</p>
+    </div>
+    <div class="aim-section__work">
+      <h3>To do that, we aim to:</h3>
+      <ol class="aim-list">
+        <li><span>01</span><p>Build a community across departments and class years, open to anyone interested in engineering whether or not they intend to transfer.</p></li>
+        <li><span>02</span><p>Run hands-on projects a student team can scope, finish, and document within a semester.</p></li>
+        <li><span>03</span><p>Make the 3-2 pathway easier to navigate by collecting the questions students actually have and pointing to current official advising.</p></li>
+        <li><span>04</span><p>Hold regular meetups, workshops, and conversations with engineers and alumni.</p></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section section--maroon pathway-feature">
+  <div class="container pathway-feature__grid">
+    <div>
+      <span class="eyebrow">The academic pathway</span>
+      <h2>Plan the transfer before the application year.</h2>
+      <p>Course sequences, admission rules, financial aid, housing, and degree timelines differ by partner school. The club helps students compare questions and prepare for official advising.</p>
+      <div class="page-hero__actions"><a class="button button--secondary button--light" href="pathway">Read the student guide</a></div>
+    </div>
+    <figure class="pathway-map" aria-labelledby="pathway-map-caption">
+      <div class="pathway-map__formula" aria-hidden="true"><span>3</span><i>→</i><span>2</span></div>
+      <div class="pathway-map__track">
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>01</b><small>Oberlin</small></div>
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>02</b><small>Oberlin</small></div>
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>03</b><small>Oberlin</small></div>
+        <div class="pathway-map__transfer" aria-hidden="true"><span>Transfer</span></div>
+        <div class="pathway-map__partners">
+          <div class="pathway-map__partners-heading"><b>Years 04–05</b><span>Partner engineering school</span></div>
+          <div class="partner-logo-grid" aria-label="Oberlin 3-2 partner schools">
+            <a href="https://www.admissions.caltech.edu/apply/32-program" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/caltech.png" alt="Caltech" width="450" height="110"></a>
+            <a href="https://case.edu/engineering/academics/undergraduate/32-program" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/case-western-reserve.jpeg" alt="Case Western Reserve University" width="275" height="30"></a>
+            <a href="https://undergrad.admissions.columbia.edu/apply/combinedplan" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/columbia-engineering.png" alt="Columbia Engineering" width="706" height="86"></a>
+            <a href="https://engineering.washu.edu/academics/dual-degree-program/index.html" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/washu.png" alt="WashU" width="3126" height="758"></a>
+          </div>
         </div>
-        <div class="hero-core__readout"><span>MISSION</span><strong>CONNECT → PREPARE → BUILD</strong></div>
       </div>
-      <div class="hero-card__status">
-        <strong>What is happening now</strong>
-        <p>We are recruiting founding members, choosing the first projects, and scheduling the first meetup. Move your cursor across the system to explore.</p>
-      </div>
-    </aside>
+      <figcaption id="pathway-map-caption"><strong>The standard 3-2 model</strong><span>Three years at Oberlin, followed by two at an engineering school. Partner timelines can differ.</span></figcaption>
+    </figure>
   </div>
 </section>
 
-<section class="section build-invitation">
-  <div class="container">
-    <div class="section-heading build-invitation__heading">
-      <div><span class="eyebrow">Find your way in</span><h2>There is more than one way to be an engineer.</h2></div>
-      <p>You do not need a finished idea, a perfect schedule, or a 3-2 plan. Start with the kind of work you want to try next.</p>
-    </div>
-    <div class="entry-grid">
-      <a class="entry-card entry-card--build" href="projects"><img src="assets/images/photos/soldering-workshop.jpg" alt="Students working together during a soldering workshop" loading="lazy" width="1200" height="900"><span class="entry-card__number">01</span><div><strong>Build something</strong><small>Hardware, software, CAD, testing, and the messy middle.</small></div><span class="entry-card__arrow" aria-hidden="true">↗</span></a>
-      <a class="entry-card entry-card--path" href="pathway"><img src="assets/images/photos/tool-pegboard.jpg" alt="Engineering tools arranged on a workshop pegboard" loading="lazy" width="1200" height="900"><span class="entry-card__number">02</span><div><strong>Find your route</strong><small>Questions, planning, and peer support for the 3-2 pathway.</small></div><span class="entry-card__arrow" aria-hidden="true">↗</span></a>
-      <a class="entry-card entry-card--community" href="events"><img src="assets/images/photos/board-in-clamps.jpg" alt="A circuit board secured for hands-on work" loading="lazy" width="1200" height="900"><span class="entry-card__number">03</span><div><strong>Meet your people</strong><small>Show up curious. Leave with collaborators, mentors, and a next step.</small></div><span class="entry-card__arrow" aria-hidden="true">↗</span></a>
-    </div>
-  </div>
-</section>
-
-<section class="section">
+<section class="section project-lab">
   <div class="container">
     <div class="section-heading">
-      <div><span class="eyebrow">Why join</span><h2>Support, projects, and people to learn with.</h2></div>
-      <p>The group is being built around the things students need now, not around a long list of programs that may never happen.</p>
+      <div><span class="eyebrow">Projects</span><h2>Start with work that students can finish.</h2></div>
+      <p>Arduino and EV3 robotics are examples of accessible platforms the founding members could consider. The club will publish project briefs only after members choose the work.</p>
     </div>
-    <div class="card-grid">
-      <article class="card icon-card"><div class="icon-card__icon">3+2</div><h3>Plan the pathway</h3><p>Compare questions about courses, partner schools, applications, finances, housing, and the move from Oberlin.</p><a class="text-link" href="pathway">Use the 3-2 guide →</a></article>
-      <article class="card icon-card"><h3>Join a project</h3><p>Contribute through hardware, software, CAD, research, testing, writing, design, or project coordination.</p><a class="text-link" href="projects">See proposed projects →</a></article>
-      <article class="card icon-card"><div class="icon-card__icon">◎</div><h3>Meet your people</h3><p>Find students across departments and class years who are interested in engineering and willing to share what they know.</p><a class="text-link" href="events">See what is planned →</a></article>
+    <div class="lab-grid">
+      <article class="lab-card lab-card--image">
+        <img src="assets/images/photos/homepage-testing-generated.jpg" alt="An electronics testing bench with a multimeter, breadboard, notebook, and components" loading="lazy" width="1736" height="906">
+        <div><span>Bench habit</span><strong>Measure before guessing</strong></div>
+      </article>
+      <article class="lab-card">
+        <span>Hardware</span>
+        <h3>Sensor rigs, soldering practice, power checks</h3>
+        <p>Good starter projects teach debugging, documentation, and respect for constraints.</p>
+      </article>
+      <article class="lab-card">
+        <span>Software</span>
+        <h3>Control panels, project logs, data capture</h3>
+        <p>Code work should connect to the hardware, measurements, and notes from each build session.</p>
+      </article>
+      <article class="lab-card lab-card--image">
+        <img src="assets/images/photos/homepage-arduino-generated.jpg" alt="An Arduino-style microcontroller connected to a breadboard, LEDs, jumper wires, and a sensor" loading="lazy" width="1536" height="1024">
+        <div><span>Arduino</span><strong>Microcontroller practice</strong></div>
+      </article>
+      <article class="lab-card lab-card--image">
+        <img src="assets/images/photos/homepage-ev3-generated.jpg" alt="An EV3-style educational robotics build with wheels, sensors, motors, cables, and modular beams" loading="lazy" width="1536" height="1024">
+        <div><span>EV3 robotics</span><strong>Build, code, test</strong></div>
+      </article>
     </div>
+    <div class="page-hero__actions"><a class="button button--secondary" href="projects">See how projects will work</a></div>
   </div>
 </section>
 
 <section class="section section--soft">
   <div class="container">
     <div class="section-heading">
-      <div><span class="eyebrow">The academic pathway</span><h2>Three years at Oberlin. Two at an engineering school.</h2></div>
-      <p>The society offers peer support and practical questions to ask. Official requirements always come from Oberlin and the partner institution.</p>
-    </div>
-    <div class="pathway-strip" aria-label="Five-year 3-2 pathway">
-      <div><span>1</span><strong>Build foundations</strong><small>Math, science, writing, exploration</small></div>
-      <div><span>2</span><strong>Check requirements</strong><small>Course sequence and partner options</small></div>
-      <div><span>3</span><strong>Prepare the move</strong><small>Applications, finances, housing</small></div>
-      <div class="engineering-year"><span>4</span><strong>Engineering study</strong><small>Partner institution</small></div>
-      <div class="engineering-year"><span>5</span><strong>Complete both degrees</strong><small>Partner institution and Oberlin</small></div>
-    </div>
-    <div class="page-hero__actions"><a class="button button--secondary" href="pathway">See the planning timeline</a></div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <div><span class="eyebrow">Proposed first projects</span><h2>Start small enough to finish well.</h2></div>
-      <p>These are proposals, not completed projects. Founding members will decide which ideas have the right scope, support, and team.</p>
-    </div>
-    <div class="card-grid" data-featured-projects><div class="empty-state"><h3>Loading project proposals</h3><p>The versioned project briefs are loading.</p></div></div>
-    <div class="page-hero__actions"><a class="button button--secondary" href="projects">View all project briefs</a></div>
-  </div>
-</section>
-
-<section class="section section--warm">
-  <div class="container">
-    <div class="section-heading">
-      <div><span class="eyebrow">Planned gatherings</span><h2>The first calendar is being built.</h2></div>
-      <p>We will publish a date, room, and registration link only after each event is confirmed.</p>
+      <div><span class="eyebrow">First events</span><h2>Meetups, workshops, and build sessions.</h2></div>
+      <p>Confirmed dates, rooms, and registration links will appear here.</p>
     </div>
     <div class="card-grid card-grid--2" data-home-events><div class="empty-state"><h3>Loading planned events</h3><p>Event information is loading.</p></div></div>
   </div>
 </section>
 
-<section class="section section--soft">
-  <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Who is behind it</span><h2>The founding team.</h2></div><p>A small group getting the society started, with roles still open for students who want to help run it.</p></div>
-    <div class="card-grid card-grid--2" data-home-leaders><div class="empty-state"><h3>Loading the founding team</h3><p>Officer records are loading.</p></div></div>
-    <p class="section-more"><a class="text-link" href="leadership">See every role and what it involves →</a></p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container split split--center">
+<section class="section founder-section">
+  <div class="container founder-section__grid">
+    <figure class="founder-photo">
+      <img src="assets/images/photos/homepage-macro-generated.jpg" alt="A close view of circuit-board headers, jumper wires, and loose electronic components" loading="lazy" width="1536" height="1024">
+    </figure>
     <div>
-      <span class="eyebrow">Why I am starting this</span>
-      <div class="founder-note">
-        <blockquote>“I kept meeting students who were interested in engineering but did not always know who else was on the same path. I want us to have a practical place to meet, share reliable information, and build together.”</blockquote>
-        <cite><strong>Frank (Kwaku) Kusi Appiah</strong>Founder and president</cite>
-      </div>
-    </div>
-    <div>
-      <h2>Help shape the first year.</h2>
-      <p>You can join as a general member, suggest a project, help plan an event, or express interest in a founding role. Filling out the form does not lock you into a position.</p>
-      <div class="page-hero__actions"><a class="button button--primary" href="join">Tell us what interests you</a><a class="button button--secondary" href="about">Read the founding story</a></div>
+      <span class="eyebrow">The idea behind the club</span>
+      <h2>Engineering should be something Oberlin students can do together.</h2>
+      <p>Kwaku started the society after seeing the same problem from different sides: students interested in engineering were scattered across campus, students considering 3-2 had questions that were hard to compare, and people who wanted to build had no obvious team to join.</p>
+      <p>The idea is to give that interest a home. A physics student, a TIMARA student, a programmer, a designer, and someone who has never touched a breadboard should be able to meet here, find a useful role, and make something together.</p>
+      <p class="founder-credit"><strong>Frank (Kwaku) Kusi Appiah</strong><span>Founder and president</span></p>
+      <div class="page-hero__actions"><a class="button button--primary" href="join">Tell us what interests you</a><a class="button button--secondary" href="leadership">See open roles</a></div>
     </div>
   </div>
 </section>

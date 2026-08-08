@@ -28,16 +28,16 @@ PAGES: dict[str, dict[str, str]] = {
         "description": "Why the Oberlin 3-2 Engineering Society is being formed, what it will focus on, and who it is for.",
     },
     "pathway": {
-        "title": "Oberlin College 3-2 Engineering Program: A Student Guide",
-        "description": "A student guide to Oberlin College's 3-2 engineering program: three years at Oberlin, two at Caltech, Case Western, Columbia, or Washington University, and the BA plus BSE dual degree at the end.",
+        "title": "Oberlin 3-2 Engineering Pathway: A Student Planning Guide",
+        "description": "A student planning guide to Oberlin's 3-2 engineering pathway, partner-school requirements, course sequencing, cost, financial aid, and degree timelines.",
     },
     "projects": {
         "title": "Engineering Projects · Oberlin 3-2 Engineering Society",
-        "description": "Explore realistic first-year engineering project proposals and tell the society how you would like to contribute.",
+        "description": "Learn how the Oberlin 3-2 Engineering Society will choose and run student projects after the founding membership forms.",
     },
     "competition": {
         "title": "Future Engineering Showcase Idea · Oberlin 3-2 Engineering Society",
-        "description": "An honest look at a possible future Oberlin engineering showcase and what would need to be in place first.",
+        "description": "A possible future Oberlin engineering showcase and the team, venue, safety, funding, and access requirements it would need.",
     },
     "leadership": {
         "title": "Leadership and Open Roles · Oberlin 3-2 Engineering Society",
@@ -70,10 +70,6 @@ PAGES: dict[str, dict[str, str]] = {
     "media": {
         "title": "Media Information · Oberlin 3-2 Engineering Society",
         "description": "Accurate boilerplate, logo files, photo guidance, and contact information for the founding society.",
-    },
-    "privacy": {
-        "title": "Privacy · Oberlin 3-2 Engineering Society",
-        "description": "How the society handles membership interest, project ideas, event preferences, and contact messages.",
     },
     "404": {
         "title": "Page Not Found · Oberlin 3-2 Engineering Society",
@@ -124,7 +120,7 @@ PATHWAY_FAQ = """  <script type="application/ld+json">
         "name": "What is Oberlin College's 3-2 engineering program?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "It is a dual-degree pathway. A student spends three years at Oberlin College studying liberal arts along with the required pre-engineering coursework, then two years at an affiliated engineering school, and finishes with a Bachelor of Arts from Oberlin and a Bachelor of Science in Engineering from the partner institution."
+          "text": "Oberlin describes it as a pathway with three years of liberal-arts and pre-engineering study at Oberlin followed by engineering study at an affiliated school. Partner structures and degrees differ, so students must verify the current requirements for the program they intend to enter."
         }
       },
       {
@@ -145,10 +141,10 @@ PATHWAY_FAQ = """  <script type="application/ld+json">
       },
       {
         "@type": "Question",
-        "name": "How long does the Oberlin 3-2 engineering pathway take?",
+        "name": "Does every Oberlin 3-2 pathway take five years?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Five years in total: three at Oberlin College and two at the partner engineering school, ending with two degrees."
+          "text": "No single timeline applies to every partner. Caltech and Case Western currently describe five-year routes, while Washington University currently describes a six-year route ending in three degrees. Students should verify the current structure with Oberlin and the partner school."
         }
       }
     ]
@@ -213,7 +209,7 @@ def generate_manifest() -> str:
     manifest = {
         "name": "Oberlin 3-2 Engineering Society",
         "short_name": "Oberlin 3-2",
-        "description": "A student-led engineering community at Oberlin College.",
+        "description": "A student group for engineering projects and 3-2 planning at Oberlin College.",
         "start_url": "/",
         "scope": "/",
         "display": "standalone",

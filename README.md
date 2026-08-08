@@ -30,7 +30,7 @@ node scripts/test_api.js
 Serve the generated site locally:
 
 ```bash
-python3 -m http.server 8080 --directory site
+python3 scripts/serve.py --port 8080
 ```
 
 Then open `http://localhost:8080`.

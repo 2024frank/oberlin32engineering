@@ -1,5 +1,85 @@
 [
   {
+    "file": "assets/images/photos/engineering-workbench-generated.jpg",
+    "description": "AI-generated engineering workbench hero image",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-soldering-generated.jpg",
+    "description": "AI-generated soldering practice image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-tools-generated.jpg",
+    "description": "AI-generated makerspace tool wall image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-board-generated.jpg",
+    "description": "AI-generated circuit board inspection image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-testing-generated.jpg",
+    "description": "AI-generated electronics testing bench image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-macro-generated.jpg",
+    "description": "AI-generated electronics macro image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-arduino-generated.jpg",
+    "description": "AI-generated Arduino-style microcontroller image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
+    "file": "assets/images/photos/homepage-ev3-generated.jpg",
+    "description": "AI-generated EV3-style educational robotics image for homepage",
+    "photographer": "Generated with OpenAI image tools",
+    "source": "OpenAI image generation, created for the Oberlin 3-2 Engineering Society website",
+    "license": "Generated project asset",
+    "license_url": "",
+    "attribution_required": false,
+    "depicts_identifiable_people": false
+  },
+  {
     "file": "assets/images/photos/bench-multimeter.jpg",
     "description": "electronics bench with multimeter",
     "photographer": "Clint Patterson",

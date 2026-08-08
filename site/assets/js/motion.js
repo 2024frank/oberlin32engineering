@@ -4,7 +4,7 @@
  * outline at the partner school. The animation performs the idea the page is
  * about, which is the only reason it earns the bandwidth. There is no
  * scroll-reveal on anything else: scattered fades are the pattern that reads as
- * generated, and an animation that fails to finish leaves real content invisible.
+ * template-like, and an animation that fails to finish leaves real content invisible.
  *
  * Progressive by construction. With JS off, anime.js missing, or reduced motion
  * requested, the bar is already in its finished state.

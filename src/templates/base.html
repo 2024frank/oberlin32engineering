@@ -34,14 +34,8 @@
   <script src="assets/js/data-service.js?v={{ASSET_REV}}" defer></script>
   <script src="assets/js/site.js?v={{ASSET_REV}}" defer></script>
   <script src="assets/js/pages.js?v={{ASSET_REV}}" defer></script>
-  <script src="assets/js/hero-core.js?v={{ASSET_REV}}" defer></script>
   <script src="assets/js/vendor/anime.umd.min.js?v={{ASSET_REV}}" defer></script>
   <script src="assets/js/motion.js?v={{ASSET_REV}}" defer></script>
-  <!-- Structured data. The point of parentOrganization and the sameAs list is
-       to let a search engine connect this site to Oberlin College as an entity,
-       so a query about Oberlin's 3-2 engineering program can surface the
-       student society alongside the college's own pages. alternateName covers
-       the ways people actually type the name. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -58,7 +52,7 @@
     "foundingDate": "2026",
     "email": "fkusiapp@oberlin.edu",
     "sameAs": ["https://www.instagram.com/oberlin32engineering/"],
-    "description": "The student society for Oberlin College's 3-2 engineering program. Peer advice on the dual-degree pathway, partner schools, technical projects, and events, open to any Oberlin student interested in engineering.",
+    "description": "A student group for Oberlin students interested in engineering projects, the 3-2 pathway, workshops, and events.",
     "knowsAbout": [
       "3-2 engineering",
       "Oberlin College 3-2 engineering program",
@@ -66,15 +60,6 @@
       "engineering transfer pathway",
       "student engineering projects"
     ],
-    "parentOrganization": {
-      "@type": "CollegeOrUniversity",
-      "name": "Oberlin College",
-      "url": "https://www.oberlin.edu",
-      "sameAs": [
-        "https://en.wikipedia.org/wiki/Oberlin_College",
-        "https://www.oberlin.edu/arts-and-sciences/departments/engineering"
-      ]
-    },
     "location": {
       "@type": "Place",
       "name": "Oberlin College",
@@ -85,11 +70,6 @@
         "postalCode": "44074",
         "addressCountry": "US"
       }
-    },
-    "memberOf": {
-      "@type": "CollegeOrUniversity",
-      "name": "Oberlin College",
-      "url": "https://www.oberlin.edu"
     }
   }
   </script>
