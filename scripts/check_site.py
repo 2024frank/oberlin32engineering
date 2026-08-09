@@ -408,6 +408,31 @@ def check_javascript(errors: list[str]) -> None:
             fail(errors, f"JavaScript syntax error in {path.relative_to(ROOT)}: {result.stderr.strip()}")
 
 
+def check_injected_images(errors: list[str]) -> None:
+    """Card renderers must not lazy-load.
+
+    Their markup is written into the DOM after the page has loaded. An image
+    that arrives already inside the viewport can miss the browser's lazy-load
+    check entirely, so it never loads and the card shows a blank square. The
+    failure is intermittent, which is why it has now shipped twice: once in the
+    redesign and again in the Astro migration, each time silently dropping the
+    fix and the comment that explained it.
+    """
+    renderer = ROOT / "app" / "scripts" / "pages.ts"
+    if not renderer.exists():
+        return
+    for number, line in enumerate(renderer.read_text(encoding="utf-8").splitlines(), 1):
+        stripped = line.strip()
+        if stripped.startswith("*") or stripped.startswith("//"):
+            continue
+        if 'loading="lazy"' in line:
+            fail(
+                errors,
+                f"{renderer.relative_to(ROOT)}:{number} lazy-loads an injected image; "
+                'use loading="eager" so cards rendered after page load actually appear',
+            )
+
+
 def main() -> int:
     errors: list[str] = []
     if not SITE.exists():
@@ -417,6 +442,7 @@ def main() -> int:
     check_json(errors)
     check_source(errors)
     check_javascript(errors)
+    check_injected_images(errors)
     if errors:
         print(f"Release validation failed with {len(errors)} problem(s):", file=sys.stderr)
         for error in errors:

@@ -27,10 +27,20 @@ function formatDate(value: string, fallback = 'Date to be announced'): string {
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
 }
 
+/* Injected images must not be lazy.
+ *
+ * These cards are written into the DOM after the page has loaded. When an
+ * image arrives already inside the viewport, the browser's lazy-load check has
+ * often already run, so the load never fires and the picture stays blank. It
+ * is intermittent, which is what makes it easy to miss: a hard refresh shows
+ * the photo, a normal visit does not. This was fixed once before and the
+ * migration reverted it, so scripts/check_site.py now fails the build if
+ * loading="lazy" reappears in a card renderer.
+ */
 function projectCard(item: UnknownRecord): string {
   const categories = [text(item, 'category'), ...list(item, 'skills')].filter(Boolean).join('|').toLowerCase();
   const cover = text(item, 'cover_url');
-  const image = cover ? `<div class="project-card__image"><img src="${esc(safeUrl(cover))}" alt="" width="1200" height="800" loading="lazy" decoding="async"></div>` : '';
+  const image = cover ? `<div class="project-card__image"><img src="${esc(safeUrl(cover))}" alt="" width="1200" height="800" loading="eager" decoding="async"></div>` : '';
   const skills = list(item, 'skills').slice(0, 5).map((skill) => `<li>${esc(skill)}</li>`).join('');
   const roles = list(item, 'open_roles').map((role) => `<li>${esc(role)}</li>`).join('');
   const status = text(item, 'status', 'Proposed');
@@ -73,7 +83,7 @@ function leaderCard(item: UnknownRecord): string {
   const role = text(item, 'role');
   const photo = text(item, 'photo_url');
   const email = text(item, 'email');
-  const avatar = photo ? `<img src="${esc(safeUrl(photo))}" alt="${esc(name)}" width="640" height="640" loading="lazy" decoding="async">` : esc(initials(name || role));
+  const avatar = photo ? `<img src="${esc(safeUrl(photo))}" alt="${esc(name)}" width="640" height="640" loading="eager" decoding="async">` : esc(initials(name || role));
   const action = flag(item, 'open_seat') ? '<a class="text-link" href="/join?interest=leadership">Express interest →</a>' : email ? `<a class="text-link" href="mailto:${esc(email)}">Email →</a>` : '';
   return `<article class="card leader-card" data-filter-value="${flag(item, 'open_seat') ? 'open' : 'current'}"><div class="leader-card__avatar">${avatar}</div><div><h3>${esc(name)}</h3><p class="leader-card__role">${esc(role)}</p><p>${esc(text(item, 'bio'))}</p>${action}</div></article>`;
 }
