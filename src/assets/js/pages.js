@@ -108,16 +108,18 @@
   async function renderList(selector, table, renderer, options = {}) {
     const root = $(selector);
     if (!root) return [];
+    const components = window.O32Components;
+    if (components) root.innerHTML = components.statusPanel({ type: 'loading', title: 'Loading', message: 'Fetching the latest information.' });
     try {
       const data = await window.O32Data.get(table);
       let rows = Array.isArray(data) ? data : (data ? [data] : []);
       if (options.filter) rows = rows.filter(options.filter);
       const limited = options.limit ? rows.slice(0, options.limit) : rows;
-      root.innerHTML = limited.length ? limited.map(renderer).join('') : empty(options.emptyTitle || 'Nothing published yet', options.emptyCopy || 'Check back after the organizing team confirms the details.');
+      root.innerHTML = limited.length ? limited.map(renderer).join('') : components?.statusPanel({ type: 'empty', title: options.emptyTitle || 'Nothing published yet', message: options.emptyCopy || 'Check back after the organizing team confirms the details.' }) || empty(options.emptyTitle || 'Nothing published yet', options.emptyCopy || 'Check back after the organizing team confirms the details.');
       window.O32Site?.applyFilters?.(root);
       return rows;
     } catch (error) {
-      root.innerHTML = empty('This section could not load', 'Please refresh the page or try again later.');
+      root.innerHTML = components?.statusPanel({ type: 'error', title: 'This section could not load', message: 'Please refresh the page or try again later.' }) || empty('This section could not load', 'Please refresh the page or try again later.');
       console.error(`[O32] ${table}:`, error);
       return [];
     }

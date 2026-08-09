@@ -301,7 +301,7 @@ def generate_service_worker(revision: str) -> str:
     shell = [
         "./", "./index.html", "./about.html", "./pathway.html", "./projects.html",
         "./events.html", "./resources.html", "./join.html", "./contact.html",
-        "./assets/css/site.css", "./assets/js/data-service.js", "./assets/js/site.js",
+        "./assets/css/site.css", "./assets/js/data-service.js", "./assets/js/components.js", "./assets/js/site.js",
         "./assets/js/pages.js", "./assets/images/logo-mark.svg", "./content/site.json",
         "./content/projects.json", "./content/events.json", "./content/resources.json",
     ]

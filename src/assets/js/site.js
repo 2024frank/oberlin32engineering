@@ -79,8 +79,8 @@
         if (!form.reportValidity()) return;
         const button = $('button[type="submit"]', form);
         const status = $('[data-form-status]', form);
-        const original = button?.textContent || 'Submit';
-        if (button) { button.disabled = true; button.textContent = 'Sending…'; }
+        const components = window.O32Components;
+        components?.setBusy(button, true, 'Sending…');
         if (status) { status.textContent = ''; status.className = 'form-status'; }
         try {
           const result = await window.O32Data.submit(form.dataset.formType || 'contact', new FormData(form));
@@ -93,7 +93,7 @@
           if (status) { status.textContent = error.message; status.classList.add('error'); }
           toast(error.message, 'error');
         } finally {
-          if (button) { button.disabled = false; button.textContent = original; }
+          components?.setBusy(button, false);
         }
       });
     });

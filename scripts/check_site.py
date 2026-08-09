@@ -269,7 +269,7 @@ def check_json(errors: list[str]) -> None:
 
 def check_source(errors: list[str]) -> None:
     source_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in [
-        SRC / "assets/js/data-service.js", SRC / "assets/js/site.js", SRC / "assets/js/pages.js",
+        SRC / "assets/js/data-service.js", SRC / "assets/js/components.js", SRC / "assets/js/site.js", SRC / "assets/js/pages.js",
     ])
     if "/api/submit" not in source_text:
         fail(errors, "public forms are not routed through /api/submit")
