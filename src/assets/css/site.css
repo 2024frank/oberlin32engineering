@@ -1123,3 +1123,9 @@ p { color: var(--ink-650); }
    new row underneath the copy. */
 .page-hero__side { display: grid; gap: 1rem; align-content: start; min-width: 0; }
 .section-more { margin: 1.25rem 0 0; }
+
+/* The aim reads as a list of commitments, so it gets space between items
+   rather than the tight spacing of an inline list. */
+.aim-list { display: grid; gap: .7rem; margin: 0 0 1.5rem; padding: 0; list-style: none; }
+.aim-list li { padding-left: 1.4rem; position: relative; color: var(--ink-650); line-height: 1.6; }
+.aim-list li::before { content: ""; position: absolute; left: 0; top: .62em; width: .55rem; height: 2px; background: var(--gold-500); }
