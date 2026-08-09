@@ -6,7 +6,7 @@
     "location": "Pasadena, California",
     "region_code": "CA",
     "url": "https://www.admissions.caltech.edu/apply/32-program",
-    "description": "Caltech describes a five-year 3/2 route leading to a liberal-arts bachelor’s and a Caltech BS. Admission is selective and current international-aid rules require careful review.",
+    "description": "Caltech’s page describes a five-year 3/2 route leading to a liberal-arts bachelor’s degree and a Caltech BS. Review its current admission and financial-aid rules before applying.",
     "questions": [
       "Which entrance or academic-preparation requirements apply to my application year?",
       "Which engineering option fits my Oberlin preparation?",
@@ -14,6 +14,7 @@
       "What housing is available to incoming 3/2 students?"
     ],
     "published": true,
+    "reviewed_at": "2026-08-09",
     "sort_order": 10
   },
   {
@@ -23,7 +24,7 @@
     "location": "Cleveland, Ohio",
     "region_code": "OH",
     "url": "https://case.edu/engineering/academics/undergraduate/32-program",
-    "description": "Case describes a three-year liberal-arts plus two-year engineering pathway leading to two bachelor’s degrees, subject to current eligibility and admission rules.",
+    "description": "Case Western’s page describes three years at an affiliate school followed by two years of engineering, with one bachelor’s degree from each school.",
     "questions": [
       "Which prerequisites apply to my intended engineering major?",
       "How will my Oberlin courses transfer?",
@@ -31,6 +32,7 @@
       "What financial aid and housing options apply to 3+2 students?"
     ],
     "published": true,
+    "reviewed_at": "2026-08-09",
     "sort_order": 20
   },
   {
@@ -40,7 +42,7 @@
     "location": "New York, New York",
     "region_code": "NY",
     "url": "https://www.engineering.columbia.edu/academics/programs/undergraduate-programs/combined-plan-babs",
-    "description": "Columbia’s Combined Plan is usually completed as a 3-2 sequence and may also have a 4-2 route. Review current affiliate, prerequisite, admission, housing, and financial-aid information.",
+    "description": "Columbia’s page describes 3-2 and 4-2 Combined Plan routes. Check its current prerequisites, admission process, housing terms, and financial-aid rules.",
     "questions": [
       "Which courses and grades are required for my intended major?",
       "How does affiliate status affect review?",
@@ -48,6 +50,7 @@
       "What is the current cost and aid process?"
     ],
     "published": true,
+    "reviewed_at": "2026-08-09",
     "sort_order": 30
   },
   {
@@ -57,7 +60,7 @@
     "location": "St. Louis, Missouri",
     "region_code": "MO",
     "url": "https://engineering.washu.edu/academics/dual-degree-program/index.html",
-    "description": "WashU currently presents its Dual Degree Program as three additional years leading to an engineering bachelor’s and master’s, not a simple two-year continuation. Confirm how the current structure applies to Oberlin students.",
+    "description": "WashU’s page describes three additional years leading to an engineering bachelor’s and master’s degree. Confirm the degree plan and timeline for your application year.",
     "questions": [
       "Is my expected route three years at WashU, and which degrees would I earn?",
       "Which prerequisites and GPA rules apply?",
@@ -65,6 +68,7 @@
       "Which bachelor’s and master’s combinations are available?"
     ],
     "published": true,
+    "reviewed_at": "2026-08-09",
     "sort_order": 40
   }
 ]

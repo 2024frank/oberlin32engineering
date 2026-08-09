@@ -40,8 +40,8 @@ function projectCard(item: UnknownRecord): string {
     ${image}<div class="card__meta"><span class="status-pill status-pill--${status === 'Open for interest' ? 'open' : 'planned'}">${esc(status)}</span><span class="card__meta-sep">·</span><span>${esc(text(item, 'category', 'Project'))}</span></div>
     <h3>${esc(text(item, 'title'))}</h3><p>${esc(text(item, 'summary'))}</p>
     ${skills ? `<ul class="tag-list" aria-label="Useful skills">${skills}</ul>` : ''}
-    <details><summary>Read the proposed brief</summary><p>${esc(description)}</p>${impact ? `<p><strong>Why it could matter:</strong> ${esc(impact)}</p>` : ''}${roles ? `<p><strong>Help wanted:</strong></p><ul class="plain-list">${roles}</ul>` : ''}</details>
-    <div class="card__footer project-card__footer"><span>${esc(text(item, 'year', '2026–27'))}</span><a class="text-link" href="/join?interest=projects">I’m interested →</a></div>
+    <details><summary>Read the project brief</summary><p>${esc(description)}</p>${impact ? `<p><strong>Intended use:</strong> ${esc(impact)}</p>` : ''}${roles ? `<p><strong>Open tasks:</strong></p><ul class="plain-list">${roles}</ul>` : ''}</details>
+    <div class="card__footer project-card__footer"><span>${esc(text(item, 'year', '2026–27'))}</span><a class="text-link" href="/join?interest=projects">Submit project interest →</a></div>
   </article>`;
 }
 
@@ -62,7 +62,7 @@ function resourceCard(item: UnknownRecord): string {
 
 function opportunityCard(item: UnknownRecord): string {
   const deadlineValue = text(item, 'deadline');
-  const deadline = text(item, 'deadline_label') || (deadlineValue ? `Deadline: ${formatDate(deadlineValue)}` : 'Open while positions remain');
+  const deadline = text(item, 'deadline_label') || (deadlineValue ? `Deadline: ${formatDate(deadlineValue)}` : 'No fixed deadline');
   const url = text(item, 'url', '/join');
   const external = /^https?:/i.test(url);
   return `<article class="card" data-filter-value="${esc(text(item, 'type').toLowerCase())}"><div class="card__meta"><span class="status-pill status-pill--open">${esc(text(item, 'type', 'Opportunity'))}</span></div><h3>${esc(text(item, 'title'))}</h3><p><strong>${esc(text(item, 'organization', 'Oberlin 3-2 Engineering Society'))}</strong></p><p>${esc(text(item, 'description'))}</p><div class="card__footer"><span>${esc(deadline)}</span><a class="text-link" href="${esc(safeUrl(url))}"${external ? ' target="_blank" rel="noopener"' : ''}>${external ? 'Open listing ↗' : 'Express interest →'}</a></div></article>`;
@@ -96,7 +96,7 @@ function newsCard(item: UnknownRecord): string {
 async function renderList(selector: string, table: PublicTable, renderer: Renderer, applyFilters: ApplyFilters, options: RenderOptions = {}): Promise<UnknownRecord[]> {
   const root = select<HTMLElement>(selector);
   if (!root) return [];
-  root.innerHTML = statusPanel('loading', 'Loading…', 'Fetching the latest information.');
+  root.innerHTML = statusPanel('loading', 'Loading…', 'Preparing this section.');
   try {
     const value = await get(table);
     let rows = Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [];
@@ -104,7 +104,7 @@ async function renderList(selector: string, table: PublicTable, renderer: Render
     const limited = options.limit ? rows.slice(0, options.limit) : rows;
     root.innerHTML = limited.length
       ? limited.map(renderer).join('')
-      : statusPanel('empty', options.emptyTitle ?? 'Nothing published yet', options.emptyCopy ?? 'Check back after the organizing team confirms the details.');
+      : statusPanel('empty', options.emptyTitle ?? 'Nothing published yet', options.emptyCopy ?? 'New information will appear here after it is confirmed.');
     applyFilters(root);
     return rows;
   } catch (error) {
@@ -140,7 +140,7 @@ async function initCompetition(): Promise<void> {
   if (!root) return;
   try {
     const value = await get('competition_editions');
-    if (!isRecord(value)) return;
+    if (!isRecord(value) || value.published === false) return;
     selectAll<HTMLElement>('[data-showcase-title]').forEach((node) => { node.textContent = text(value, 'title'); });
     selectAll<HTMLElement>('[data-showcase-copy]').forEach((node) => { node.textContent = text(value, 'description'); });
     root.textContent = text(value, 'status', 'Idea under evaluation');
@@ -174,16 +174,16 @@ async function initOpenRoles(): Promise<void> {
 
 export async function initPages(applyFilters: ApplyFilters): Promise<void> {
   await Promise.all([
-    renderList('[data-project-grid]', 'projects', projectCard, applyFilters, { emptyTitle: 'No project briefs yet', emptyCopy: 'The founding members will add them after the club begins.' }),
+    renderList('[data-project-grid]', 'projects', projectCard, applyFilters, { emptyTitle: 'No projects selected', emptyCopy: 'Members will choose the first projects after reviewing proposals and available resources.' }),
     renderList('[data-featured-projects]', 'projects', projectCard, applyFilters, { limit: 3 }),
-    renderList('[data-event-grid]', 'events', eventCard, applyFilters, { emptyTitle: 'No events announced', emptyCopy: 'Confirmed dates, locations, and registration information will be published here.' }),
-    renderList('[data-home-events]', 'events', eventCard, applyFilters, { limit: 2, emptyTitle: 'No events announced', emptyCopy: 'Confirmed dates and locations will be published here.' }),
-    renderList('[data-resource-grid]', 'resources', resourceCard, applyFilters, { emptyTitle: 'Resources are being checked', emptyCopy: 'Only verified links will be published here.' }),
+    renderList('[data-event-grid]', 'events', eventCard, applyFilters, { emptyTitle: 'Nothing scheduled yet', emptyCopy: 'Confirmed dates, rooms, and registration links will appear here.' }),
+    renderList('[data-home-events]', 'events', eventCard, applyFilters, { limit: 2, emptyTitle: 'No events announced yet', emptyCopy: 'Dates and rooms will appear here after they are confirmed.' }),
+    renderList('[data-resource-grid]', 'resources', resourceCard, applyFilters, { emptyTitle: 'No resources available', emptyCopy: 'The resource list could not be prepared.' }),
     renderList('[data-opportunity-grid]', 'opportunities', opportunityCard, applyFilters),
     renderList('[data-leader-grid]', 'leaders', leaderCard, applyFilters),
     renderList('[data-home-leaders]', 'leaders', leaderCard, applyFilters, { filter: (item) => !flag(item, 'open_seat') && text(item, 'name') !== 'Open position', limit: 2, emptyTitle: 'The founding team is forming', emptyCopy: 'Officer records appear here once roles are confirmed.' }),
     renderList('[data-partner-grid]', 'partner_schools', partnerCard, applyFilters),
-    renderList('[data-news-grid]', 'news_posts', newsCard, applyFilters, { limit: 6, emptyTitle: 'No updates published', emptyCopy: 'Society news will appear here after it is confirmed.' }),
+    renderList('[data-news-grid]', 'news_posts', newsCard, applyFilters, { limit: 6, emptyTitle: 'No updates published yet', emptyCopy: 'Completed actions and confirmed announcements will appear here.' }),
   ]);
   await Promise.all([initOpenRoles(), initImpact(), initCompetition()]);
   initResourceSearch(applyFilters);

@@ -4,24 +4,24 @@ import Layout from '../layouts/Layout.astro';
 <Layout pageId="resources">
 <section class="page-hero">
   <div class="container page-hero__grid">
-    <div><span class="eyebrow">Resource library</span><h1>Official links for planning, projects, research, and careers.</h1><p class="page-hero__lead">Each entry links to its original source, explains why it is useful, and shows when it was last reviewed.</p></div>
-    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/bench-multimeter.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A multimeter and test leads on an electronics bench"></figure><aside class="page-hero__aside"><strong>How to use this library</strong><p>Open the official source, check the date and audience, and save a copy of important requirements for your own records.</p></aside></div>
+    <div><span class="eyebrow">Resource library</span><h1>Engineering and 3-2 resources.</h1><p class="page-hero__lead">Find Oberlin program pages, partner requirements, research opportunities, career services, and project references.</p></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/bench-multimeter.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A multimeter and test leads on an electronics bench"></figure><aside class="page-hero__aside"><strong>Check dates on program pages</strong><p>The review date shows when this directory was checked. Use the linked source for deadlines and requirements.</p></aside></div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Find a resource</span><h2>Search by topic or source.</h2></div><p>Suggested topics include partner schools, course planning, financial aid, research, careers, electronics, CAD, and project documentation.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">Find a resource</span><h2>Search the library.</h2></div><p>Search titles, descriptions, or source names, or choose a topic filter.</p></div>
     <label class="search-field"><span class="sr-only">Search resources</span><input type="search" name="resource_search" data-resource-search autocomplete="off" placeholder="Search by topic or source…"></label>
     <div class="filters" data-filter-group data-filter-target="#resource-grid"><button class="filter-button active" type="button" data-filter="all">All</button><button class="filter-button" type="button" data-filter="3-2 planning">3-2 planning</button><button class="filter-button" type="button" data-filter="partner school">Partner schools</button><button class="filter-button" type="button" data-filter="careers">Careers</button><button class="filter-button" type="button" data-filter="research">Research</button><button class="filter-button" type="button" data-filter="project skills">Project skills</button></div>
-    <div class="card-grid" id="resource-grid" data-resource-grid aria-live="polite"><div class="empty-state"><h3>Loading verified resources…</h3><p>Fetching the latest library entries.</p></div></div>
+    <div class="card-grid" id="resource-grid" data-resource-grid aria-live="polite"><div class="empty-state"><h3>Loading resources…</h3><p>Preparing the library.</p></div></div>
   </div>
 </section>
 
 <section class="section section--soft">
-  <div class="container split">
-    <div><span class="eyebrow">Library standard</span><h2>What belongs here.</h2><p>Resources must have a named source, a working link, and a stated reason for including them.</p></div>
-    <ul class="check-list"><li>Prefer official Oberlin, partner-school, government, or recognized educational sources.</li><li>Show a last-reviewed date for time-sensitive guidance.</li><li>Separate student tips from institutional requirements.</li><li>Remove dead, misleading, duplicated, or outdated links.</li><li>Link to the original guide rather than reproducing it.</li></ul>
+  <div class="container split split--center">
+    <div><span class="eyebrow">Corrections</span><h2>Found a broken or outdated link?</h2><p>Send the page title and the correct source so the library can be updated.</p></div>
+    <div class="page-hero__actions"><a class="button button--primary" href="contact">Report a resource problem</a></div>
   </div>
 </section>
 </Layout>

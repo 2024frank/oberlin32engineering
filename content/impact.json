@@ -7,37 +7,37 @@
     {
       "period": "August 2026",
       "title": "Publish the society’s first website",
-      "description": "Provide membership information, project briefs, event plans, leadership openings, and links to official 3-2 resources.",
+      "description": "Publish membership information, leadership openings, the first-year roadmap, and links to Oberlin and partner-school resources.",
       "status": "Complete"
     },
     {
       "period": "August–September 2026",
       "title": "Recruit the founding group",
-      "description": "Collect member interests, discuss leadership capacity, and identify students willing to own the first tasks.",
+      "description": "Collect interest forms, confirm the remaining founding members, and fill the open officer roles.",
       "status": "In progress"
     },
     {
       "period": "Early fall 2026",
       "title": "Hold the first member meeting",
-      "description": "Confirm a room, date, agenda, access information, and a clear decision process for first-year priorities.",
+      "description": "Meet with founding members to review officer roles, project interests, chartering work, and immediate tasks.",
       "status": "Planned"
     },
     {
       "period": "Fall 2026",
-      "title": "Select one or two first projects",
-      "description": "Choose projects only after a lead, team, scope, tools, safety plan, and first milestone are defined.",
+      "title": "Review proposals for the first projects",
+      "description": "Confirm a lead, workspace, tools, estimated cost, safety needs, and first milestone before selecting a project.",
       "status": "Planned"
     },
     {
       "period": "Fall 2026",
-      "title": "Run the first practical program",
-      "description": "Test one 3-2 planning conversation, build session, or speaker event and gather participant feedback.",
+      "title": "Hold the first confirmed event",
+      "description": "Set an organizer, topic, date, room, and access information before announcing the event.",
       "status": "Planned"
     },
     {
       "period": "End of first term",
       "title": "Publish a short founding-term report",
-      "description": "Record what happened, what did not happen, participation counts, project status, spending, and next steps.",
+      "description": "Report confirmed participation counts, meetings held, project status, spending, unfinished work, and next steps.",
       "status": "Planned"
     }
   ],

@@ -13,7 +13,7 @@ export function safeUrl(value: unknown = ''): string {
 }
 
 export function statusPanel(type: 'loading' | 'empty' | 'error', title: string, message: string): string {
-  const icon = type === 'error' ? '!' : type === 'empty' ? '—' : '';
+  const icon = type === 'error' ? '!' : type === 'empty' ? '○' : '';
   return `<div class="component-status component-status--${type}" role="${type === 'error' ? 'alert' : 'status'}"><span class="component-status__icon" aria-hidden="true">${icon}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(message)}</p></div>`;
 }
 

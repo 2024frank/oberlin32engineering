@@ -7,6 +7,8 @@ import json
 import re
 import subprocess
 import sys
+from datetime import date
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -42,10 +44,20 @@ PROHIBITED_COPY = [
     "design it. build it. defend it", "6 active briefs", "20+ ways to contribute",
 ]
 PROHIBITED_CONTENT_PATTERNS = {
+    r"\u2014": "an em dash",
     r"\bnot just\b.{0,120}\bbut\b": "formulaic 'not just X but Y' contrast",
     r"\bnot only\b.{0,120}\bbut also\b": "formulaic 'not only X but also Y' contrast",
+    r"\bnot as (?:a )?substitute\b": "formulaic 'not as a substitute' disclaimer",
+    r"\bcan help\b.{0,120}\bbut\b": "staged 'can help, but' disclaimer",
+    r"\bserves as\b": "vague 'serves as' construction",
+    r"\bmeant to\b": "vague 'meant to' construction",
+    r"\ba place to\b": "generic 'a place to' construction",
     r"\bwhether you(?:'re| are)\b": "generic 'whether you are' introduction",
     r"\b(?:delve|unlock|unleash|game-changing|transformative journey|vibrant ecosystem)\b": "generic promotional language",
+    r"\b(?:one|a shared) place to\b": "generic 'place to' construction",
+    r"\bsomewhere to\b": "generic 'somewhere to' construction",
+    r"\bwhat comes next\b": "formulaic 'what comes next' phrasing",
+    r"\bhelp shape\b": "generic 'help shape' call to action",
 }
 DYNAMIC_COPY_CONFLICTS = {
     "data-event-grid": ["no events announced", "nothing scheduled yet"],
@@ -68,9 +80,15 @@ class PageParser(HTMLParser):
         self.forms: list[dict[str, str]] = []
         self.current_form: dict[str, object] | None = None
         self.form_details: list[dict[str, object]] = []
+        self.hidden_text_depth = 0
+        self.visible_text: list[str] = []
 
     def handle_starttag(self, tag: str, attrs_list: list[tuple[str, str | None]]) -> None:
         attrs = {key: value or "" for key, value in attrs_list}
+        if tag in {"script", "style", "template"}:
+            self.hidden_text_depth += 1
+        if tag in {"p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "summary", "label", "button", "a"}:
+            self.visible_text.append("\n")
         if tag == "html" and attrs.get("lang"):
             self.html_lang = True
         if tag == "h1":
@@ -102,6 +120,14 @@ class PageParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == "form":
             self.current_form = None
+        if tag in {"script", "style", "template"}:
+            self.hidden_text_depth = max(0, self.hidden_text_depth - 1)
+        if tag in {"p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "summary", "label", "button", "a"}:
+            self.visible_text.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        if not self.hidden_text_depth:
+            self.visible_text.append(data)
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -166,8 +192,9 @@ def check_html(errors: list[str]) -> None:
         for phrase in PROHIBITED_COPY:
             if phrase in lower:
                 fail(errors, f"{page.relative_to(ROOT)} contains retired copy: {phrase!r}")
+        visible_text = unescape("".join(parser.visible_text))
         for pattern, description in PROHIBITED_CONTENT_PATTERNS.items():
-            if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+            if re.search(pattern, visible_text, re.IGNORECASE):
                 fail(errors, f"{page.relative_to(ROOT)} contains {description}")
         for marker, phrases in DYNAMIC_COPY_CONFLICTS.items():
             if marker in lower:
@@ -230,10 +257,10 @@ def check_json(errors: list[str]) -> None:
         loaded[filename] = value
         if not isinstance(value, expected_type):
             fail(errors, f"{path.relative_to(ROOT)} must contain {expected_type.__name__}")
-        source = path.read_text(encoding="utf-8")
+        source = json.dumps(value, ensure_ascii=False)
         if filename != "photo_credits.json":
             for pattern, description in PROHIBITED_CONTENT_PATTERNS.items():
-                if re.search(pattern, source, re.IGNORECASE | re.DOTALL):
+                if re.search(pattern, source, re.IGNORECASE):
                     fail(errors, f"content/{filename} contains {description}")
 
     # A founding society may legitimately have no projects, events, or news yet.
@@ -273,9 +300,26 @@ def check_json(errors: list[str]) -> None:
     for record in resources if isinstance(resources, list) else []:
         if record.get("published", True) and not record.get("reviewed_at"):
             fail(errors, f"resource {record.get('id')} has no reviewed_at date")
+        reviewed_at = str(record.get("reviewed_at", ""))
+        if reviewed_at:
+            try:
+                date.fromisoformat(reviewed_at)
+            except ValueError:
+                fail(errors, f"resource {record.get('id')} has an invalid reviewed_at date")
         url = str(record.get("url", ""))
         if not url.startswith("https://"):
             fail(errors, f"resource {record.get('id')} must use an https URL")
+
+    partners = loaded.get("partners.json", [])
+    for record in partners if isinstance(partners, list) else []:
+        reviewed_at = str(record.get("reviewed_at", ""))
+        if record.get("published", True) and not reviewed_at:
+            fail(errors, f"partner {record.get('id')} has no reviewed_at date")
+        if reviewed_at:
+            try:
+                date.fromisoformat(reviewed_at)
+            except ValueError:
+                fail(errors, f"partner {record.get('id')} has an invalid reviewed_at date")
 
     credits = loaded.get("photo_credits.json", [])
     credit_map = {item.get("file"): item for item in credits if isinstance(item, dict)}
@@ -300,6 +344,12 @@ def check_json(errors: list[str]) -> None:
 
 def check_source(errors: list[str]) -> None:
     source_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in sorted((APP / "scripts").glob("*.ts")))
+    public_source_paths = [*APP.rglob("*.astro"), *APP.rglob("*.ts")]
+    for path in sorted(public_source_paths):
+        source = path.read_text(encoding="utf-8", errors="ignore")
+        for pattern, description in PROHIBITED_CONTENT_PATTERNS.items():
+            if re.search(pattern, source, re.IGNORECASE):
+                fail(errors, f"{path.relative_to(ROOT)} contains {description}")
     if "/api/submit" not in source_text:
         fail(errors, "public forms are not routed through /api/submit")
     if "serviceWorker.register" not in source_text:

@@ -4,45 +4,45 @@ import Layout from '../layouts/Layout.astro';
 <Layout pageId="projects">
 <section class="page-hero">
   <div class="container page-hero__grid">
-    <div><span class="eyebrow">Student projects</span><h1>Propose the first student projects.</h1><p class="page-hero__lead">The society wants to support projects that students can finish, document, and explain. Funding depends on the available budget, workspace, tools, supervision, and safety requirements.</p><div class="page-hero__actions"><a class="button button--primary" href="#propose">Share an idea</a><a class="button button--secondary" href="join?interest=projects">Join the project list</a></div></div>
-    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/motherboard-macro.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A macro view of components across a motherboard"></figure><aside class="page-hero__aside"><strong>When a project begins</strong><p>The club will publish a brief after a student lead, team, scope, meeting time, and first milestone are confirmed.</p></aside></div>
+    <div><span class="eyebrow">Student projects</span><h1>Propose a student project.</h1><p class="page-hero__lead">Students may submit ideas. Members will decide what to support after reviewing the budget, workspace, tools, supervision, and safety requirements.</p><div class="page-hero__actions"><a class="button button--primary" href="#propose">Submit a project idea</a><a class="button button--secondary" href="join?interest=projects">Submit project interest</a></div></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/motherboard-macro.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A macro view of components across a motherboard"></figure><aside class="page-hero__aside"><strong>When a project is selected</strong><p>Its brief will name the scope, lead, team, resources, and first milestone.</p></aside></div>
   </div>
 </section>
 
 <section class="section section--soft">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Project funding</span><h2>Funding is conditional.</h2></div><p>The goal is to support a small number of projects each semester after a budget and approval path are confirmed.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">Selection criteria</span><h2>Members will choose the first projects.</h2></div><p>Proposals will be reviewed for their value to a 3-2 application, usefulness on campus, cost, workspace, tools, supervision, and safety.</p></div>
     <div class="card-grid card-grid--2">
-      <article class="card"><h3>Evidence of your work</h3><p>A completed project can give you drawings, code, test results, photographs, and a clear account of your decisions. Selection will consider whether the team can produce that evidence.</p></article>
-      <article class="card"><h3>A defined campus use</h3><p>Selection will also consider who at Oberlin could use the result and how the team will learn whether it helped.</p></article>
+      <article class="card"><h3>Useful for a 3-2 application</h3><p>Will the work produce a design, prototype, code, measurements, test results, or another result a student can explain?</p></article>
+      <article class="card"><h3>Useful on campus</h3><p>Who at Oberlin would use the result, and what problem would it address?</p></article>
     </div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Project briefs</span><h2>Current project briefs.</h2></div><p>A brief appears only after the lead, team, scope, workspace, equipment, safety requirements, and first milestone are confirmed.</p></div>
-    <div class="card-grid card-grid--2" id="project-grid" data-project-grid><div class="empty-state"><h3>No project briefs yet</h3><p>The founding members will add them after the club begins.</p></div></div>
+    <div class="section-heading"><div><span class="eyebrow">Selected projects</span><h2>Project briefs.</h2></div><p>Approved projects appear here with their scope, lead, team, budget, workspace, and first milestone.</p></div>
+    <div class="card-grid card-grid--2" id="project-grid" data-project-grid><div class="empty-state"><h3>No projects selected</h3><p>Members will choose the first projects after reviewing proposals and available resources.</p></div></div>
   </div>
 </section>
 
 <section class="section section--soft">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Project cycle</span><h2>Define, build, test, document.</h2></div><p>Every team should leave behind enough evidence for the next group to understand the design and continue the work.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">Technical areas</span><h2>Areas members could work in.</h2></div><p>These are categories of work, not approved projects.</p></div>
     <div class="card-grid card-grid--4">
-      <article class="card"><span class="card__number">Define</span><h3>Write the problem</h3><p>Name the user or setting, the constraint, the evidence you need, and what is out of scope.</p></article>
-      <article class="card"><span class="card__number">Prototype</span><h3>Build the smallest test</h3><p>Choose a version that can answer one important question before the team commits to a larger design.</p></article>
-      <article class="card"><span class="card__number">Test</span><h3>Record what happened</h3><p>Save measurements, failures, photos, code, design files, and the decisions that changed the direction.</p></article>
-      <article class="card"><span class="card__number">Share</span><h3>Say what comes next</h3><p>Demonstrate the result, publish a short build note, and explain what another team should try next.</p></article>
+      <article class="card"><span class="card__number">Testing</span><h3>Electronics testing</h3><p>Measurement, circuit assembly, power checks, and test records.</p></article>
+      <article class="card"><span class="card__number">Hardware</span><h3>Embedded systems</h3><p>Sensors, microcontrollers, and physical computing.</p></article>
+      <article class="card"><span class="card__number">Software</span><h3>Control software</h3><p>Interfaces, automation, visualization, and data logging for prototypes.</p></article>
+      <article class="card"><span class="card__number">Machines</span><h3>Robotics</h3><p>Motors, sensors, mechanisms, and control.</p></article>
     </div>
   </div>
 </section>
 
 <section class="section" id="propose">
   <div class="container split">
-    <div><span class="eyebrow">Propose a project</span><h2>Define the problem and the first test.</h2><p>A proposal can be technical, environmental, artistic, or accessibility-focused. Explain who it is for, what the first version should test, and what resources the work may require.</p><div class="callout"><p><strong>A complete team is not required.</strong> The proposal process can identify collaborators and missing expertise.</p></div></div>
+    <div><span class="eyebrow">Propose a project</span><h2>Describe the problem and a first test.</h2><p>Include who the work is for, what you would build first, and any tools, workspace, or safety needs you already know about.</p><div class="callout"><p><strong>You can submit an idea without a team.</strong> Submitting an idea does not guarantee selection or funding.</p></div></div>
     <form class="form-shell" data-o32-form data-form-type="project_idea">
-      <h3>Propose a project</h3><p>The founding team reviews every idea and will follow up with you about scope and next steps.</p>
+      <h3>Project idea form</h3><p>Submissions will be reviewed when members choose the first projects.</p>
       <div class="form-grid">
         <label class="form-field"><span>Your name</span><input type="text" name="full_name" autocomplete="name" maxlength="120" required></label>
         <label class="form-field"><span>Oberlin email</span><input type="email" name="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" required></label>

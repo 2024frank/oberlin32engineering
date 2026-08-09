@@ -2,7 +2,7 @@
   {
     "id": "oberlin-official-32-guide",
     "title": "Oberlin 3-2 Engineering Advising Guide",
-    "description": "The primary Oberlin starting point for program structure, sample planning, affiliated schools, and advising context.",
+    "description": "Oberlin’s advising guide explains the program structure and includes sample three-year course plans.",
     "category": "3-2 planning",
     "source": "Oberlin College",
     "url": "https://www.oberlin.edu/aarc/advising-guides-major/3-2-engineering-program",
@@ -14,7 +14,7 @@
   {
     "id": "oberlin-engineering-program",
     "title": "Oberlin Engineering Program Page",
-    "description": "Official program overview, current contact information, and links to related engineering experiences.",
+    "description": "Oberlin’s engineering department page lists the partner schools and current program contact information.",
     "category": "3-2 planning",
     "source": "Oberlin College",
     "url": "https://www.oberlin.edu/arts-and-sciences/departments/engineering",
@@ -26,7 +26,7 @@
   {
     "id": "oberlin-engaged-engineering",
     "title": "Engaged 3-2 Engineering",
-    "description": "Examples of research, internships, study away, winter term, and other applied experiences connected to the pathway.",
+    "description": "Examples of internships, research, study away, and Winter Term work connected to Oberlin’s 3-2 program.",
     "category": "research",
     "source": "Oberlin College",
     "url": "https://www.oberlin.edu/arts-and-sciences/departments/engineering/engaged-engineering",
@@ -38,7 +38,7 @@
   {
     "id": "caltech-32",
     "title": "Caltech 3/2 Program",
-    "description": "Current Caltech program overview and application links. International students should check the financial-aid policy carefully.",
+    "description": "Caltech’s 3/2 program page explains the five-year route, application requirements, and financial-aid policy.",
     "category": "partner school",
     "source": "California Institute of Technology",
     "url": "https://www.admissions.caltech.edu/apply/32-program",
@@ -50,7 +50,7 @@
   {
     "id": "case-32",
     "title": "Case Western Reserve 3+2 Program",
-    "description": "Official program description, eligibility, application direction, and contact information.",
+    "description": "Case Western’s page explains the 3+2 structure, eligibility, application process, and program contacts.",
     "category": "partner school",
     "source": "Case Western Reserve University",
     "url": "https://case.edu/engineering/academics/undergraduate/32-program",
@@ -62,7 +62,7 @@
   {
     "id": "columbia-combined-plan",
     "title": "Columbia Combined Plan BA/BS",
-    "description": "Official Columbia Engineering overview for the 3-2 and 4-2 Combined Plan pathways.",
+    "description": "Columbia’s page explains its 3-2 and 4-2 routes, application requirements, housing terms, and financial aid.",
     "category": "partner school",
     "source": "Columbia University",
     "url": "https://www.engineering.columbia.edu/academics/programs/undergraduate-programs/combined-plan-babs",
@@ -74,7 +74,7 @@
   {
     "id": "washu-dual-degree",
     "title": "WashU Dual Degree Program",
-    "description": "Current WashU program information. WashU now describes a three-year engineering segment leading to an engineering bachelor’s and master’s, so confirm the timeline and degree plan directly.",
+    "description": "WashU’s page explains its three-year engineering segment, degree structure, prerequisites, and scholarship information.",
     "category": "partner school",
     "source": "Washington University in St. Louis",
     "url": "https://engineering.washu.edu/academics/dual-degree-program/index.html",
@@ -86,7 +86,7 @@
   {
     "id": "oberlin-career",
     "title": "Career Exploration and Development",
-    "description": "Oberlin career advising, internship support, employer resources, and application preparation.",
+    "description": "Oberlin’s career center provides advising, internship-search support, and application help.",
     "category": "careers",
     "source": "Oberlin College",
     "url": "https://www.oberlin.edu/career",
@@ -98,7 +98,7 @@
   {
     "id": "oberlin-research",
     "title": "Undergraduate Research at Oberlin",
-    "description": "Starting point for campus research information and support.",
+    "description": "Oberlin’s undergraduate research page lists campus programs, funding, and contacts.",
     "category": "research",
     "source": "Oberlin College",
     "url": "https://www.oberlin.edu/undergraduate-research",
@@ -110,10 +110,10 @@
   {
     "id": "nsf-reu",
     "title": "NSF Research Experiences for Undergraduates",
-    "description": "Official directory for NSF-funded REU sites. Eligibility varies by program, so verify each listing.",
+    "description": "Search NSF’s directory of REU sites and apply through each host program.",
     "category": "research",
     "source": "National Science Foundation",
-    "url": "https://www.nsf.gov/crssprgm/reu/",
+    "url": "https://www.nsf.gov/funding/initiatives/reu",
     "pinned": false,
     "published": true,
     "reviewed_at": "2026-08-07",
@@ -122,7 +122,7 @@
   {
     "id": "arduino-docs",
     "title": "Arduino Documentation",
-    "description": "Official tutorials and references useful for introductory electronics and microcontroller projects.",
+    "description": "Arduino’s documentation covers board setup, programming references, hardware specifications, and introductory tutorials.",
     "category": "project skills",
     "source": "Arduino",
     "url": "https://docs.arduino.cc/",
@@ -134,7 +134,7 @@
   {
     "id": "freecad-docs",
     "title": "FreeCAD Documentation",
-    "description": "Official open-source CAD documentation for students who need a no-cost modeling tool.",
+    "description": "FreeCAD’s getting-started guide covers installation, the interface, workbenches, and basic 3D modeling.",
     "category": "project skills",
     "source": "FreeCAD",
     "url": "https://wiki.freecad.org/Getting_started",

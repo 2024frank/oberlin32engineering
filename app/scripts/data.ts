@@ -72,29 +72,30 @@ async function fetchSupabase(table: PublicTable, options: QueryOptions): Promise
   return response.json() as Promise<unknown>;
 }
 
-function normalize(table: PublicTable, value: unknown): unknown {
+function normalize(table: PublicTable, value: unknown, options: QueryOptions): unknown {
   if (table === 'site_settings') {
     const record = Array.isArray(value) ? value[0] : value;
     return isRecord(record) && isRecord(record.settings) ? record.settings : {};
   }
   if (table === 'competition_editions') {
-    const rows = Array.isArray(value) ? value.filter(isRecord) : [];
+    const rows = (Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [])
+      .filter((row) => options.published === false || row.published !== false);
     return rows.sort((a, b) => String(b.year ?? '').localeCompare(String(a.year ?? '')))[0] ?? null;
   }
   if (!Array.isArray(value)) return value;
-  const rows = value.filter(isRecord);
+  const rows = value.filter(isRecord).filter((row) => options.published === false || row.published !== false);
   return sorters[table] ? rows.sort(sorters[table]) : rows;
 }
 
 export async function get(table: PublicTable, options: QueryOptions = {}): Promise<unknown> {
   if (useDatabase) {
     try {
-      return normalize(table, await fetchSupabase(table, options));
+      return normalize(table, await fetchSupabase(table, options), options);
     } catch (error) {
       console.warn(`[O32] Database unavailable for ${table}; using bundled content.`, error);
     }
   }
-  return normalize(table, await fetchJson(`/content/${tableFallbacks[table]}`));
+  return normalize(table, await fetchJson(`/content/${tableFallbacks[table]}`), options);
 }
 
 export function serializeForm(formData: FormData): Record<string, string | string[]> {

@@ -4,43 +4,15 @@ import Layout from '../layouts/Layout.astro';
 <Layout pageId="competition">
 <section class="page-hero">
   <div class="container page-hero__grid">
-    <div><span class="eyebrow">Future possibility</span><h1 data-showcase-title>An Oberlin engineering showcase is being explored.</h1><p class="page-hero__lead" data-showcase-copy>We are considering a future event where student teams could demonstrate projects and explain their design decisions. The format, date, venue, funding, and approval path are not confirmed.</p><div class="page-hero__actions"><a class="button button--primary" href="#interest">Help evaluate the idea</a><a class="button button--secondary" href="projects">See how projects will work</a></div></div>
-    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/solder-practice.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A practice board of the kind used to learn soldering"></figure><aside class="page-hero__aside"><strong data-showcase-status>Idea under evaluation</strong><p>There is no registration, judging panel, prize, venue, or event date at this time.</p></aside></div>
+    <div><span class="eyebrow">Competition status</span><h1>No competition or showcase is scheduled.</h1><p class="page-hero__lead">Members have not approved an engineering competition or showcase. The society is focusing first on choosing and supporting student projects.</p><div class="page-hero__actions"><a class="button button--primary" href="projects#propose">Propose a project</a><a class="button button--secondary" href="join">Submit membership interest</a></div></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/solder-practice.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A circuit board used for soldering practice"></figure><aside class="page-hero__aside"><strong>Nothing to register for</strong><p>There is no event date, venue, judging process, prize, or registration.</p></aside></div>
   </div>
 </section>
 
 <section class="section">
-  <div class="container split">
-    <div><span class="eyebrow">Requirements</span><h2>Conditions for a public showcase.</h2><p>A showcase would require confirmed organizers, participants, space, safety procedures, funding, accessibility planning, and a schedule.</p></div>
-    <ul class="check-list"><li>A confirmed student organizing team</li><li>A faculty or staff approval path</li><li>A venue and a schedule</li><li>Safety and equipment rules</li><li>A budget and source of support</li><li>Enough active teams to make the event worthwhile</li><li>A fair review process and accessibility plan</li></ul>
-  </div>
-</section>
-
-<section class="section section--soft">
-  <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Format options</span><h2>Demonstration, design review, or challenge.</h2></div><p>The organizing team will evaluate whether scoring would support learning and whether the society has the resources to run a fair process.</p></div>
-    <div class="card-grid">
-      <article class="card"><span class="card__number">Option A</span><h3>Open demonstration night</h3><p>Teams share prototypes, tests, failures, and next steps without formal scoring.</p></article>
-      <article class="card"><span class="card__number">Option B</span><h3>Design review</h3><p>Mentors give structured feedback on problem definition, evidence, engineering choices, and communication.</p></article>
-      <article class="card"><span class="card__number">Option C</span><h3>Small challenge</h3><p>A limited prompt, common constraints, and transparent criteria, only after resources and oversight are confirmed.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="interest">
-  <div class="container split">
-    <div><span class="eyebrow">Feedback</span><h2>Comment on the proposed format.</h2><p>Describe the format you would attend, what you could contribute, and any risks or access barriers the organizers should consider.</p></div>
-    <form class="form-shell" data-o32-form data-form-type="showcase_interest">
-      <h3>Share your view</h3>
-      <div class="form-grid">
-        <label class="form-field"><span>Your name</span><input type="text" name="full_name" maxlength="120" autocomplete="name" required></label>
-        <label class="form-field"><span>Email</span><input type="email" name="email" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
-        <label class="form-field form-field--full"><span>Which format would be most useful?</span><select name="preferred_format"><option>Open demonstration night</option><option>Mentored design review</option><option>Small judged challenge</option><option>No event yet; focus on projects first</option></select></label>
-        <label class="form-field form-field--full"><span>What should the organizers consider?</span><textarea name="message" maxlength="1800" required></textarea></label>
-        <label class="honeypot" aria-hidden="true">Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label>
-        <div class="form-actions"><button class="button button--primary" type="submit">Send feedback</button><p class="form-status" data-form-status role="status" aria-live="polite"></p></div>
-      </div>
-    </form>
+  <div class="container split split--center">
+    <div><span class="eyebrow">Current priority</span><h2>Projects come first.</h2><p>The society will first review project ideas, confirm teams, and determine which work can be supported. A showcase should appear here only after members approve one and confirm an organizer, date, venue, and safety plan.</p></div>
+    <div class="page-hero__actions"><a class="button button--primary" href="projects">Review project selection</a></div>
   </div>
 </section>
 </Layout>

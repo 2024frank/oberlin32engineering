@@ -2,57 +2,51 @@
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout pageId="index">
-<section class="home-hero home-hero--signal" data-engine-hero>
-  <div class="home-hero__gridlines" aria-hidden="true"></div>
-  <div class="container home-signal">
-    <div class="home-signal__copy">
-      <span class="eyebrow">Student-led engineering at Oberlin</span>
-      <h1>Build engineering at Oberlin.</h1>
-      <p class="home-hero__lead">Meet collaborators, finish a semester-scale project, and make sense of the 3-2 path—with students across majors and experience levels.</p>
+<section class="home-hero home-hero--redesign" data-engine-hero>
+  <div class="home-hero__photo" aria-hidden="true">
+    <img src="/assets/images/photos/engineering-workbench-generated.jpg" alt="" width="1736" height="906" fetchpriority="high" decoding="async">
+  </div>
+  <div class="container home-hero__inner">
+    <div class="home-hero__copy">
+      <span class="eyebrow">Oberlin 3-2 Engineering Society</span>
+      <h1>Engineering projects and 3-2 planning at Oberlin.</h1>
+      <p class="home-hero__lead">The society is organizing for 2026–27. Members will choose the first projects, plan the first events, and share current 3-2 source links.</p>
       <div class="home-hero__actions">
-        <a class="button button--gold" href="join">Join the founding group <span aria-hidden="true">→</span></a>
-        <a class="button button--ink" href="projects">See how projects work</a>
+        <a class="button button--gold" href="join">Submit membership interest <span aria-hidden="true">→</span></a>
+        <a class="button button--glass" href="projects">Review project selection</a>
       </div>
       <ul class="home-signal__proof" aria-label="Membership details">
         <li>Open to every major</li>
-        <li>No experience required</li>
+        <li>3-2 enrollment is not required</li>
         <li>Founding in 2026–27</li>
       </ul>
     </div>
-    <figure class="signal-mark">
-      <div class="signal-mark__frame">
-        <span class="signal-mark__coordinate" aria-hidden="true">41.2939° N / 82.2174° W</span>
-        <img src="assets/images/iglogo-900.webp" alt="Oberlin 3-2 Engineering Society emblem" width="900" height="900" fetchpriority="high" decoding="async">
-        <span class="signal-mark__index" aria-hidden="true">OES / 01</span>
-      </div>
-      <figcaption><span>Oberlin, Ohio</span><strong>3-2 Engineering Society</strong><span>Founding mark · 2026</span></figcaption>
-    </figure>
   </div>
 </section>
 
 <nav class="mission-rail" aria-label="Explore the society">
   <div class="container mission-rail__grid">
-    <a href="projects"><span>01 / Build</span><strong>Turn a scoped idea into documented work.</strong><i aria-hidden="true">↗</i></a>
-    <a href="pathway"><span>02 / Plan</span><strong>Compare the 3-2 path before application year.</strong><i aria-hidden="true">↗</i></a>
-    <a href="events"><span>03 / Gather</span><strong>Learn beside students, alumni, and engineers.</strong><i aria-hidden="true">↗</i></a>
+    <a href="projects"><span>Projects</span><strong>See how proposals will be reviewed.</strong><i aria-hidden="true">↗</i></a>
+    <a href="pathway"><span>3-2 Pathway</span><strong>Review planning steps and partner links.</strong><i aria-hidden="true">↗</i></a>
+    <a href="events"><span>Events</span><strong>No events have been announced yet.</strong><i aria-hidden="true">↗</i></a>
   </div>
 </nav>
 
 <section class="section aim-section" id="operating-plan">
   <div class="container aim-grid">
     <div class="aim-section__intro">
-      <span class="eyebrow">Why this exists</span>
-      <h2>Engineering-minded students should not have to work alone.</h2>
-      <p>Engineering-minded students at Oberlin study in many departments and class years. The society gives them one place to meet, compare plans, and form project teams.</p>
-      <p>You can join to build, learn about 3-2, help run an event, or meet students working on related problems. Prior engineering experience is not required.</p>
+      <span class="eyebrow">Purpose</span>
+      <h2>Meet other Oberlin students interested in engineering.</h2>
+      <p>Students with engineering interests study in different majors and class years. The society is being organized so they can find collaborators and compare 3-2 questions.</p>
+      <p>The founding group will decide which projects and events are realistic after it reviews student interest and available resources.</p>
     </div>
     <div class="aim-section__work">
-      <h3>First-year operating plan</h3>
+      <h3>First-year tasks</h3>
       <ol class="aim-list">
         <li><span>01</span><p>Recruit members from different departments and class years.</p></li>
-        <li><span>02</span><p>Select projects that a student team can finish and document within one semester.</p></li>
-        <li><span>03</span><p>Collect 3-2 questions and connect students with current official guidance.</p></li>
-        <li><span>04</span><p>Schedule meetups, workshops, and conversations with engineers and alumni.</p></li>
+        <li><span>02</span><p>Review proposals and select projects that fit the available time, tools, workspace, budget, and safety requirements.</p></li>
+        <li><span>03</span><p>Collect 3-2 questions and maintain links to Oberlin and partner-school pages.</p></li>
+        <li><span>04</span><p>Announce the first event after its organizer, date, room, and access details are confirmed.</p></li>
       </ol>
     </div>
   </div>
@@ -62,8 +56,8 @@ import Layout from '../layouts/Layout.astro';
   <div class="container pathway-feature__grid">
     <div>
       <span class="eyebrow">The academic pathway</span>
-      <h2>Plan the transfer before the application year.</h2>
-      <p>Course sequences, admission rules, financial aid, housing, and degree timelines differ by partner school. The club helps students compare questions and prepare for official advising.</p>
+      <h2>Questions to review before applying.</h2>
+      <p>The guide covers prerequisites, admission, financial aid, housing, and program length. Confirm your plan with an Oberlin adviser and the partner school.</p>
       <div class="page-hero__actions"><a class="button button--secondary button--light" href="pathway">Read the student guide</a></div>
     </div>
     <figure class="pathway-map" aria-labelledby="pathway-map-caption">
@@ -91,8 +85,8 @@ import Layout from '../layouts/Layout.astro';
 <section class="section section--soft">
   <div class="container">
     <div class="section-heading">
-      <div><span class="eyebrow">Events</span><h2>Programs being planned.</h2></div>
-      <p>Each listing states whether its date, room, and registration details are confirmed.</p>
+      <div><span class="eyebrow">Events</span><h2>Event calendar.</h2></div>
+      <p>Published listings include their date, room, and registration status.</p>
     </div>
     <div class="card-grid card-grid--2" data-home-events aria-live="polite"><div class="empty-state"><h3>Loading planned events…</h3><p>Fetching the latest event information.</p></div></div>
   </div>
@@ -104,10 +98,10 @@ import Layout from '../layouts/Layout.astro';
       <img src="assets/images/photos/homepage-macro-generated.jpg" alt="A close view of circuit-board headers, jumper wires, and loose electronic components" loading="lazy" width="1536" height="1024">
     </figure>
     <div>
-      <span class="eyebrow">Why Kwaku started it</span>
-      <h2>Students needed an easier way to find a team.</h2>
-      <p>Kwaku kept meeting students interested in engineering who were working separately or trying to answer the same 3-2 questions on their own. He started the society to connect those students and give project ideas a place to become shared work.</p>
-      <p>A project may need hardware, software, research, writing, photography, logistics, or testing. Members do not need the same major or the same level of experience.</p>
+      <span class="eyebrow">From the founder</span>
+      <h2>A group for hands-on engineering work.</h2>
+      <p>Kwaku started the society because he wanted more opportunities to work on hardware and software projects with other Oberlin students.</p>
+      <p>The first projects have not been selected. Members will review ideas after checking the lead, workspace, tools, cost, and safety needs.</p>
       <p class="founder-credit"><strong>Frank (Kwaku) Kusi Appiah</strong><span>Founder and president</span></p>
       <div class="page-hero__actions"><a class="button button--primary" href="join">Tell us what interests you</a><a class="button button--secondary" href="leadership">See open roles</a></div>
     </div>

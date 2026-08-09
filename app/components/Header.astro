@@ -4,17 +4,29 @@ import type { PageId } from '../lib/page-meta';
 interface Props { pageId: PageId }
 const { pageId } = Astro.props;
 const links = [
+  ['index', 'Home'],
+  ['about', 'About'],
   ['pathway', '3-2 Pathway'],
   ['projects', 'Projects'],
   ['events', 'Events'],
   ['resources', 'Resources'],
-  ['about', 'About'],
+  ['leadership', 'Team'],
+] as const;
+const mobileLinks = [
+  ['index', 'Home', 'Society overview'],
+  ['about', 'About', 'Purpose and first-year plan'],
+  ['pathway', '3-2 Pathway', 'Planning steps and partner links'],
+  ['projects', 'Projects', 'Selection process and technical areas'],
+  ['events', 'Events', 'Schedule and event-interest form'],
+  ['resources', 'Resources', '3-2 and technical source pages'],
+  ['leadership', 'Team', 'Officers and open positions'],
+  ['contact', 'Contact', 'Questions and collaboration requests'],
 ] as const;
 ---
 <div class="announcement" data-announcement>
   <div class="container announcement__inner">
-    <p data-site-announcement>Founding in 2026–27. Interested Oberlin students are welcome.</p>
-    <a data-announcement-link href="/join">Join the founding group <span aria-hidden="true">→</span></a>
+    <p data-site-announcement>Organizing for 2026–27. Membership interest is open.</p>
+    <a data-announcement-link href="/join">Submit membership interest <span aria-hidden="true">→</span></a>
   </div>
 </div>
 <header class="site-header" data-header>
@@ -24,7 +36,7 @@ const links = [
       <span><strong>Oberlin 3-2</strong><small>Engineering Society</small></span>
     </a>
     <nav class="primary-nav" aria-label="Primary navigation">
-      {links.map(([id, label]) => <a href={`/${id}`} class:list={{ active: pageId === id }} aria-current={pageId === id ? 'page' : undefined}>{label}</a>)}
+      {links.map(([id, label]) => <a href={id === 'index' ? '/' : `/${id}`} class:list={{ active: pageId === id }} aria-current={pageId === id ? 'page' : undefined}>{label}</a>)}
     </nav>
     <div class="nav-actions">
       <a class="button button--small button--primary desktop-join" href="/join" class:list={{ active: pageId === 'join' }} aria-current={pageId === 'join' ? 'page' : undefined}>Join</a>
@@ -36,14 +48,7 @@ const links = [
 </header>
 <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
   <nav class="container" aria-label="Mobile navigation">
-    <a href="/">Home <span>Return to the society overview</span></a>
-    <a href="/about">About <span>What the society is and why it exists</span></a>
-    <a href="/pathway">3-2 Pathway <span>Plan courses and compare partner schools</span></a>
-    <a href="/projects">Projects <span>See how the first projects will be chosen</span></a>
-    <a href="/events">Events <span>See what is planned and register interest</span></a>
-    <a href="/resources">Resources <span>Use official links and technical resources</span></a>
-    <a href="/leadership">Leadership <span>Meet the founding team and see open roles</span></a>
-    <a href="/contact">Contact <span>Questions, speakers, and partnerships</span></a>
-    <a class="button button--primary" href="/join">Join the founding group</a>
+    {mobileLinks.map(([id, label, description]) => <a href={id === 'index' ? '/' : `/${id}`} class:list={{ active: pageId === id }} aria-current={pageId === id ? 'page' : undefined}>{label} <span>{description}</span></a>)}
+    <a class="button button--primary" href="/join" aria-current={pageId === 'join' ? 'page' : undefined}>Submit membership interest</a>
   </nav>
 </div>

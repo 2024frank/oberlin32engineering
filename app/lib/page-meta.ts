@@ -14,7 +14,7 @@ export interface PageMeta {
 export const pageMeta: Record<PageId, PageMeta> = {
   index: {
     title: 'Oberlin 3-2 Engineering Society',
-    description: "The student society for Oberlin College's 3-2 engineering program, engineering projects, technical events, and peer planning.",
+    description: "A student group forming around engineering projects and Oberlin's 3-2 engineering pathway.",
   },
   about: {
     title: 'About the Oberlin 3-2 Engineering Society',
@@ -26,11 +26,11 @@ export const pageMeta: Record<PageId, PageMeta> = {
   },
   projects: {
     title: 'Engineering Projects · Oberlin 3-2 Engineering Society',
-    description: 'Learn how the society will choose and run student projects after the founding membership forms.',
+    description: 'Review project selection criteria, technical areas, selected project briefs, and the project idea form.',
   },
   competition: {
-    title: 'Future Engineering Showcase Idea · Oberlin 3-2 Engineering Society',
-    description: 'A possible future Oberlin engineering showcase and the team, venue, safety, funding, and access requirements it would need.',
+    title: 'Competition Status · Oberlin 3-2 Engineering Society',
+    description: 'No engineering competition or showcase is scheduled. The society is focusing first on student projects.',
   },
   leadership: {
     title: 'Leadership and Open Roles · Oberlin 3-2 Engineering Society',
@@ -38,23 +38,23 @@ export const pageMeta: Record<PageId, PageMeta> = {
   },
   events: {
     title: 'Events · Oberlin 3-2 Engineering Society | Oberlin College',
-    description: 'Planned society meetups, project sessions, 3-2 conversations, and confirmed event details when available.',
+    description: 'View confirmed event details, published updates, and the event-interest form.',
   },
   opportunities: {
     title: 'Opportunities · Oberlin 3-2 Engineering Society',
-    description: 'Current society roles, project openings, and trusted external starting points for engineering opportunities.',
+    description: 'Unpaid society roles plus source pages for internships and undergraduate research.',
   },
   resources: {
     title: '3-2 Engineering Resources for Oberlin Students',
     description: 'Checked links for Oberlin 3-2 planning, partner schools, financial aid, internships, research, and technical learning.',
   },
   impact: {
-    title: 'Founding Roadmap · Oberlin 3-2 Engineering Society',
-    description: "A public roadmap of the society's concrete founding commitments, current status, and future reports.",
+    title: 'First-Year Roadmap · Oberlin 3-2 Engineering Society',
+    description: "The society's 2026–27 milestones, including membership recruitment, project selection, and the first event.",
   },
   join: {
     title: 'Join the Oberlin 3-2 Engineering Society',
-    description: 'Join the engineering community at Oberlin as a member, project contributor, event volunteer, or officer.',
+    description: 'Submit membership interest and choose the meetings, projects, or open roles you want to hear about.',
   },
   contact: {
     title: 'Contact · Oberlin 3-2 Engineering Society',
@@ -62,7 +62,7 @@ export const pageMeta: Record<PageId, PageMeta> = {
   },
   media: {
     title: 'Media Information · Oberlin 3-2 Engineering Society',
-    description: 'Accurate boilerplate, logo files, photo guidance, and contact information for the founding society.',
+    description: 'Society description, logo files, brand colors, image policy, and media contact instructions.',
   },
   '404': {
     title: 'Page Not Found · Oberlin 3-2 Engineering Society',

@@ -1,11 +1,11 @@
 [
   {
     "id": "founding-projects-role",
-    "title": "Projects coordinator",
+    "title": "Project coordinator",
     "organization": "Oberlin 3-2 Engineering Society",
     "type": "Leadership",
-    "description": "Help project teams turn broad ideas into manageable tasks, identify tools or mentors, and publish short progress notes.",
-    "deadline_label": "Interest reviewed on a rolling basis",
+    "description": "Coordinate project scopes, equipment needs, mentors, and progress updates after projects are selected.",
+    "deadline_label": "No fixed deadline",
     "deadline": null,
     "location": "Oberlin College",
     "url": "/join?interest=leadership",
@@ -14,15 +14,15 @@
   },
   {
     "id": "event-volunteer",
-    "title": "Launch-event volunteer",
+    "title": "Event support volunteer",
     "organization": "Oberlin 3-2 Engineering Society",
     "type": "Volunteer",
-    "description": "Help with room setup, attendance, accessibility checks, photography with consent, food, or post-event follow-up.",
-    "deadline_label": "Open before each confirmed event",
+    "description": "Help with setup, check-in, cleanup, and accessibility needs at a confirmed society event.",
+    "deadline_label": "Opens when an event is scheduled",
     "deadline": null,
     "location": "Oberlin College",
     "url": "/join?interest=events",
     "featured": true,
-    "published": true
+    "published": false
   }
 ]

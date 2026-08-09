@@ -4,28 +4,28 @@ import Layout from '../layouts/Layout.astro';
 <Layout pageId="events">
 <section class="page-hero">
   <div class="container page-hero__grid">
-    <div><span class="eyebrow">Events and updates</span><h1>Meetings, build sessions, and 3-2 discussions.</h1><p class="page-hero__lead">Each listing states what is still being planned. Registration opens only after the date, room, organizer, and access information are confirmed.</p><div class="page-hero__actions"><a class="button button--primary" href="join?interest=events">Get event updates</a><a class="button button--secondary" href="#calendar">View event plans</a></div></div>
-    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-boards-green.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="Green circuit boards laid out ready for a build session"></figure><aside class="page-hero__aside"><strong>Dates and rooms are not confirmed</strong><p>Planned formats may appear below before registration opens.</p></aside></div>
+    <div><span class="eyebrow">Events</span><h1>Event schedule and interest form.</h1><p class="page-hero__lead">Confirmed listings include the date, room, organizer, access details, and registration link.</p><div class="page-hero__actions"><a class="button button--primary" href="#event-interest">Share event interest</a><a class="button button--secondary" href="#calendar">Check the schedule</a></div></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-boards-green.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="Green printed circuit boards"></figure><aside class="page-hero__aside"><strong>Check the schedule below</strong><p>The event-interest form asks what students would attend and when.</p></aside></div>
   </div>
 </section>
 
 <section class="section" id="calendar">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Event plans</span><h2>Programs under consideration.</h2></div><p>Read each listing for its current date, room, and registration status.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">Calendar</span><h2>Event schedule.</h2></div><p>Each published listing includes its current date, room, and registration status.</p></div>
     <div class="card-grid card-grid--2" id="event-grid" data-event-grid aria-live="polite"><div class="empty-state"><h3>Loading planned events…</h3><p>Fetching the latest event information.</p></div></div>
   </div>
 </section>
 
 <section class="section section--soft" id="news">
   <div class="container">
-    <div class="section-heading"><div><span class="eyebrow">Society updates</span><h2>Published notes and decisions.</h2></div><p>Updates record completed actions, confirmed opportunities, and changes to society plans.</p></div>
+    <div class="section-heading"><div><span class="eyebrow">Updates</span><h2>Society updates.</h2></div><p>Completed actions and confirmed announcements appear here.</p></div>
     <div class="card-grid" data-news-grid aria-live="polite"><div class="empty-state"><h3>Loading updates…</h3><p>Fetching published updates.</p></div></div>
   </div>
 </section>
 
-<section class="section">
+<section class="section" id="event-interest">
   <div class="container split">
-    <div><span class="eyebrow">Help shape the calendar</span><h2>Tell us when you can attend.</h2><p>Select the formats you want and give the days and times that work for you.</p></div>
+    <div><span class="eyebrow">Event interest</span><h2>What would you attend?</h2><p>Share the event formats and meeting times that interest you. This form does not register you for an event.</p></div>
     <form class="form-shell" data-o32-form data-form-type="event_interest">
       <h3>Event interest</h3>
       <div class="form-grid">
