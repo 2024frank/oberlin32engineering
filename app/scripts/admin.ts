@@ -11,7 +11,18 @@ declare global {
   type CollectionKey = 'projects' | 'project_updates' | 'events' | 'leaders' | 'resources' | 'opportunities' | 'news_posts' | 'partner_schools' | 'competition_editions' | 'impact' | 'documents' | 'sponsors';
   type PortalView = CollectionKey | 'dashboard' | 'submissions' | 'site_settings' | 'members' | 'broadcasts' | 'media' | 'content_audit';
   type AuthView = 'login' | 'recover' | 'password' | 'config';
+  type HistoryMode = 'push' | 'replace' | 'none';
   type ConfirmAction = () => void | Promise<void>;
+
+  class RequestError extends Error {
+    readonly status: number;
+
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = 'RequestError';
+      this.status = status;
+    }
+  }
 
   interface SelectOption { value: string; label: string }
   interface FieldDefinition {
@@ -126,6 +137,12 @@ declare global {
   let activeRecords: UnknownRecord[] = [];
   let editorContext: EditorContext | null = null;
   let pendingConfirm: ConfirmAction | null = null;
+  let refreshPromise: Promise<void> | null = null;
+  let viewEpoch = 0;
+  let editorEpoch = 0;
+  let editorDirty = false;
+  let contentDirty = false;
+  let confirmBusy = false;
 
   const field = (name: string, label: string, type: FieldType, options: FieldOptions = {}): FieldDefinition => ({ name, label, type, ...options });
   const text = (name: string, label: string, options: FieldOptions = {}): FieldDefinition => field(name, label, 'text', options);
@@ -272,6 +289,44 @@ declare global {
   ];
   const siteFields = SITE_SECTIONS.flatMap((section) => section.fields);
   const isCollectionKey = (value: string): value is CollectionKey => Object.prototype.hasOwnProperty.call(collections, value);
+  const isPortalView = (value: string): value is PortalView => isCollectionKey(value) || ['dashboard','submissions','site_settings','members','broadcasts','media','content_audit'].includes(value);
+  const viewIsCurrent = (view: PortalView, epoch: number): boolean => activeView === view && viewEpoch === epoch;
+
+  async function runButtonAction(button: HTMLButtonElement | null, pendingLabel: string, action: () => void | Promise<void>): Promise<void> {
+    if (!button || button.disabled) return;
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = pendingLabel;
+    try { await action(); }
+    finally {
+      if (button.isConnected) {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        button.innerHTML = original;
+      }
+    }
+  }
+
+  function confirmDiscardChanges(action: () => void | Promise<void>): void {
+    if (!contentDirty) { void Promise.resolve(action()).catch((error) => toast(errorMessage(error), 'error')); return; }
+    confirmAction(
+      'Discard unsaved changes?',
+      'Changes in the current form have not been saved.',
+      async () => { contentDirty = false; await action(); },
+      'Discard changes'
+    );
+  }
+
+  function requestEditorClose(): void {
+    if (!editorDirty) { editorDialog.close(); return; }
+    confirmAction(
+      'Discard this draft?',
+      'Changes in the record editor have not been saved.',
+      () => { editorDirty = false; editorDialog.close(); },
+      'Discard changes'
+    );
+  }
 
   function toast(message: string, type: 'success' | 'error' = 'success'): void {
     const region = $<HTMLElement>('[data-toasts]');
@@ -292,7 +347,7 @@ declare global {
         const parsed = JSON.parse(raw);
         message = parsed.message || parsed.error_description || parsed.error || parsed.hint || raw;
       } catch (_) { /* use raw */ }
-      throw new Error(message || `Request failed (${response.status}).`);
+      throw new RequestError(message || `Request failed (${response.status}).`, response.status);
     }
     if (response.status === 204 || options.method === 'DELETE') return null as T;
     return ((response.headers.get('content-type') || '').includes('application/json') ? response.json() : response.text()) as Promise<T>;
@@ -309,17 +364,27 @@ declare global {
   }
 
   function loadSession(): Session | null {
-    try { return JSON.parse(sessionStorage.getItem('o32-officer-session') || 'null') as Session | null; }
-    catch (_) { return null; }
+    try {
+      const value = asRecord(JSON.parse(sessionStorage.getItem('o32-officer-session') || 'null'));
+      if (!valueText(value.access_token) || !Number.isFinite(Number(value.expires_at))) return null;
+      return value as unknown as Session;
+    } catch (_) { return null; }
   }
 
-  async function refreshSession() {
-    if (!session?.refresh_token) throw new Error('Your session has ended. Sign in again.');
-    const next = await request<Session>('/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: session.refresh_token })
-    });
-    next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
-    saveSession(next);
+  async function refreshSession(): Promise<void> {
+    if (refreshPromise) return refreshPromise;
+    const refreshToken = session?.refresh_token;
+    if (!refreshToken) throw new Error('Your session has ended. Sign in again.');
+    refreshPromise = (async () => {
+      const next = await request<Session>('/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      next.refresh_token ||= refreshToken;
+      next.expires_at = Math.floor(Date.now() / 1000) + Number(next.expires_in || 3600);
+      saveSession(next);
+    })();
+    try { await refreshPromise; }
+    finally { refreshPromise = null; }
   }
 
   async function ensureSession() {
@@ -358,7 +423,8 @@ declare global {
   async function signOut() {
     try { if (session?.access_token) await request('/auth/v1/logout', { method: 'POST', headers: authHeaders() }); }
     catch (_) { /* local sign-out still succeeds */ }
-    saveSession(null); profile = null; portal.hidden = true; authScreen.hidden = false; showAuth('login');
+    saveSession(null); profile = null; editorDirty = false; contentDirty = false; portal.hidden = true; authScreen.hidden = false; showAuth('login');
+    const url = new URL(window.location.href); url.searchParams.delete('view'); window.history.replaceState({}, document.title, `${url.pathname}${url.search}`);
   }
 
   async function rows(table: string, order = ''): Promise<UnknownRecord[]> {
@@ -403,12 +469,16 @@ declare global {
     const now = new Date();
     const folder = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2,'0')}`;
     const path = `${collection}/${folder}/${Date.now()}-${base}.${extension}`;
-    await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': file.type, 'x-upsert': 'false' }, body: file });
+    const objectPath = `/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`;
+    await request(objectPath, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': file.type, 'x-upsert': 'false' }, body: file });
     const publicUrl = `${API}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${path.split('/').map(encodeURIComponent).join('/')}`;
     try {
       const userId = valueText(session?.user?.id);
       await request('/rest/v1/media', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ file_name: file.name, storage_path: path, public_url: publicUrl, mime_type: file.type, size_bytes: file.size, uploaded_by: userId }) });
-    } catch (error) { console.warn('Could not record media metadata:', errorMessage(error)); }
+    } catch (error) {
+      await request(objectPath, { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+      throw new Error(`The file could not be added to the media library. ${errorMessage(error)}`);
+    }
     return publicUrl;
   }
 
@@ -477,9 +547,12 @@ declare global {
     }).join('')}</tbody></table></div>`;
   }
 
-  async function renderCollection(view: CollectionKey): Promise<void> {
+  async function renderCollection(view: CollectionKey, epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent(view, epoch)) return;
     const definition = collections[view];
-    activeRecords = await rows(view, definition.order || 'updated_at.desc');
+    const records = await rows(view, definition.order || 'updated_at.desc');
+    if (!viewIsCurrent(view, epoch)) return;
+    activeRecords = records;
     content.innerHTML = `${viewHead(view, definition, activeRecords.length)}<div class="toolbar"><label><span class="sr-only">Search</span><input type="search" data-search placeholder="Search ${escapeHTML(definition.label.toLowerCase())}"></label><select data-filter><option value="all">All records</option><option value="published">Public</option><option value="draft">Hidden</option><option value="featured">Featured</option></select></div><div data-results>${tableMarkup(view, definition, activeRecords)}</div>`;
     const refresh = (): void => {
       const query = String($<HTMLInputElement>('[data-search]')?.value || '').trim().toLowerCase(); const filter = $<HTMLSelectElement>('[data-filter]')?.value || 'all';
@@ -509,7 +582,7 @@ declare global {
     const value = record?.[field.name];
     if (field.type === 'json') return value ? JSON.stringify(value, null, 2) : '[]';
     if (field.type === 'array') return Array.isArray(value) ? value.join(', ') : (value || '');
-    if (field.type === 'datetime-local' && value) return String(value).slice(0,16);
+    if (field.type === 'datetime-local' && value) return localInputValue(value);
     return value ?? '';
   }
 
@@ -523,15 +596,22 @@ declare global {
       const placeholder = field.placeholder ? `<option value="">${escapeHTML(field.placeholder)}</option>` : '';
       return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><select name="${escapeHTML(field.name)}"${required}>${placeholder}${options.map((option) => `<option value="${escapeHTML(option.value)}" ${String(value) === String(option.value) ? 'selected' : ''}>${escapeHTML(option.label)}</option>`).join('')}</select>${help}</label>`;
     }
-    if (field.type === 'image') return `<div class="image-field" data-image-field="${escapeHTML(field.name)}"><span>${escapeHTML(field.label)}</span><div class="image-control"><img src="${escapeHTML(value || '../assets/images/engineering-field.svg')}" alt=""><div><input type="url" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="Image URL"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload="${escapeHTML(field.name)}"><small>Use a licensed image and keep its credit in content/photo_credits.json.</small></div></div></div>`;
-    const inputType = field.type === 'array' ? 'text' : field.type;
-    return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><input type="${escapeHTML(inputType)}" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}"${required}${minmax}>${help}</label>`;
+    if (field.type === 'image') return `<div class="image-field" data-image-field="${escapeHTML(field.name)}"><span>${escapeHTML(field.label)}</span><div class="image-control"><img src="${escapeHTML(value || '../assets/images/engineering-field.svg')}" alt="" width="110" height="90"><div><input type="url" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}" placeholder="https://example.com/image.jpg" autocomplete="off" aria-label="${escapeHTML(field.label)} URL"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-upload="${escapeHTML(field.name)}" aria-label="Upload ${escapeHTML(field.label)}"><small>Use a licensed image and keep its credit in content/photo_credits.json.</small></div></div></div>`;
+    const defaultType = field.type === 'array' ? 'text' : field.type;
+    const inputType = defaultType === 'text' && /email/i.test(field.name) ? 'email' : defaultType === 'text' && /(?:^|_)url$/i.test(field.name) ? 'url' : defaultType;
+    const autocomplete = inputType === 'email' ? ' autocomplete="email" autocapitalize="none" spellcheck="false"' : ' autocomplete="off"';
+    return `<label class="${field.full ? 'full' : ''}"><span>${escapeHTML(field.label)}</span><input type="${escapeHTML(inputType)}" name="${escapeHTML(field.name)}" value="${escapeHTML(value)}"${autocomplete}${required}${minmax}>${help}</label>`;
   }
 
   async function openEditor(view: CollectionKey, record: UnknownRecord = {}, forceNew = false): Promise<void> {
     const definition = collections[view]; if (!definition) return;
+    const epoch = ++editorEpoch;
+    editorDirty = false;
     editorContext = { view, originalId: forceNew ? '' : valueText(record.id), record };
     editorKicker.textContent = definition.label; editorTitle.textContent = `${forceNew || !record.id ? 'Create' : 'Edit'} ${definition.singular}`;
+    editorFields.innerHTML = '<div class="loading"><span></span><p>Loading editor…</p></div>';
+    deleteRecord.hidden = true;
+    if (!editorDialog.open) editorDialog.showModal();
     // Record ID and URL slug are machine values. Asking a person to invent a
     // primary key before they can name their project is the system's problem
     // leaking into the interface, so both are generated on save. The slug stays
@@ -542,21 +622,29 @@ declare global {
       if (field.name === 'id') return false;
       if (field.name === 'slug' && isNew) return false;
       return true;
-    });
+    }).map((field) => ({ ...field, options: field.options ? [...field.options] : [] }));
     // The first field is the one the officer is here to fill in, and the one an
     // empty-form save should point at. Previously that was Record ID, so the
     // browser sent them to a plumbing field to explain what was missing.
     // A reference field needs the other collection's records before it can be
     // drawn, so resolve them first. A failed lookup leaves an empty picker
     // rather than blocking the whole editor.
-    await Promise.all(visible.filter((item): item is FieldDefinition & { reference: CollectionKey } => Boolean(item.reference)).map(async (field) => {
-      const other = collections[field.reference];
+    await Promise.all(visible.map(async (field) => {
+      const reference = field.reference;
+      if (!reference) return;
+      const other = collections[reference];
       try {
-        const items = await rows(field.reference, other?.order || 'title.asc');
+        const items = await rows(reference, other.order || 'title.asc');
         field.options = items.map((item) => ({ value: valueText(item.id), label: titleFor(other, item) }));
-      } catch (_) { field.options = []; }
-      if (!field.options.length) field.help = `No ${escapeHTML(other?.label.toLowerCase() || field.reference)} exist yet. Create one first.`;
+      } catch (error) {
+        field.options = [];
+        field.help = `Could not load ${other.label.toLowerCase()}. Close the editor and try again. ${errorMessage(error)}`;
+        return;
+      }
+      if (!field.options.length) field.help = `No ${other.label.toLowerCase()} exist yet. Create one first.`;
     }));
+
+    if (epoch !== editorEpoch || !editorDialog.open) return;
 
     const titleIndex = visible.findIndex((field) => field.name === definition.titleField);
     if (titleIndex > 0) visible.unshift(...visible.splice(titleIndex, 1));
@@ -565,7 +653,7 @@ declare global {
     editorFields.innerHTML = body.map((field) => fieldMarkup(field, record)).join('')
       + (slugField ? `<details class="advanced"><summary>Advanced</summary><div class="advanced__fields">${fieldMarkup({ ...slugField, help: 'Changing this breaks any existing link to the public page.' }, record)}</div></details>` : '');
     deleteRecord.hidden = forceNew || !record.id;
-    deleteRecord.onclick = () => confirmAction(`Delete ${titleFor(definition, record)}?`, 'This cannot be undone.', async () => { await deleteTableRecord(view, record.id); editorDialog.close(); toast('Record deleted.'); await renderCollection(view); });
+    deleteRecord.onclick = () => confirmAction(`Delete ${titleFor(definition, record)}?`, 'This cannot be undone.', async () => { await deleteTableRecord(view, record.id); editorDirty = false; editorDialog.close(); toast('Record deleted.'); await renderCollection(view); });
     $$<HTMLInputElement>('[data-upload]', editorFields).forEach((input) => input.addEventListener('change', async () => {
       const file = input.files?.[0]; if (!file) return; const wrapper = input.closest('[data-image-field]');
       try {
@@ -574,15 +662,16 @@ declare global {
         const preview = wrapper ? $<HTMLImageElement>('img', wrapper) : null;
         if (target) target.value = url;
         if (preview) preview.src = url;
+        editorDirty = true;
         toast('Image uploaded. Save the record to publish it.');
       } catch (error) { toast(errorMessage(error), 'error'); }
     }));
-    editorDialog.showModal();
     // A dialog reopened on a long form keeps the previous scroll position, so
     // the officer landed mid-form with the record's title above the fold.
     editorFields.scrollTop = 0;
     editorDialog.scrollTop = 0;
     $('.editor__shell', editorDialog)?.scrollTo({ top: 0 });
+    $<HTMLElement>('input:not([type="hidden"]), textarea, select', editorFields)?.focus({ preventScroll: true });
   }
 
 
@@ -647,9 +736,11 @@ declare global {
    * counter at zero says what to do about it, and recent changes come first.
    * The Common tasks grid is gone: it was the third copy of the same six
    * collection names, after the sidebar and the create buttons. */
-  async function renderDashboard(): Promise<void> {
+  async function renderDashboard(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('dashboard', epoch)) return;
     const names = ['projects','leaders','events','resources','submissions','content_audit'] as const;
     const values = await Promise.all(names.map((name) => rows(name, name === 'submissions' || name === 'content_audit' ? 'created_at.desc' : 'updated_at.desc').catch(() => [])));
+    if (!viewIsCurrent('dashboard', epoch)) return;
     const [projects = [], leaders = [], events = [], resources = [], submissions = [], audit = []] = values;
     const fresh = submissions.filter((item) => item.status === 'new');
     setBadge(fresh.length);
@@ -680,29 +771,57 @@ declare global {
     $$('[data-goto]', content).forEach((button) => button.addEventListener('click', () => { const view = button.dataset.goto; if (view) void switchView(view as PortalView); }));
   }
 
-  async function renderSubmissions(): Promise<void> {
-    const submissions = await rows('submissions','created_at.desc'); setBadge(submissions.filter((item) => item.status === 'new').length);
+  async function renderSubmissions(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('submissions', epoch)) return;
+    const submissions = await rows('submissions','created_at.desc');
+    if (!viewIsCurrent('submissions', epoch)) return;
+    setBadge(submissions.filter((item) => item.status === 'new').length);
     content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Inbox</p><h2>Public submissions</h2><p>Review what students sent, mark it handled, or archive it. Network hashes are used only for abuse prevention and are not shown here.</p></div></div><div class="submission-list">${submissions.map((item) => {
       const payload = asRecord(item.payload); const lead = valueText(payload.message) || valueText(payload.motivation) || valueText(payload.problem) || valueText(payload.first_test);
       return `<article class="submission"><div><div class="submission__meta"><span>${escapeHTML(pretty(item.type))}</span><span>${escapeHTML(item.status)}</span><span>${escapeHTML(formatDate(item.created_at,true))}</span><span>${escapeHTML(item.email)}</span></div><h3>${escapeHTML(item.full_name || item.email)}</h3><p>${escapeHTML(lead)}</p><div class="submission-data">${Object.entries(payload).filter(([key]) => !['full_name','email'].includes(key)).map(([key,value]) => `<div><b>${escapeHTML(pretty(key))}</b><span>${escapeHTML(Array.isArray(value) ? value.join(', ') : value)}</span></div>`).join('')}</div></div><div class="row-actions"><button type="button" data-status="reviewed" data-id="${escapeHTML(item.id)}" title="Mark reviewed">${iconMarkup('reviewed')}<span>Reviewed</span></button><button type="button" data-status="archived" data-id="${escapeHTML(item.id)}" title="Archive">${iconMarkup('archive')}<span>Archive</span></button><button class="danger" type="button" data-delete-submission="${escapeHTML(item.id)}" title="Delete">${iconMarkup('trash')}<span>Delete</span></button></div></article>`;
     }).join('') || '<div class="empty"><div><h3>No submissions yet</h3><p>Working public forms will place new entries here.</p></div></div>'}</div>`;
-    $$('[data-status]',content).forEach((button) => button.addEventListener('click', async () => { await saveRecord('submissions',{status:button.dataset.status},button.dataset.id); toast('Submission updated.'); await renderSubmissions(); }));
+    $$<HTMLButtonElement>('[data-status]',content).forEach((button) => button.addEventListener('click', async () => {
+      try {
+        await runButtonAction(button, 'Updating…', async () => { await saveRecord('submissions',{status:button.dataset.status},button.dataset.id); toast('Submission updated.'); await renderSubmissions(); });
+      } catch (error) { toast(errorMessage(error), 'error'); }
+    }));
     $$('[data-delete-submission]',content).forEach((button) => button.addEventListener('click', () => confirmAction('Delete this submission?','This permanently removes the entry.',async()=>{await deleteTableRecord('submissions',button.dataset.deleteSubmission);toast('Submission deleted.');await renderSubmissions();})));
   }
 
-  async function renderSiteSettings(): Promise<void> {
-    const settingsRows = await rows('site_settings','updated_at.desc'); const settings = asRecord(settingsRows[0]?.settings);
+  async function renderSiteSettings(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('site_settings', epoch)) return;
+    const settingsRows = await rows('site_settings','updated_at.desc');
+    if (!viewIsCurrent('site_settings', epoch)) return;
+    const settings = asRecord(settingsRows[0]?.settings);
     content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:262"><span class="view-head__icon">${iconMarkup('site_settings')}</span><div><h2>Site settings</h2><p class="view-head__count">${siteFields.length} values used across the public site</p></div><details class="guideline"><summary>Editing guidance</summary><p>These values control contact links, the announcement, and homepage identity. Page copy remains versioned in GitHub.</p></details></div><form data-settings-form>${SITE_SECTIONS.map((section) => `<section class="panel settings-section"><header class="panel__head"><div><h3>${escapeHTML(section.title)}</h3><p>${escapeHTML(section.copy)}</p></div></header><div class="editor__fields">${section.fields.map((field) => fieldMarkup(field, settings)).join('')}</div></section>`).join('')}<div class="settings-save"><button class="button primary" type="submit">Save settings</button></div></form>`;
-    $<HTMLFormElement>('[data-settings-form]')?.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget as HTMLFormElement);const next: UnknownRecord={};siteFields.forEach((item)=>{next[item.name]=String(data.get(item.name)||'').trim();});await request('/rest/v1/site_settings?on_conflict=id',{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:'main',settings:next,published:true})});toast('Site settings saved.');});
+    $<HTMLFormElement>('[data-settings-form]')?.addEventListener('submit',async(event)=>{
+      event.preventDefault();
+      const form = event.currentTarget as HTMLFormElement;
+      const button = (event.submitter as HTMLButtonElement | null) || $<HTMLButtonElement>('button[type="submit"]', form);
+      const data=new FormData(form);const next: UnknownRecord={};siteFields.forEach((item)=>{next[item.name]=String(data.get(item.name)||'').trim();});
+      try {
+        await runButtonAction(button, 'Saving…', async () => {
+          await ensureSession();
+          await request('/rest/v1/site_settings?on_conflict=id',{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:'main',settings:next,published:true})});
+          contentDirty = false;
+          toast('Site settings saved.');
+        });
+      } catch (error) { toast(errorMessage(error), 'error'); }
+    });
   }
 
   /* The library listed camera-roll filenames with a single Copy URL action: no
    * rename, no delete, and no alt text, which is an accessibility gap the
    * moment one of these images lands on a public page. Each card now edits its
    * own name and description, and can be removed from storage and the index. */
-  async function renderMedia(): Promise<void> {
-    const media = await rows('media','created_at.desc').then((items) => items as MediaRecord[]).catch(()=>[]);
-    const usage = await collectMediaUsage().catch(() => new Map<string, string[]>());
+  async function renderMedia(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('media', epoch)) return;
+    const media = await rows('media','created_at.desc').then((items) => items as MediaRecord[]);
+    let usage = new Map<string, string[]>();
+    let usageAvailable = true;
+    try { usage = await collectMediaUsage(); }
+    catch (_) { usageAvailable = false; }
+    if (!viewIsCurrent('media', epoch)) return;
     content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:196"><span class="view-head__icon">${iconMarkup('media')}</span><div><h2>Media library</h2><p class="view-head__count">${media.length} file${media.length === 1 ? '' : 's'}</p></div><details class="guideline"><summary>Editing guidance</summary><p>Upload public images and PDFs. Record the original source and license separately when the file is not created by the society.</p></details></div>
       <div class="media-uploader"><label><input type="file" data-media-upload accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple><span class="media-uploader__face">${iconMarkup('media')}<strong>Choose files to upload</strong><small>JPG, PNG, WebP, GIF, or PDF. Maximum 15 MB each.</small></span></label></div>
       <div class="media-grid">${media.map((item) => {
@@ -717,7 +836,7 @@ declare global {
             <div class="media-card__actions">
               <button class="link-button" type="button" data-copy-url="${escapeHTML(item.public_url)}">Copy URL</button>
               <button class="link-button" type="button" data-media-edit="${escapeHTML(item.id)}">Rename</button>
-              <button class="link-button danger" type="button" data-media-delete="${escapeHTML(item.id)}">Delete</button>
+              <button class="link-button danger" type="button" data-media-delete="${escapeHTML(item.id)}"${usageAvailable ? '' : ' disabled title="Reload the media library before deleting; usage could not be verified."'}>Delete</button>
             </div>
             <form class="media-card__form" data-media-form="${escapeHTML(item.id)}" hidden>
               <label><span>Name</span><input type="text" name="title" maxlength="140" value="${escapeHTML(name)}"></label>
@@ -729,23 +848,35 @@ declare global {
       }).join('') || `<div class="empty"><div>${iconMarkup('media','empty__icon')}<h3>No uploaded media</h3><p>The versioned site images remain available in the repository.</p></div></div>`}</div>`;
 
     $<HTMLInputElement>('[data-media-upload]')?.addEventListener('change', async (event) => {
-      const files = [...((event.currentTarget as HTMLInputElement).files || [])];
-      for (const file of files) {
-        try { await uploadFile(file, 'media'); toast(`${file.name} uploaded.`); }
-        catch (error) { toast(`${file.name}: ${errorMessage(error)}`, 'error'); }
+      const input = event.currentTarget as HTMLInputElement;
+      const files = [...(input.files || [])];
+      if (!files.length || input.disabled) return;
+      input.disabled = true;
+      input.setAttribute('aria-busy', 'true');
+      try {
+        for (const file of files) {
+          try { await uploadFile(file, 'media'); toast(`${file.name} uploaded.`); }
+          catch (error) { toast(`${file.name}: ${errorMessage(error)}`, 'error'); }
+        }
+        await renderMedia();
+      } finally {
+        if (input.isConnected) { input.disabled = false; input.removeAttribute('aria-busy'); input.value = ''; }
       }
-      await renderMedia();
     });
-    $$('[data-copy-url]', content).forEach((button) => button.addEventListener('click', async () => { const url = button.dataset.copyUrl; if (url) await navigator.clipboard.writeText(url); toast('URL copied.'); }));
-    $$('[data-media-edit]', content).forEach((button) => button.addEventListener('click', () => { const id = button.dataset.mediaEdit; const form = id ? $<HTMLFormElement>(`[data-media-form="${CSS.escape(id)}"]`) : null; if (form) form.hidden = false; }));
-    $$('[data-media-cancel]', content).forEach((button) => button.addEventListener('click', () => { const id = button.dataset.mediaCancel; const form = id ? $<HTMLFormElement>(`[data-media-form="${CSS.escape(id)}"]`) : null; if (form) form.hidden = true; }));
+    $$('[data-copy-url]', content).forEach((button) => button.addEventListener('click', async () => { const url = button.dataset.copyUrl; if (!url) return; try { await navigator.clipboard.writeText(url); toast('URL copied.'); } catch (_) { toast('The URL could not be copied. Select and copy it manually.', 'error'); } }));
+    $$('[data-media-edit]', content).forEach((button) => button.addEventListener('click', () => { const id = button.dataset.mediaEdit; const form = id ? $<HTMLFormElement>(`[data-media-form="${CSS.escape(id)}"]`) : null; if (form) { form.hidden = false; $<HTMLInputElement>('input', form)?.focus(); } }));
+    $$('[data-media-cancel]', content).forEach((button) => button.addEventListener('click', () => { const id = button.dataset.mediaCancel; const form = id ? $<HTMLFormElement>(`[data-media-form="${CSS.escape(id)}"]`) : null; if (form) { form.reset(); form.hidden = true; contentDirty = false; } }));
     $$<HTMLFormElement>('[data-media-form]', content).forEach((form) => form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const data = new FormData(form);
+      const button = (event.submitter as HTMLButtonElement | null) || $<HTMLButtonElement>('button[type="submit"]', form);
       try {
-        await saveRecord('media', { title: String(data.get('title') || '').trim(), alt_text: String(data.get('alt_text') || '').trim() }, form.dataset.mediaForm);
-        toast('File details saved.');
-        await renderMedia();
+        await runButtonAction(button, 'Saving…', async () => {
+          await saveRecord('media', { title: String(data.get('title') || '').trim(), alt_text: String(data.get('alt_text') || '').trim() }, form.dataset.mediaForm);
+          contentDirty = false;
+          toast('File details saved.');
+          await renderMedia();
+        });
       } catch (error) { toast(errorMessage(error), 'error'); }
     }));
     $$('[data-media-delete]', content).forEach((button) => button.addEventListener('click', () => {
@@ -758,7 +889,12 @@ declare global {
           ? `This file is currently used in ${used.join(', ')}. Deleting it will leave a broken image there.`
           : 'This removes the file from storage. Anything already pointing at its URL will break.',
         async () => {
-          await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${record.storage_path.split('/').map(encodeURIComponent).join('/')}`, { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+          await ensureSession();
+          try {
+            await request(`/storage/v1/object/${encodeURIComponent(BUCKET)}/${record.storage_path.split('/').map(encodeURIComponent).join('/')}`, { method: 'DELETE', headers: authHeaders() });
+          } catch (error) {
+            if (!(error instanceof RequestError) || error.status !== 404) throw error;
+          }
           await deleteTableRecord('media', record.id);
           toast('File deleted.');
           await renderMedia();
@@ -780,7 +916,7 @@ declare global {
   async function collectMediaUsage(): Promise<Map<string, string[]>> {
     const withImages = Object.entries(collections).filter((entry): entry is [CollectionKey, CollectionDefinition & { imageField: string }] => Boolean(entry[1].imageField));
     const found = new Map<string, string[]>();
-    const results = await Promise.all(withImages.map(([view]) => rows(view).catch(() => [])));
+    const results = await Promise.all(withImages.map(([view]) => rows(view)));
     withImages.forEach(([_view, definition], index) => {
       for (const record of results[index] || []) {
         const url = valueText(record[definition.imageField]);
@@ -806,16 +942,20 @@ declare global {
     return label;
   }
 
-  async function renderAudit(): Promise<void> {
+  async function renderAudit(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('content_audit', epoch)) return;
     const audit = await rows('content_audit','created_at.desc');
+    if (!viewIsCurrent('content_audit', epoch)) return;
     content.innerHTML = `<div class="view-head view-head--collection" style="--accent-h:210"><span class="view-head__icon">${iconMarkup('content_audit')}</span><div><h2>Change history</h2><p class="view-head__count">${audit.length} recorded change${audit.length === 1 ? '' : 's'}</p></div><details class="guideline"><summary>What this is</summary><p>Every content edit is recorded automatically for board handoff. This view is read-only.</p></details></div><div class="table-wrap"><table><thead><tr><th>Change</th><th>Record</th><th>Collection</th><th>When</th></tr></thead><tbody>${audit.map((item)=>`<tr><td><span class="verb verb--${escapeHTML(String(item.action||'').toLowerCase())}">${escapeHTML(auditVerb(item.action))}</span></td><td>${escapeHTML(auditRecordName(item))}</td><td>${escapeHTML(pretty(item.table_name))}</td><td><time title="${escapeHTML(formatDate(item.created_at,true))}">${escapeHTML(relativeDate(item.created_at))}</time></td></tr>`).join('')||'<tr><td colspan="4">No changes have been recorded.</td></tr>'}</tbody></table></div>`;
   }
 
-  async function renderMembers(): Promise<void> {
+  async function renderMembers(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('members', epoch)) return;
     if (profile?.role !== 'admin') { content.innerHTML='<div class="empty"><div><h3>Administrator access required</h3><p>Editors can maintain public content. Only administrators can invite officers or change access roles.</p></div></div>'; return; }
     const [roleData, memberData] = await Promise.all([apiCall<RolesResponse>('/api/roles'),apiCall<MembersResponse>('/api/members')]); const roles=roleData.roles||[]; const members=memberData.members||[]; const invitations=memberData.invitations||[];
+    if (!viewIsCurrent('members', epoch)) return;
     const roleMap=new Map<string,string>(roles.map((role)=>[role.id,role.label]));
-    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Access</p><h2>Officers and roles</h2><p>Create a role before inviting someone into it. Seat limits count current officers and pending invitations together.</p></div></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Invite an officer</h3><p>They get an email welcoming them to the role with a link to set their password. The link works once and lasts an hour.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-invite-form><label>Full name<input type="text" name="full_name" maxlength="120"></label><label>Email<input type="email" name="email" required></label><label>Role<select name="role_id" required><option value="">Choose a role</option>${roles.filter((role)=>role.active).map((role)=>`<option value="${escapeHTML(role.id)}">${escapeHTML(role.label)} · ${role.seats} seat${role.seats===1?'':'s'}</option>`).join('')}</select></label><label>Optional note<textarea name="message" rows="3" maxlength="800"></textarea></label><button class="button primary" type="submit">Send invitation</button><p class="form-message" data-invite-message></p></form></section><section class="panel"><header class="panel__head"><div><h3>Create a role</h3><p>Use officer titles that describe the actual responsibility.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-role-form><label>Role name<input type="text" name="label" required maxlength="100"></label><label>Description<textarea name="description" rows="3" maxlength="600"></textarea></label><label>Access<select name="access_level"><option value="editor">Editor</option><option value="admin">Administrator</option></select></label><label>Seats<input type="number" name="seats" value="1" min="1" max="50"></label><button class="button primary" type="submit">Create role</button></form></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Current officers</h3><p>${members.length} profile${members.length===1?'':'s'}</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Name</th><th>Email</th><th>Officer role</th><th>Access</th></tr></thead><tbody>${members.map((member)=>`<tr><td>${escapeHTML(member.full_name||'Not set')}</td><td>${escapeHTML(member.email)}</td><td>${escapeHTML(roleMap.get(member.society_role_id ?? '')||'Not assigned')}</td><td>${escapeHTML(member.role)}</td></tr>`).join('')||'<tr><td colspan="4">No officer profiles.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Invitations</h3><p>Pending and historical invitation records.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Sent</th><th></th></tr></thead><tbody>${invitations.map((invite)=>`<tr><td>${escapeHTML(invite.full_name||invite.email)}<br><small>${escapeHTML(invite.email)}</small></td><td>${escapeHTML(roleMap.get(invite.role_id ?? '')||'Role removed')}</td><td>${escapeHTML(invite.status)}</td><td>${escapeHTML(formatDate(invite.sent_at,true))}</td><td>${invite.status==='sent'?`<button class="link-button" type="button" data-revoke="${escapeHTML(invite.id)}">Revoke</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">No invitations.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Role definitions</h3><p>Deactivate roles that should no longer accept invitations.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Role</th><th>Access</th><th>Seats</th><th>Status</th><th></th></tr></thead><tbody>${roles.map((role)=>`<tr><td><strong>${escapeHTML(role.label)}</strong><br><small>${escapeHTML(role.description||'')}</small></td><td>${escapeHTML(role.access_level)}</td><td>${role.seats}</td><td>${role.active?'Active':'Inactive'}</td><td>${role.active?`<button class="link-button" type="button" data-deactivate-role="${escapeHTML(role.id)}">Deactivate</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
+    content.innerHTML = `<div class="view-head"><div><p class="eyebrow">Access</p><h2>Officers and roles</h2><p>Create a role before inviting someone into it. Seat limits count current officers and pending invitations together.</p></div></div><div class="grid-2"><section class="panel"><header class="panel__head"><div><h3>Invite an officer</h3><p>They get an email welcoming them to the role with a link to set their password. The link works once and lasts an hour.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-invite-form><label>Full name<input type="text" name="full_name" maxlength="120" autocomplete="name"></label><label>Email<input type="email" name="email" required autocomplete="email" autocapitalize="none" spellcheck="false"></label><label>Role<select name="role_id" required><option value="">Choose a role</option>${roles.filter((role)=>role.active).map((role)=>`<option value="${escapeHTML(role.id)}">${escapeHTML(role.label)} · ${role.seats} seat${role.seats===1?'':'s'}</option>`).join('')}</select></label><label>Optional note<textarea name="message" rows="3" maxlength="800"></textarea></label><button class="button primary" type="submit">Send invitation</button><p class="form-message" data-invite-message aria-live="polite"></p></form></section><section class="panel"><header class="panel__head"><div><h3>Create a role</h3><p>Use officer titles that describe the actual responsibility.</p></div></header><form style="display:grid;gap:.8rem;padding:1rem" data-role-form><label>Role name<input type="text" name="label" required maxlength="100" autocomplete="off"></label><label>Description<textarea name="description" rows="3" maxlength="600"></textarea></label><label>Access<select name="access_level"><option value="editor">Editor</option><option value="admin">Administrator</option></select></label><label>Seats<input type="number" name="seats" value="1" min="1" max="50"></label><button class="button primary" type="submit">Create role</button><p class="form-message" data-role-message aria-live="polite"></p></form></section></div><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Current officers</h3><p>${members.length} profile${members.length===1?'':'s'}</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Name</th><th>Email</th><th>Officer role</th><th>Access</th></tr></thead><tbody>${members.map((member)=>`<tr><td>${escapeHTML(member.full_name||'Not set')}</td><td>${escapeHTML(member.email)}</td><td>${escapeHTML(roleMap.get(member.society_role_id ?? '')||'Not assigned')}</td><td>${escapeHTML(member.role)}</td></tr>`).join('')||'<tr><td colspan="4">No officer profiles.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Invitations</h3><p>Pending and historical invitation records.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Sent</th><th></th></tr></thead><tbody>${invitations.map((invite)=>`<tr><td>${escapeHTML(invite.full_name||invite.email)}<br><small>${escapeHTML(invite.email)}</small></td><td>${escapeHTML(roleMap.get(invite.role_id ?? '')||'Role removed')}</td><td>${escapeHTML(invite.status)}</td><td>${escapeHTML(formatDate(invite.sent_at,true))}</td><td>${invite.status==='sent'?`<button class="link-button" type="button" data-revoke="${escapeHTML(invite.id)}">Revoke</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">No invitations.</td></tr>'}</tbody></table></div></section><section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>Role definitions</h3><p>Deactivate roles that should no longer accept invitations.</p></div></header><div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Role</th><th>Access</th><th>Seats</th><th>Status</th><th></th></tr></thead><tbody>${roles.map((role)=>`<tr><td><strong>${escapeHTML(role.label)}</strong><br><small>${escapeHTML(role.description||'')}</small></td><td>${escapeHTML(role.access_level)}</td><td>${role.seats}</td><td>${role.active?'Active':'Inactive'}</td><td>${role.active?`<button class="link-button" type="button" data-deactivate-role="${escapeHTML(role.id)}">Deactivate</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
     /* The form reference is captured before the first await. event.currentTarget
      * is nulled by the browser once the event finishes dispatching, so reading
      * it after an await threw "Cannot read properties of null (reading
@@ -827,22 +967,26 @@ declare global {
       const form = event.currentTarget as HTMLFormElement;
       const data = Object.fromEntries(new FormData(form));
       const message = $<HTMLElement>('[data-invite-message]');
+      const button = (event.submitter as HTMLButtonElement | null) || $<HTMLButtonElement>('button[type="submit"]', form);
       if (!message) return;
       message.classList.remove('success');
       message.textContent = 'Sending…';
       try {
-        await apiCall('/api/members', { method: 'POST', body: JSON.stringify({ action: 'invite', ...data }) });
-        form.reset();
-        message.textContent = 'Invitation sent.';
-        message.classList.add('success');
-        toast('Officer invitation sent.');
-        await renderMembers();
+        await runButtonAction(button, 'Sending…', async () => {
+          await apiCall('/api/members', { method: 'POST', body: JSON.stringify({ action: 'invite', ...data }) });
+          form.reset();
+          contentDirty = false;
+          message.textContent = 'Invitation sent.';
+          message.classList.add('success');
+          toast('Officer invitation sent.');
+          await renderMembers();
+        });
       } catch (error) {
         message.classList.remove('success');
         message.textContent = errorMessage(error);
       }
     });
-    $<HTMLFormElement>('[data-role-form]')?.addEventListener('submit',async(event)=>{event.preventDefault();const raw=Object.fromEntries(new FormData(event.currentTarget as HTMLFormElement));const data={...raw,seats:Number(raw.seats||1)};try{await apiCall('/api/roles',{method:'POST',body:JSON.stringify(data)});toast('Role created.');await renderMembers();}catch(error){toast(errorMessage(error),'error');}});
+    $<HTMLFormElement>('[data-role-form]')?.addEventListener('submit',async(event)=>{event.preventDefault();const form=event.currentTarget as HTMLFormElement;const raw=Object.fromEntries(new FormData(form));const data={...raw,seats:Number(raw.seats||1)};const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',form);const message=$<HTMLElement>('[data-role-message]');if(message)message.textContent='';try{await runButtonAction(button,'Creating…',async()=>{await apiCall('/api/roles',{method:'POST',body:JSON.stringify(data)});contentDirty=false;toast('Role created.');await renderMembers();});}catch(error){if(message)message.textContent=errorMessage(error);else toast(errorMessage(error),'error');}});
     $$('[data-revoke]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Revoke this invitation?','The setup link stops working and the invitation is no longer counted against the seat limit.',async()=>{await apiCall('/api/members',{method:'POST',body:JSON.stringify({action:'revoke',id:button.dataset.revoke})});toast('Invitation revoked.');await renderMembers();},'Revoke')));
     $$('[data-deactivate-role]',content).forEach((button)=>button.addEventListener('click',()=>confirmAction('Deactivate this role?','Existing officer profiles remain. The role will disappear from new invitations.',async()=>{await apiCall('/api/roles',{method:'DELETE',body:JSON.stringify({id:button.dataset.deactivateRole})});toast('Role deactivated.');await renderMembers();},'Deactivate')));
   }
@@ -886,8 +1030,10 @@ declare global {
     return 'Draft';
   }
 
-  async function renderBroadcasts(): Promise<void> {
+  async function renderBroadcasts(epoch = viewEpoch): Promise<void> {
+    if (!viewIsCurrent('broadcasts', epoch)) return;
     const data = await apiCall<BroadcastsResponse>('/api/broadcasts');
+    if (!viewIsCurrent('broadcasts', epoch)) return;
     const broadcasts = data.broadcasts || [];
     const audienceSize = data.audienceSize || 0;
     const editing = broadcasts.find((item) => item.id === broadcastDraftId) || null;
@@ -922,53 +1068,64 @@ declare global {
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const payload = Object.fromEntries(new FormData(event.currentTarget as HTMLFormElement));
+      const payload = Object.fromEntries(new FormData(form));
+      const button = (event.submitter as HTMLButtonElement | null) || $<HTMLButtonElement>('button[type="submit"]', form);
       say('Saving…');
       try {
-        const path = editing ? `/api/broadcasts?id=${encodeURIComponent(editing.id)}` : '/api/broadcasts';
-        const result = await apiCall<BroadcastsResponse>(path, { method: editing ? 'PATCH' : 'POST', body: JSON.stringify(payload) });
-        broadcastDraftId = result.broadcast?.id || broadcastDraftId;
-        toast('Draft saved.');
-        await renderBroadcasts();
+        await runButtonAction(button, 'Saving…', async () => {
+          const path = editing ? `/api/broadcasts?id=${encodeURIComponent(editing.id)}` : '/api/broadcasts';
+          const result = await apiCall<BroadcastsResponse>(path, { method: editing ? 'PATCH' : 'POST', body: JSON.stringify(payload) });
+          broadcastDraftId = result.broadcast?.id || broadcastDraftId;
+          contentDirty = false;
+          toast('Draft saved.');
+          await renderBroadcasts();
+        });
       } catch (error) { say(errorMessage(error)); }
     });
 
-    $('[data-new-broadcast]')?.addEventListener('click', async () => { broadcastDraftId = ''; await renderBroadcasts(); });
+    $('[data-new-broadcast]')?.addEventListener('click', () => confirmDiscardChanges(async () => { broadcastDraftId = ''; await renderBroadcasts(); }));
 
-    $('[data-broadcast-test]')?.addEventListener('click', async () => {
+    $<HTMLButtonElement>('[data-broadcast-test]')?.addEventListener('click', async (event) => {
+      if (contentDirty) { say('Save the draft before sending a test.'); return; }
       say('Sending a test…');
       try {
         if (!editing) return;
-        const result = await apiCall<BroadcastsResponse>(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=test`, { method: 'POST' });
-        say(result.message ?? 'Test sent.', true);
+        await runButtonAction(event.currentTarget as HTMLButtonElement, 'Sending…', async () => {
+          const result = await apiCall<BroadcastsResponse>(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=test`, { method: 'POST' });
+          say(result.message ?? 'Test sent.', true);
+        });
       } catch (error) { say(errorMessage(error)); }
     });
 
-    $('[data-broadcast-schedule]')?.addEventListener('click', async () => {
+    $<HTMLButtonElement>('[data-broadcast-schedule]')?.addEventListener('click', async (event) => {
+      if (contentDirty) { say('Save the draft before changing its schedule.'); return; }
       const value = $<HTMLInputElement>('[data-broadcast-when]')?.value ?? '';
       say(value ? 'Scheduling…' : 'Clearing the schedule…');
       try {
         // The input gives local wall-clock time; send an absolute instant.
         const when = value ? new Date(value).toISOString() : null;
         if (!editing) return;
-        await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=schedule`, { method: 'POST', body: JSON.stringify({ scheduled_for: when }) });
-        toast(when ? 'Scheduled.' : 'Back to draft.');
-        await renderBroadcasts();
+        await runButtonAction(event.currentTarget as HTMLButtonElement, value ? 'Scheduling…' : 'Clearing…', async () => {
+          await apiCall(`/api/broadcasts?id=${encodeURIComponent(editing.id)}&action=schedule`, { method: 'POST', body: JSON.stringify({ scheduled_for: when }) });
+          contentDirty = false;
+          toast(when ? 'Scheduled.' : 'Back to draft.');
+          await renderBroadcasts();
+        });
       } catch (error) { say(errorMessage(error)); }
     });
 
-    $('[data-broadcast-send]')?.addEventListener('click', () => { if (!editing) return; confirmAction(
+    $('[data-broadcast-send]')?.addEventListener('click', () => { if (!editing) return;if(contentDirty){say('Save the draft before sending it.');return;}confirmAction(
       `Send "${editing.subject}" now?`,
       `This goes to ${audienceSize} ${audienceSize === 1 ? 'person' : 'people'} and cannot be recalled.`,
       async () => { await driveSend(editing.id, say); await renderBroadcasts(); },
       'Send now'
     ); });
 
-    $$('[data-open-broadcast]', content).forEach((button) => button.addEventListener('click', async () => {
+    $$('[data-open-broadcast]', content).forEach((button) => button.addEventListener('click', () => confirmDiscardChanges(async () => {
       broadcastDraftId = button.dataset.openBroadcast ?? '';
       await renderBroadcasts();
       content.scrollIntoView({ block: 'start' });
-    }));
+    })));
 
     $$('[data-delete-broadcast]', content).forEach((button) => button.addEventListener('click', () => confirmAction(
       'Delete this message?', 'The draft and its schedule are removed.',
@@ -982,28 +1139,64 @@ declare global {
     )));
   }
 
-  async function switchView(view: PortalView): Promise<void> {
-    activeView=view; $$('[data-view]').forEach((button)=>button.classList.toggle('active',button.dataset.view===view)); document.body.classList.remove('sidebar-open');
+  async function switchView(view: PortalView, historyMode: HistoryMode = 'replace'): Promise<void> {
+    if (view !== activeView && contentDirty) {
+      confirmDiscardChanges(() => switchView(view, historyMode));
+      return;
+    }
+    const epoch = ++viewEpoch;
+    activeView=view;
+    contentDirty=false;
+    $$('[data-view]').forEach((button) => {
+      const current = button.dataset.view === view;
+      button.classList.toggle('active', current);
+      if (current) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
+    });
+    closeSidebar(false);
+    if (historyMode !== 'none') {
+      const url = new URL(window.location.href);
+      if (view === 'dashboard') url.searchParams.delete('view'); else url.searchParams.set('view', view);
+      window.history[historyMode === 'push' ? 'pushState' : 'replaceState']({ view }, '', `${url.pathname}${url.search}${url.hash}`);
+    }
     const labels: Partial<Record<PortalView,string>>={dashboard:'Officer overview',submissions:'Public submissions',site_settings:'Site settings',members:'Officers and roles',broadcasts:'Newsletters',media:'Media library',content_audit:'Change history'};
     const collection = isCollectionKey(view) ? collections[view] : null;
     const title=labels[view]||collection?.label||pretty(view); viewTitle.textContent=title; breadcrumb.textContent=view==='dashboard'?'Overview':title;
     primaryAction.hidden=!collection; primaryAction.textContent=collection?`Create ${collection.singular}`:'Create';
-    content.innerHTML='<div class="loading"><span></span><p>Loading…</p></div>';
+    content.innerHTML='<div class="loading" role="status"><span aria-hidden="true"></span><p>Loading…</p></div>';
     try {
-      if(view==='dashboard') await renderDashboard(); else if(view==='submissions') await renderSubmissions(); else if(view==='site_settings') await renderSiteSettings(); else if(view==='members') await renderMembers(); else if(view==='broadcasts') await renderBroadcasts(); else if(view==='media') await renderMedia(); else if(view==='content_audit') await renderAudit(); else if(isCollectionKey(view)) await renderCollection(view); else throw new Error('Unknown portal view.');
-    } catch(error){content.innerHTML=`<div class="empty"><div><h3>This section could not load</h3><p>${escapeHTML(errorMessage(error))}</p><button class="button secondary" type="button" data-retry>Try again</button></div></div>`;$('[data-retry]')?.addEventListener('click',()=>void switchView(view));}
+      if(view==='dashboard') await renderDashboard(epoch); else if(view==='submissions') await renderSubmissions(epoch); else if(view==='site_settings') await renderSiteSettings(epoch); else if(view==='members') await renderMembers(epoch); else if(view==='broadcasts') await renderBroadcasts(epoch); else if(view==='media') await renderMedia(epoch); else if(view==='content_audit') await renderAudit(epoch); else if(isCollectionKey(view)) await renderCollection(view, epoch); else throw new Error('Unknown portal view.');
+    } catch(error){
+      if (!viewIsCurrent(view, epoch)) return;
+      content.innerHTML=`<div class="empty"><div><h3>This section could not load</h3><p>${escapeHTML(errorMessage(error))}</p><button class="button secondary" type="button" data-retry>Try again</button></div></div>`;
+      $('[data-retry]')?.addEventListener('click',()=>void switchView(view, 'none'));
+    }
   }
 
   /* The accept button used to read "Confirm" for everything, so the dialog for
    * deleting a record looked identical to the one for archiving a submission.
    * Naming the action is the last chance to notice you are on the wrong one. */
   function confirmAction(title: string, copy: string, action: ConfirmAction, acceptLabel = 'Delete'): void {
+    if (confirmBusy) return;
     pendingConfirm = action;
-    const titleNode = $('[data-confirm-title]'); const copyNode = $('[data-confirm-copy]'); const accept = $('[data-confirm-accept]');
+    const titleNode = $('[data-confirm-title]'); const copyNode = $('[data-confirm-copy]'); const accept = $<HTMLButtonElement>('[data-confirm-accept]');
     if (titleNode) titleNode.textContent = title;
     if (copyNode) copyNode.textContent = copy;
     if (accept) accept.textContent = acceptLabel;
-    confirmDialog.showModal();
+    if (!confirmDialog.open) confirmDialog.showModal();
+  }
+
+  function openSidebar(): void {
+    document.body.classList.add('sidebar-open');
+    $<HTMLButtonElement>('[data-open-sidebar]')?.setAttribute('aria-expanded', 'true');
+    $<HTMLButtonElement>('[data-close-sidebar]')?.focus();
+  }
+
+  function closeSidebar(returnFocus = true): void {
+    const wasOpen = document.body.classList.contains('sidebar-open');
+    document.body.classList.remove('sidebar-open');
+    const trigger = $<HTMLButtonElement>('[data-open-sidebar]');
+    trigger?.setAttribute('aria-expanded', 'false');
+    if (wasOpen && returnFocus) trigger?.focus();
   }
 
   function bindShell(): void {
@@ -1018,15 +1211,48 @@ declare global {
       const accent = ACCENTS[view as PortalView];
       if (accent !== undefined) button.style.setProperty('--accent-h', String(accent));
     });
-    $$('[data-view]').forEach((button)=>button.addEventListener('click',()=>{const view=button.dataset.view;if(view)void switchView(view as PortalView);}));
-    $('[data-open-sidebar]')?.addEventListener('click',()=>document.body.classList.add('sidebar-open'));
-    $('[data-close-sidebar]')?.addEventListener('click',()=>document.body.classList.remove('sidebar-open'));
-    $('[data-logout]')?.addEventListener('click',signOut);
+    $$('[data-view]').forEach((button)=>button.addEventListener('click',()=>{const view=button.dataset.view;if(view&&isPortalView(view))void switchView(view,'push');}));
+    $('[data-open-sidebar]')?.addEventListener('click',openSidebar);
+    $('[data-close-sidebar]')?.addEventListener('click',()=>closeSidebar());
+    $('[data-logout]')?.addEventListener('click',()=>confirmDiscardChanges(signOut));
     primaryAction.addEventListener('click',()=>{if(isCollectionKey(activeView))void openEditor(activeView);});
-    $('[data-editor-close]')?.addEventListener('click',()=>editorDialog.close()); $('[data-editor-cancel]')?.addEventListener('click',()=>editorDialog.close());
-    $('[data-confirm-cancel]')?.addEventListener('click',()=>{pendingConfirm=null;confirmDialog.close();});
-    $('[data-confirm-accept]')?.addEventListener('click',async()=>{const action=pendingConfirm;pendingConfirm=null;confirmDialog.close();if(!action)return;try{await action();}catch(error){toast(errorMessage(error),'error');}});
-    editorForm.addEventListener('submit',async(event)=>{event.preventDefault();if(!editorContext)return;const context=editorContext;const definition=collections[context.view];try{const record=applyGeneratedKeys(definition,collectRecord(definition),context.record,!context.originalId);await saveRecord(context.view,record,context.originalId);editorDialog.close();toast('Record saved.');await renderCollection(context.view);}catch(error){toast(errorMessage(error),'error');}});
+    $('[data-editor-close]')?.addEventListener('click',requestEditorClose);
+    $('[data-editor-cancel]')?.addEventListener('click',requestEditorClose);
+    editorDialog.addEventListener('cancel',(event)=>{event.preventDefault();requestEditorClose();});
+    editorDialog.addEventListener('close',()=>{editorEpoch+=1;editorContext=null;editorDirty=false;});
+    editorForm.addEventListener('input',()=>{if(editorDialog.open)editorDirty=true;});
+    editorForm.addEventListener('change',()=>{if(editorDialog.open)editorDirty=true;});
+    const confirmCancel = $<HTMLButtonElement>('[data-confirm-cancel]');
+    const confirmAccept = $<HTMLButtonElement>('[data-confirm-accept]');
+    confirmCancel?.addEventListener('click',()=>{if(confirmBusy)return;pendingConfirm=null;confirmDialog.close();});
+    confirmDialog.addEventListener('cancel',(event)=>{if(confirmBusy){event.preventDefault();return;}pendingConfirm=null;});
+    confirmAccept?.addEventListener('click',async()=>{
+      const action=pendingConfirm;
+      if(!action||confirmBusy)return;
+      confirmBusy=true;
+      const originalLabel=confirmAccept.textContent||'Confirm action';
+      confirmAccept.disabled=true;
+      confirmCancel?.setAttribute('disabled','');
+      confirmAccept.setAttribute('aria-busy','true');
+      confirmAccept.textContent='Working…';
+      try{await action();pendingConfirm=null;confirmDialog.close();}
+      catch(error){toast(errorMessage(error),'error');}
+      finally{confirmBusy=false;confirmAccept.disabled=false;confirmCancel?.removeAttribute('disabled');confirmAccept.removeAttribute('aria-busy');confirmAccept.textContent=originalLabel;}
+    });
+    editorForm.addEventListener('submit',async(event)=>{
+      event.preventDefault();if(!editorContext)return;
+      const context=editorContext;const definition=collections[context.view];
+      const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',editorForm);
+      try{await runButtonAction(button,'Saving…',async()=>{const record=applyGeneratedKeys(definition,collectRecord(definition),context.record,!context.originalId);await saveRecord(context.view,record,context.originalId);editorDirty=false;editorDialog.close();toast('Record saved.');await renderCollection(context.view);});}
+      catch(error){toast(errorMessage(error),'error');}
+    });
+    const markContentDirty = (event: Event): void => {if((event.target as Element|null)?.closest('form'))contentDirty=true;};
+    content.addEventListener('input',markContentDirty);
+    content.addEventListener('change',markContentDirty);
+    window.addEventListener('beforeunload',(event)=>{if(!editorDirty&&!contentDirty)return;event.preventDefault();});
+    window.addEventListener('popstate',()=>{const requested=new URLSearchParams(window.location.search).get('view')||'dashboard';if(isPortalView(requested))void switchView(requested,'none');});
+    document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&document.body.classList.contains('sidebar-open'))closeSidebar();});
+    document.addEventListener('click',(event)=>{if(!document.body.classList.contains('sidebar-open'))return;const target=event.target as Node;const sidebar=$('[data-sidebar]');const trigger=$('[data-open-sidebar]');if(sidebar&&!sidebar.contains(target)&&trigger&&!trigger.contains(target))closeSidebar();});
   }
 
   async function enterPortal() {
@@ -1034,7 +1260,9 @@ declare global {
     await loadProfile();
     const officer = profile;
     if (!officer) throw new Error('Officer profile could not be loaded.');
-    authScreen.hidden=true; portal.hidden=false; const name=$('[data-user-name]');const role=$('[data-user-role]');const badge=$('[data-user-initials]');if(name)name.textContent=officer.full_name||officer.email;if(role)role.textContent=officer.role;if(badge)badge.textContent=initials(officer.full_name||officer.email); await switchView('dashboard');
+    authScreen.hidden=true; portal.hidden=false; const name=$('[data-user-name]');const role=$('[data-user-role]');const badge=$('[data-user-initials]');if(name)name.textContent=officer.full_name||officer.email;if(role)role.textContent=officer.role;if(badge)badge.textContent=initials(officer.full_name||officer.email);
+    const requested = new URLSearchParams(window.location.search).get('view') || 'dashboard';
+    await switchView(isPortalView(requested) ? requested : 'dashboard', 'replace');
     resumeStalledBroadcasts();
   }
 
@@ -1107,29 +1335,32 @@ declare global {
 
   async function initialize(): Promise<void> {
     bindShell(); if(!configured){showAuth('config');return;} showAuth('login');
-    loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$<HTMLElement>('[data-login-message]');const button=$<HTMLButtonElement>('button[type="submit"]',loginForm);if(!message||!button)return;message.textContent='';button.disabled=true;try{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();}catch(error){saveSession(null);message.textContent=errorMessage(error);}finally{button.disabled=false;}});
+    loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$<HTMLElement>('[data-login-message]');const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',loginForm);if(!message||!button)return;message.textContent='';try{await runButtonAction(button,'Signing in…',async()=>{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();});}catch(error){saveSession(null);message.textContent=errorMessage(error);}});
     $('[data-request-recover]')?.addEventListener('click',()=>{const target=$<HTMLInputElement>('input[name="email"]',recoverForm);const source=$<HTMLInputElement>('input[name="email"]',loginForm);if(target&&source)target.value=source.value;showAuth('recover');});
     $$('[data-back-login]').forEach((button)=>button.addEventListener('click',()=>showAuth('login')));
     recoverForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const email = String(new FormData(recoverForm).get('email') || '').trim();
       const message = $<HTMLElement>('[data-recover-message]');
-      if (!message) return;
+      const button = (event.submitter as HTMLButtonElement | null) || $<HTMLButtonElement>('button[type="submit"]', recoverForm);
+      if (!message || !button) return;
       message.classList.remove('success');
       message.textContent = 'Sending…';
       try {
-        const response = await fetch('/api/members', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'reset', email })
+        await runButtonAction(button, 'Sending…', async () => {
+          const response = await fetch('/api/members', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset', email })
+          });
+          const data = asRecord(await response.json().catch(() => ({})));
+          if (!response.ok) throw new Error(valueText(data.error) || 'Could not send the link.');
+          message.textContent = 'If that address has an officer account, a link is on its way. Check your spam folder if it does not arrive.';
+          message.classList.add('success');
         });
-        const data = asRecord(await response.json().catch(() => ({})));
-        if (!response.ok) throw new Error(valueText(data.error) || 'Could not send the link.');
-        message.textContent = 'If that address has an officer account, a link is on its way. Check your spam folder if it does not arrive.';
-        message.classList.add('success');
       } catch (error) { message.textContent = errorMessage(error); }
     });
 
-    passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$<HTMLElement>('[data-password-message]');if(!message)return;if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();}catch(error){message.textContent=errorMessage(error);}});
+    passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$<HTMLElement>('[data-password-message]');const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',passwordForm);if(!message||!button)return;if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await runButtonAction(button,'Saving…',async()=>{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();});}catch(error){message.textContent=errorMessage(error);}});
     // A setup or reset link in the URL wins over any stale stored session.
     if (await consumeAuthFragment()) return;
     session=loadSession(); if(session){try{await ensureSession();await enterPortal();}catch(error){saveSession(null);const message=$('[data-login-message]');if(message)message.textContent=errorMessage(error);}}
