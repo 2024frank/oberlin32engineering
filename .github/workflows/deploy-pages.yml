@@ -33,6 +33,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
 
       - name: Confirm generated seed is current
         run: |
@@ -48,12 +52,13 @@ jobs:
           SUPABASE_STORAGE_BUCKET: ${{ vars.SUPABASE_STORAGE_BUCKET }}
           NEXT_PUBLIC_ENABLE_PORTAL: ${{ vars.NEXT_PUBLIC_ENABLE_PORTAL }}
           NEXT_PUBLIC_USE_DATABASE: ${{ vars.NEXT_PUBLIC_USE_DATABASE }}
-        run: python scripts/build.py
+        run: npm run build
 
       - name: Validate release
         run: |
-          python scripts/check_site.py
-          for file in api/*.js site/assets/js/*.js site/admin/*.js; do node --check "$file"; done
+          npm run check
+          npm run test:site
+          npm run test:api
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -1,11 +1,13 @@
 # Deployment
 
-The production build is generated from `src/` and `content/` into `site/`.
+The Astro production build is generated from `app/`, `src/assets/`, and `content/` into `site/`. Browser behavior and the officer portal are strict TypeScript; existing Vercel API functions remain unchanged.
 
 ## Build command
 
 ```bash
-python3 scripts/build.py
+npm ci
+python3 scripts/generate_seed.py
+npm run build
 ```
 
 ## Output directory
@@ -18,9 +20,7 @@ site
 
 ```bash
 python3 scripts/generate_seed.py
-python3 scripts/build.py
-python3 scripts/check_site.py
-node scripts/test_api.js
+npm test
 ```
 
 The repository includes a GitHub Pages workflow for the static public build. The same generated `site/` directory can also be deployed through Vercel. API routes in `api/` require a serverless deployment such as Vercel; GitHub Pages alone cannot execute them. The production custom domain should point to the deployment that serves both the static output and the API routes.

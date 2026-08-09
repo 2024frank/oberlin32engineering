@@ -1,18 +1,5 @@
 [
   {
-    "id": "founding-operations-role",
-    "title": "Operations and finance coordinator",
-    "organization": "Oberlin 3-2 Engineering Society",
-    "type": "Leadership",
-    "description": "Help run meetings, records, simple budgets, room requests, and follow-up. Good organization matters more than technical experience.",
-    "deadline_label": "Interest reviewed on a rolling basis",
-    "deadline": null,
-    "location": "Oberlin College",
-    "url": "/join?interest=leadership",
-    "featured": true,
-    "published": true
-  },
-  {
     "id": "founding-projects-role",
     "title": "Projects coordinator",
     "organization": "Oberlin 3-2 Engineering Society",
@@ -26,19 +13,6 @@
     "published": true
   },
   {
-    "id": "project-team-interest",
-    "title": "Founding project team member",
-    "organization": "Oberlin 3-2 Engineering Society",
-    "type": "Project",
-    "description": "Join one of the proposed teams through hardware, software, data, CAD, research, testing, documentation, or coordination.",
-    "deadline_label": "Open while teams are forming",
-    "deadline": null,
-    "location": "Oberlin College",
-    "url": "/join?interest=projects",
-    "featured": true,
-    "published": true
-  },
-  {
     "id": "event-volunteer",
     "title": "Launch-event volunteer",
     "organization": "Oberlin 3-2 Engineering Society",
@@ -48,20 +22,7 @@
     "deadline": null,
     "location": "Oberlin College",
     "url": "/join?interest=events",
-    "featured": false,
-    "published": true
-  },
-  {
-    "id": "resource-reviewer",
-    "title": "Resource and link reviewer",
-    "organization": "Oberlin 3-2 Engineering Society",
-    "type": "Volunteer",
-    "description": "Check official links, note update dates, flag unclear claims, and help keep the 3-2 resource library accurate.",
-    "deadline_label": "Open during the founding term",
-    "deadline": null,
-    "location": "Remote or Oberlin College",
-    "url": "/join?interest=communications",
-    "featured": false,
+    "featured": true,
     "published": true
   }
 ]

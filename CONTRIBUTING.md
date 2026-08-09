@@ -4,8 +4,8 @@ Use a focused branch and keep public claims factual. Before proposing a change:
 
 ```bash
 python3 scripts/generate_seed.py
-python3 scripts/build.py
-python3 scripts/check_site.py
+npm ci
+npm test
 ```
 
 For content changes, follow `docs/CONTENT_GUIDE.md`. Proposed projects, planned events, open leadership roles, and confirmed outcomes must remain distinct.

@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
-SRC = ROOT / "src"
+APP = ROOT / "app"
 CONTENT = ROOT / "content"
 EXPECTED_PAGES = {
     "index.html", "about.html", "pathway.html", "projects.html", "competition.html",
@@ -41,6 +41,17 @@ PROHIBITED_COPY = [
     "find your people. build what matters", "move the work forward", "turn ideas into evidence",
     "design it. build it. defend it", "6 active briefs", "20+ ways to contribute",
 ]
+PROHIBITED_CONTENT_PATTERNS = {
+    r"\bnot just\b.{0,120}\bbut\b": "formulaic 'not just X but Y' contrast",
+    r"\bnot only\b.{0,120}\bbut also\b": "formulaic 'not only X but also Y' contrast",
+    r"\bwhether you(?:'re| are)\b": "generic 'whether you are' introduction",
+    r"\b(?:delve|unlock|unleash|game-changing|transformative journey|vibrant ecosystem)\b": "generic promotional language",
+}
+DYNAMIC_COPY_CONFLICTS = {
+    "data-event-grid": ["no events announced", "nothing scheduled yet"],
+    "data-news-grid": ["no updates published yet"],
+    "data-project-grid": ["no briefs have been approved"],
+}
 
 
 class PageParser(HTMLParser):
@@ -52,7 +63,7 @@ class PageParser(HTMLParser):
         self.canonical = False
         self.robots = ""
         self.html_lang = False
-        self.images: list[tuple[str, str | None]] = []
+        self.images: list[tuple[str, str | None, str, str]] = []
         self.links: list[dict[str, str]] = []
         self.forms: list[dict[str, str]] = []
         self.current_form: dict[str, object] | None = None
@@ -73,17 +84,18 @@ class PageParser(HTMLParser):
         if tag == "link" and attrs.get("rel") == "canonical" and attrs.get("href"):
             self.canonical = True
         if tag == "img":
-            self.images.append((attrs.get("src", ""), attrs.get("alt")))
+            self.images.append((attrs.get("src", ""), attrs.get("alt"), attrs.get("width", ""), attrs.get("height", "")))
         if tag == "a":
             self.links.append(attrs)
         if tag == "form":
-            self.current_form = {"attrs": attrs, "honeypot": False, "status": False, "submit": False}
+            self.current_form = {"attrs": attrs, "honeypot": False, "status": False, "status_live": False, "submit": False}
             self.form_details.append(self.current_form)
         if self.current_form is not None:
             if tag == "input" and attrs.get("name") == "company":
                 self.current_form["honeypot"] = True
             if attrs.get("data-form-status") is not None:
                 self.current_form["status"] = True
+                self.current_form["status_live"] = attrs.get("aria-live") == "polite" and attrs.get("role") == "status"
             if tag == "button" and attrs.get("type", "submit") == "submit":
                 self.current_form["submit"] = True
 
@@ -132,8 +144,10 @@ def check_html(errors: list[str]) -> None:
         text = page.read_text(encoding="utf-8")
         parser = PageParser()
         parser.feed(text)
-        if parser.h1_count != 1:
-            fail(errors, f"{page.relative_to(ROOT)} must contain exactly one h1; found {parser.h1_count}")
+        is_admin = page.name == "admin.html"
+        if parser.h1_count != (2 if is_admin else 1):
+            expected_label = "two mutually exclusive h1 elements" if is_admin else "exactly one h1"
+            fail(errors, f"{page.relative_to(ROOT)} must contain {expected_label}; found {parser.h1_count}")
         if parser.title_count != 1:
             fail(errors, f"{page.relative_to(ROOT)} must contain exactly one title element")
         if not parser.description:
@@ -146,12 +160,20 @@ def check_html(errors: list[str]) -> None:
             fail(errors, f"{page.relative_to(ROOT)} is missing an indexable robots directive")
         if not parser.html_lang:
             fail(errors, f"{page.relative_to(ROOT)} is missing html[lang]")
-        if "{{" in text or "}}" in text:
+        if re.search(r"{{\s*[A-Za-z_]", text) or re.search(r"[A-Za-z_]\s*}}", text):
             fail(errors, f"{page.relative_to(ROOT)} contains an unresolved template token")
         lower = text.lower()
         for phrase in PROHIBITED_COPY:
             if phrase in lower:
                 fail(errors, f"{page.relative_to(ROOT)} contains retired copy: {phrase!r}")
+        for pattern, description in PROHIBITED_CONTENT_PATTERNS.items():
+            if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+                fail(errors, f"{page.relative_to(ROOT)} contains {description}")
+        for marker, phrases in DYNAMIC_COPY_CONFLICTS.items():
+            if marker in lower:
+                for phrase in phrases:
+                    if phrase in lower:
+                        fail(errors, f"{page.relative_to(ROOT)} makes a static empty claim beside dynamic content: {phrase!r}")
         if "forms.gle" in lower or "docs.google.com/forms" in lower:
             fail(errors, f"{page.relative_to(ROOT)} still links to the old Google Form")
         # Motion is allowed, but only the one scoped signature animation. The
@@ -163,11 +185,13 @@ def check_html(errors: list[str]) -> None:
         if "motion.js" in lower and "vendor/anime.umd.min.js" not in lower:
             fail(errors, f"{page.relative_to(ROOT)} loads motion.js without its library")
 
-        for src, alt in parser.images:
+        for src, alt, width, height in parser.images:
             if not src:
                 fail(errors, f"{page.relative_to(ROOT)} has an image without src")
             if alt is None:
                 fail(errors, f"{page.relative_to(ROOT)} has an image without alt")
+            if not width or not height:
+                fail(errors, f"{page.relative_to(ROOT)} has an image without explicit dimensions: {src}")
             target = local_target(page, src)
             if target is not None and not target.exists():
                 fail(errors, f"{page.relative_to(ROOT)} references missing image {src}")
@@ -178,7 +202,7 @@ def check_html(errors: list[str]) -> None:
             target = local_target(page, href)
             if target is not None and not target.exists():
                 fail(errors, f"{page.relative_to(ROOT)} references missing local target {href}")
-        for form in parser.form_details:
+        for form in parser.form_details if not is_admin else []:
             attrs = form["attrs"]
             if "data-o32-form" not in attrs:
                 fail(errors, f"{page.relative_to(ROOT)} contains a public form without data-o32-form")
@@ -188,6 +212,8 @@ def check_html(errors: list[str]) -> None:
                 fail(errors, f"{page.relative_to(ROOT)} contains a public form without the bot-trap field")
             if not form["status"]:
                 fail(errors, f"{page.relative_to(ROOT)} contains a public form without an accessible status element")
+            if not form["status_live"]:
+                fail(errors, f"{page.relative_to(ROOT)} contains a form status without role=status and aria-live=polite")
             if not form["submit"]:
                 fail(errors, f"{page.relative_to(ROOT)} contains a form without a submit button")
 
@@ -204,6 +230,11 @@ def check_json(errors: list[str]) -> None:
         loaded[filename] = value
         if not isinstance(value, expected_type):
             fail(errors, f"{path.relative_to(ROOT)} must contain {expected_type.__name__}")
+        source = path.read_text(encoding="utf-8")
+        if filename != "photo_credits.json":
+            for pattern, description in PROHIBITED_CONTENT_PATTERNS.items():
+                if re.search(pattern, source, re.IGNORECASE | re.DOTALL):
+                    fail(errors, f"content/{filename} contains {description}")
 
     # A founding society may legitimately have no projects, events, or news yet.
     # Honest empty states are preferable to publishing work or dates that have
@@ -250,9 +281,9 @@ def check_json(errors: list[str]) -> None:
     credit_map = {item.get("file"): item for item in credits if isinstance(item, dict)}
     used = set()
     pattern = re.compile(r"assets/images/photos/[A-Za-z0-9_.-]+")
-    for root in [SRC / "pages", CONTENT]:
+    for root in [APP / "pages", CONTENT]:
         for path in root.rglob("*"):
-            if path.is_file() and path.suffix in {".html", ".json"} and path.name != "photo_credits.json":
+            if path.is_file() and path.suffix in {".astro", ".json"} and path.name != "photo_credits.json":
                 used.update(pattern.findall(path.read_text(encoding="utf-8")))
     for image_path in sorted(used):
         credit = credit_map.get(image_path)
@@ -268,9 +299,7 @@ def check_json(errors: list[str]) -> None:
 
 
 def check_source(errors: list[str]) -> None:
-    source_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in [
-        SRC / "assets/js/data-service.js", SRC / "assets/js/components.js", SRC / "assets/js/site.js", SRC / "assets/js/pages.js",
-    ])
+    source_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in sorted((APP / "scripts").glob("*.ts")))
     if "/api/submit" not in source_text:
         fail(errors, "public forms are not routed through /api/submit")
     if "serviceWorker.register" not in source_text:
@@ -322,7 +351,7 @@ def check_source(errors: list[str]) -> None:
 
 
 def check_javascript(errors: list[str]) -> None:
-    paths = list((ROOT / "api").glob("*.js")) + list((SITE / "assets/js").glob("*.js")) + list((SITE / "admin").glob("*.js")) + [ROOT / "middleware.js"]
+    paths = list((ROOT / "api").glob("*.js")) + list((SITE / "assets").rglob("*.js")) + [ROOT / "middleware.js"]
     for path in paths:
         result = subprocess.run(["node", "--check", str(path)], capture_output=True, text=True)
         if result.returncode:
@@ -332,7 +361,7 @@ def check_javascript(errors: list[str]) -> None:
 def main() -> int:
     errors: list[str] = []
     if not SITE.exists():
-        print("site/ does not exist. Run python scripts/build.py first.", file=sys.stderr)
+        print("site/ does not exist. Run npm run build first.", file=sys.stderr)
         return 1
     check_html(errors)
     check_json(errors)

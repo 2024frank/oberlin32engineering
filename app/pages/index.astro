@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout pageId="index">
+<section class="home-hero home-hero--signal" data-engine-hero>
+  <div class="home-hero__gridlines" aria-hidden="true"></div>
+  <div class="container home-signal">
+    <div class="home-signal__copy">
+      <span class="eyebrow">Student-led engineering at Oberlin</span>
+      <h1>Build engineering at Oberlin.</h1>
+      <p class="home-hero__lead">Meet collaborators, finish a semester-scale project, and make sense of the 3-2 path—with students across majors and experience levels.</p>
+      <div class="home-hero__actions">
+        <a class="button button--gold" href="join">Join the founding group <span aria-hidden="true">→</span></a>
+        <a class="button button--ink" href="projects">See how projects work</a>
+      </div>
+      <ul class="home-signal__proof" aria-label="Membership details">
+        <li>Open to every major</li>
+        <li>No experience required</li>
+        <li>Founding in 2026–27</li>
+      </ul>
+    </div>
+    <figure class="signal-mark">
+      <div class="signal-mark__frame">
+        <span class="signal-mark__coordinate" aria-hidden="true">41.2939° N / 82.2174° W</span>
+        <img src="assets/images/iglogo-900.webp" alt="Oberlin 3-2 Engineering Society emblem" width="900" height="900" fetchpriority="high" decoding="async">
+        <span class="signal-mark__index" aria-hidden="true">OES / 01</span>
+      </div>
+      <figcaption><span>Oberlin, Ohio</span><strong>3-2 Engineering Society</strong><span>Founding mark · 2026</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<nav class="mission-rail" aria-label="Explore the society">
+  <div class="container mission-rail__grid">
+    <a href="projects"><span>01 / Build</span><strong>Turn a scoped idea into documented work.</strong><i aria-hidden="true">↗</i></a>
+    <a href="pathway"><span>02 / Plan</span><strong>Compare the 3-2 path before application year.</strong><i aria-hidden="true">↗</i></a>
+    <a href="events"><span>03 / Gather</span><strong>Learn beside students, alumni, and engineers.</strong><i aria-hidden="true">↗</i></a>
+  </div>
+</nav>
+
+<section class="section aim-section" id="operating-plan">
+  <div class="container aim-grid">
+    <div class="aim-section__intro">
+      <span class="eyebrow">Why this exists</span>
+      <h2>Engineering-minded students should not have to work alone.</h2>
+      <p>Engineering-minded students at Oberlin study in many departments and class years. The society gives them one place to meet, compare plans, and form project teams.</p>
+      <p>You can join to build, learn about 3-2, help run an event, or meet students working on related problems. Prior engineering experience is not required.</p>
+    </div>
+    <div class="aim-section__work">
+      <h3>First-year operating plan</h3>
+      <ol class="aim-list">
+        <li><span>01</span><p>Recruit members from different departments and class years.</p></li>
+        <li><span>02</span><p>Select projects that a student team can finish and document within one semester.</p></li>
+        <li><span>03</span><p>Collect 3-2 questions and connect students with current official guidance.</p></li>
+        <li><span>04</span><p>Schedule meetups, workshops, and conversations with engineers and alumni.</p></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section section--maroon pathway-feature">
+  <div class="container pathway-feature__grid">
+    <div>
+      <span class="eyebrow">The academic pathway</span>
+      <h2>Plan the transfer before the application year.</h2>
+      <p>Course sequences, admission rules, financial aid, housing, and degree timelines differ by partner school. The club helps students compare questions and prepare for official advising.</p>
+      <div class="page-hero__actions"><a class="button button--secondary button--light" href="pathway">Read the student guide</a></div>
+    </div>
+    <figure class="pathway-map" aria-labelledby="pathway-map-caption">
+      <div class="pathway-map__formula" aria-hidden="true"><span>3</span><i>→</i><span>2</span></div>
+      <div class="pathway-map__track">
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>01</b><small>Oberlin</small></div>
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>02</b><small>Oberlin</small></div>
+        <div class="pathway-map__year pathway-map__year--oberlin"><b>03</b><small>Oberlin</small></div>
+        <div class="pathway-map__transfer" aria-hidden="true"><span>Transfer</span></div>
+        <div class="pathway-map__partners">
+          <div class="pathway-map__partners-heading"><b>Years 04–05</b><span>Partner engineering school</span></div>
+          <div class="partner-logo-grid" aria-label="Oberlin 3-2 partner schools">
+            <a href="https://www.admissions.caltech.edu/apply/32-program" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/caltech.png" alt="Caltech" width="450" height="110"></a>
+            <a href="https://case.edu/engineering/academics/undergraduate/32-program" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/case-western-reserve.jpeg" alt="Case Western Reserve University" width="275" height="30"></a>
+            <a href="https://undergrad.admissions.columbia.edu/apply/combinedplan" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/columbia-engineering.png" alt="Columbia Engineering" width="706" height="86"></a>
+            <a href="https://engineering.washu.edu/academics/dual-degree-program/index.html" target="_blank" rel="noopener noreferrer"><img src="assets/images/partners/washu.png" alt="WashU" width="3126" height="758"></a>
+          </div>
+        </div>
+      </div>
+      <figcaption id="pathway-map-caption"><strong>The standard 3-2 model</strong><span>Three years at Oberlin, followed by two at an engineering school. Partner timelines can differ.</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-heading">
+      <div><span class="eyebrow">Events</span><h2>Programs being planned.</h2></div>
+      <p>Each listing states whether its date, room, and registration details are confirmed.</p>
+    </div>
+    <div class="card-grid card-grid--2" data-home-events aria-live="polite"><div class="empty-state"><h3>Loading planned events…</h3><p>Fetching the latest event information.</p></div></div>
+  </div>
+</section>
+
+<section class="section founder-section">
+  <div class="container founder-section__grid">
+    <figure class="founder-photo">
+      <img src="assets/images/photos/homepage-macro-generated.jpg" alt="A close view of circuit-board headers, jumper wires, and loose electronic components" loading="lazy" width="1536" height="1024">
+    </figure>
+    <div>
+      <span class="eyebrow">Why Kwaku started it</span>
+      <h2>Students needed an easier way to find a team.</h2>
+      <p>Kwaku kept meeting students interested in engineering who were working separately or trying to answer the same 3-2 questions on their own. He started the society to connect those students and give project ideas a place to become shared work.</p>
+      <p>A project may need hardware, software, research, writing, photography, logistics, or testing. Members do not need the same major or the same level of experience.</p>
+      <p class="founder-credit"><strong>Frank (Kwaku) Kusi Appiah</strong><span>Founder and president</span></p>
+      <div class="page-hero__actions"><a class="button button--primary" href="join">Tell us what interests you</a><a class="button button--secondary" href="leadership">See open roles</a></div>
+    </div>
+  </div>
+</section>
+</Layout>

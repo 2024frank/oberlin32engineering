@@ -86,9 +86,8 @@ Run these checks locally and in CI:
 
 ```bash
 python3 scripts/generate_seed.py
-python3 scripts/build.py
-python3 scripts/check_site.py
-node scripts/test_api.js
+npm ci
+npm test
 ```
 
 Then test:

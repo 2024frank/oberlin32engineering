@@ -51,13 +51,13 @@
     "sort_order": 18
   },
   {
-    "id": "open-projects-coordinator",
+    "id": "open-liaison",
     "name": "Open position",
-    "role": "Projects coordinator",
+    "role": "Liaison",
     "term": "2026–27",
     "class_year": "",
     "major": "Any field",
-    "bio": "Helps teams define scope, identify tools and mentors, schedule check-ins, and publish project updates.",
+    "bio": "Serves as the society liaison with Student Senate, Student Leadership and Involvement, the adviser, and campus partners so chartering and communication stay coordinated.",
     "photo_url": "",
     "linkedin_url": "",
     "email": "",
@@ -68,13 +68,13 @@
     "sort_order": 30
   },
   {
-    "id": "open-community-coordinator",
+    "id": "open-secretary",
     "name": "Open position",
-    "role": "Community and events coordinator",
+    "role": "Secretary",
     "term": "2026–27",
     "class_year": "",
     "major": "Any field",
-    "bio": "Plans welcoming meetings, gathers scheduling and access needs, and coordinates speakers or campus collaborators after details are confirmed.",
+    "bio": "Keeps meeting notes, membership records, attendance, officer lists, and charter documents organized for the society.",
     "photo_url": "",
     "linkedin_url": "",
     "email": "",
@@ -83,22 +83,5 @@
     "open_seat": true,
     "published": true,
     "sort_order": 40
-  },
-  {
-    "id": "open-communications-coordinator",
-    "name": "Open position",
-    "role": "Communications coordinator",
-    "term": "2026–27",
-    "class_year": "",
-    "major": "Any field",
-    "bio": "Maintains clear website and social updates, takes or organizes photographs with consent, and avoids presenting plans as completed work.",
-    "photo_url": "",
-    "linkedin_url": "",
-    "email": "",
-    "current": true,
-    "advisor": false,
-    "open_seat": true,
-    "published": true,
-    "sort_order": 50
   }
 ]

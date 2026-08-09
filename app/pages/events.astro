@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout pageId="events">
+<section class="page-hero">
+  <div class="container page-hero__grid">
+    <div><span class="eyebrow">Events and updates</span><h1>Meetings, build sessions, and 3-2 discussions.</h1><p class="page-hero__lead">Each listing states what is still being planned. Registration opens only after the date, room, organizer, and access information are confirmed.</p><div class="page-hero__actions"><a class="button button--primary" href="join?interest=events">Get event updates</a><a class="button button--secondary" href="#calendar">View event plans</a></div></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-boards-green.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="Green circuit boards laid out ready for a build session"></figure><aside class="page-hero__aside"><strong>Dates and rooms are not confirmed</strong><p>Planned formats may appear below before registration opens.</p></aside></div>
+  </div>
+</section>
+
+<section class="section" id="calendar">
+  <div class="container">
+    <div class="section-heading"><div><span class="eyebrow">Event plans</span><h2>Programs under consideration.</h2></div><p>Read each listing for its current date, room, and registration status.</p></div>
+    <div class="card-grid card-grid--2" id="event-grid" data-event-grid aria-live="polite"><div class="empty-state"><h3>Loading planned events…</h3><p>Fetching the latest event information.</p></div></div>
+  </div>
+</section>
+
+<section class="section section--soft" id="news">
+  <div class="container">
+    <div class="section-heading"><div><span class="eyebrow">Society updates</span><h2>Published notes and decisions.</h2></div><p>Updates record completed actions, confirmed opportunities, and changes to society plans.</p></div>
+    <div class="card-grid" data-news-grid aria-live="polite"><div class="empty-state"><h3>Loading updates…</h3><p>Fetching published updates.</p></div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div><span class="eyebrow">Help shape the calendar</span><h2>Tell us when you can attend.</h2><p>Select the formats you want and give the days and times that work for you.</p></div>
+    <form class="form-shell" data-o32-form data-form-type="event_interest">
+      <h3>Event interest</h3>
+      <div class="form-grid">
+        <label class="form-field"><span>Your name</span><input type="text" name="full_name" maxlength="120" autocomplete="name" required></label>
+        <label class="form-field"><span>Email</span><input type="email" name="email" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
+        <fieldset class="fieldset"><legend>Events you would attend</legend><div class="choice-grid"><label class="choice"><input type="checkbox" name="events" value="community meeting"><span><strong>Community meeting</strong><small>Meet members and discuss priorities</small></span></label><label class="choice"><input type="checkbox" name="events" value="3-2 discussion"><span><strong>3-2 discussion</strong><small>Questions about planning and partner programs</small></span></label><label class="choice"><input type="checkbox" name="events" value="project session"><span><strong>Project session</strong><small>Prototype, test, document, or review work</small></span></label><label class="choice"><input type="checkbox" name="events" value="guest speaker"><span><strong>Guest speaker</strong><small>Alumni, engineers, faculty, or researchers</small></span></label></div></fieldset>
+        <label class="form-field"><span>Best days</span><input type="text" name="best_days" maxlength="200" autocomplete="off" placeholder="Example: Tuesday or Thursday…"></label>
+        <label class="form-field"><span>Best times</span><input type="text" name="best_times" maxlength="200" autocomplete="off" placeholder="Example: after 7 p.m.…"></label>
+        <label class="honeypot" aria-hidden="true">Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label>
+        <div class="form-actions"><button class="button button--primary" type="submit">Send preferences</button><p class="form-status" data-form-status role="status" aria-live="polite"></p></div>
+      </div>
+    </form>
+  </div>
+</section>
+</Layout>

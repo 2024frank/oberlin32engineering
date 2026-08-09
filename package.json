@@ -1,0 +1,26 @@
+{
+  "name": "oberlin-32-engineering-society",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "prepare:public": "tsx tooling/prepare-public.ts",
+    "dev": "npm run prepare:public && astro dev",
+    "build": "npm run prepare:public && astro build",
+    "check": "astro check",
+    "test:api": "node scripts/test_api.js",
+    "test:site": "python3 scripts/check_site.py",
+    "test": "npm run check && npm run build && npm run test:site && npm run test:api"
+  },
+  "dependencies": {
+    "astro": "^7.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

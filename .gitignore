@@ -7,6 +7,8 @@ __pycache__/
 .vscode/
 .idea/
 node_modules/
+.astro/
+public/
 screenshots/
 scrollshots/
 *.log

@@ -6,34 +6,33 @@ The public site is intentionally honest about the organization’s current stage
 
 ## Architecture
 
-- `src/pages/`: page bodies for the public website
-- `src/partials/` and `src/templates/`: shared public layout
-- `src/assets/`: public CSS, JavaScript, logos, and licensed photographs
-- `src/admin/`: the officer portal
+- `app/pages/`: Astro page routes for the public website and officer portal
+- `app/layouts/` and `app/components/`: shared, accessible page chrome
+- `app/scripts/`: strict TypeScript for data access, UI state, forms, public pages, and the officer portal
+- `src/assets/`: design-system CSS and source images copied or bundled by the build
 - `content/`: versioned fallback content and image-license records
 - `api/`: serverless endpoints for public forms, officer invitations, and roles
 - `database/`: Supabase schema, membership tables, migration, and generated seed data
-- `scripts/`: build, seed-generation, and validation tools
+- `tooling/`: TypeScript build preparation; `scripts/` retains backend tests, seed generation, and release validation
 - `site/`: generated deployment output; do not edit it by hand
 
-The site uses plain HTML, CSS, JavaScript, Python build scripts, Supabase, and Resend. There is no package-install step and no frontend framework dependency.
+The frontend uses Astro, strict TypeScript, and CSS. Astro keeps the delivered HTML lightweight while TypeScript owns behavior, API boundaries, async states, and the complete officer portal. Existing Vercel functions, Supabase contracts, and Resend integration remain server-side JavaScript so the backend deployment contract is unchanged.
 
 ## Local build
 
 ```bash
 python3 scripts/generate_seed.py
-python3 scripts/build.py
-python3 scripts/check_site.py
-node scripts/test_api.js
+npm ci
+npm test
 ```
 
 Serve the generated site locally:
 
 ```bash
-python3 scripts/serve.py --port 8080
+npm run dev
 ```
 
-Then open `http://localhost:8080`.
+Then open the Astro URL printed in the terminal (normally `http://localhost:4321`).
 
 ## Environment variables
 

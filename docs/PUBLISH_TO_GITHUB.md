@@ -20,11 +20,11 @@ Use a credential manager, GitHub CLI, or a short-lived fine-grained token. Never
 ## Normal updates
 
 ```bash
-python scripts/build.py
-python scripts/check_site.py
+npm ci
+npm test
 git add .
 git commit -m "Describe the update"
 git push
 ```
 
-A successful push to `main` runs the Pages workflow automatically.
+A successful push to `main` runs the TypeScript checks, production build, release validation, API tests, and Pages workflow automatically.

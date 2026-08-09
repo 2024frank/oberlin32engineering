@@ -1,0 +1,15 @@
+{
+  "extends": "astro/tsconfigs/strictest",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "types": ["astro/client", "node"]
+  },
+  "include": [".astro/types.d.ts", "app/**/*.astro", "app/**/*.ts", "tooling/**/*.ts"],
+  "exclude": ["site", "public", "src", "api", "scripts"]
+}

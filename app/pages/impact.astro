@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout pageId="impact">
+<section class="page-hero">
+  <div class="container page-hero__grid">
+    <div><span class="eyebrow">Founding roadmap</span><h1>Work completed, work underway, and what comes next.</h1><p class="page-hero__lead">The roadmap gives members a short record of the commitments made for the club’s first year.</p></div>
+    <div class="page-hero__side"><figure class="page-hero__figure"><img src="assets/images/photos/circuit-board-dark.jpg" width="1200" height="960" loading="eager" fetchpriority="high" decoding="async" alt="A black circuit board on a dark background"></figure><aside class="page-hero__aside"><strong>Operating stage</strong><p data-impact-stage>Founding stage</p><p>Counts and outcomes will be published only when there is a source and a date.</p></aside></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading"><div><span class="eyebrow">2026–27 roadmap</span><h2>The first-year plan.</h2></div><p>Each item is marked planned, in progress, or complete.</p></div>
+    <div class="roadmap" data-roadmap aria-live="polite"><div class="empty-state"><h3>Loading the founding roadmap…</h3><p>Fetching current milestones.</p></div></div>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-heading"><div><span class="eyebrow">Reporting</span><h2>How progress will be documented.</h2></div><p>Published figures will include a date, definition, and source so members can interpret them correctly.</p></div>
+    <div class="card-grid">
+      <article class="card"><h3>Participation</h3><p>Members who opted in, event attendance, and project-team participation, without exposing private student information.</p></article>
+      <article class="card"><h3>Completed work</h3><p>Projects that reached a documented test or demonstration, plus links to code, files, photos, or build notes where appropriate.</p></article>
+      <article class="card"><h3>Learning and access</h3><p>Workshops delivered, resources published, barriers identified, and changes made to improve participation.</p></article>
+    </div>
+  </div>
+</section>
+</Layout>
