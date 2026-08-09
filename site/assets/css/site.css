@@ -254,7 +254,7 @@ p { color: var(--ink-650); }
 .home-hero__proof span::before { content: "✓"; color: var(--success); font-weight: 900; }
 .hero-card { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .hero-card figure { margin: 0; }
-.hero-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 0; }
+.hero-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 0; height: auto; }
 .hero-card figcaption { display: flex; justify-content: space-between; gap: 1rem; padding: .85rem 0 .15rem; color: var(--ink-500); font-size: .75rem; }
 .hero-card__status { margin-top: .9rem; padding: 0; border-radius: 0; background: none; }
 .hero-card__status strong { display: block; margin-bottom: .25rem; }
@@ -304,12 +304,12 @@ p { color: var(--ink-650); }
 .card__meta-sep { color: var(--line-strong); }
 .card__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .card--feature { padding: 0; overflow: hidden; }
-.card--feature img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.card--feature img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; height: auto; }
 .card--feature .card__body { padding: 1.35rem; }
 .icon-card__icon { width: 2.8rem; height: 2.8rem; display: grid; place-items: center; margin-bottom: 1.25rem; border-radius: .75rem; color: var(--maroon-800); background: var(--maroon-100); font-size: 1.2rem; font-weight: 850; }
 .project-card { display: flex; flex-direction: column; }
 .project-card__image { margin: -1.35rem -1.35rem 1.2rem; overflow: hidden; border-radius: 0; }
-.project-card__image img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.project-card__image img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; height: auto; }
 .project-card__footer { margin-top: auto; }
 .project-card details { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .project-card summary { color: var(--maroon-800); font-weight: 760; cursor: pointer; }
@@ -405,7 +405,7 @@ p { color: var(--ink-650); }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, .8fr); gap: clamp(2rem, 7vw, 7rem); align-items: start; }
 .split--center { align-items: center; }
 .photo-frame { margin: 0; }
-.photo-frame img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 0; }
+.photo-frame img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 0; height: auto; }
 .photo-frame figcaption { margin-top: .55rem; color: var(--ink-500); font-size: .75rem; }
 .founder-note { padding: clamp(1.5rem, 4vw, 2.5rem); border: 1px solid var(--line); border-radius: var(--radius-lg); background: white; box-shadow: var(--shadow-sm); }
 .founder-note blockquote { margin-bottom: 1.25rem; color: var(--ink-950); font-family: inherit; font-size: clamp(1.35rem, 3vw, 2rem); line-height: 1.35; }
@@ -1116,7 +1116,7 @@ p { color: var(--ink-650); }
 }
 .page-hero__grid { align-items: start; }
 @media (max-width: 720px) {
-  .page-hero__figure img { aspect-ratio: 16 / 9; }
+  .page-hero__figure img { aspect-ratio: 16 / 9; height: auto; }
 }
 /* The photo and its note share the hero's right column. Without this wrapper
    they became a third child of a two-column grid and the note wrapped onto a
