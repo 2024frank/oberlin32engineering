@@ -397,16 +397,26 @@ declare global {
     return { apikey: ANON, Authorization: `Bearer ${token || ANON}`, Accept: 'application/json' };
   }
 
+  const SESSION_KEY = 'o32-officer-session';
+
   function saveSession(value: Session | null): void {
     session = value;
-    if (session) sessionStorage.setItem('o32-officer-session', JSON.stringify(session));
-    else sessionStorage.removeItem('o32-officer-session');
+    if (session) {
+      const serialized = JSON.stringify(session);
+      sessionStorage.setItem(SESSION_KEY, serialized);
+      localStorage.setItem(SESSION_KEY, serialized);
+    } else {
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_KEY);
+    }
   }
 
   function loadSession(): Session | null {
     try {
-      const value = asRecord(JSON.parse(sessionStorage.getItem('o32-officer-session') || 'null'));
+      const stored = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+      const value = asRecord(JSON.parse(stored || 'null'));
       if (!valueText(value.access_token) || !Number.isFinite(Number(value.expires_at))) return null;
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
       return value as unknown as Session;
     } catch (_) { return null; }
   }
