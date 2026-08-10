@@ -42,6 +42,41 @@ async function getBroadcast(id) {
   return broadcast;
 }
 
+async function listAudienceMembers() {
+  const [subscribers, submissions] = await Promise.all([
+    L.sb('/rest/v1/subscribers?unsubscribed=eq.false&select=id,email,full_name,source,confirmed,created_at&order=created_at.asc&limit=500'),
+    L.sb('/rest/v1/submissions?type=eq.membership_interest&select=email,payload,created_at&order=created_at.desc&limit=500')
+      .catch((error) => {
+        if (!error.status || error.status >= 500) console.error('[broadcasts] member-role lookup failed', error.message);
+        return [];
+      }),
+  ]);
+
+  const latestInterest = new Map();
+  for (const submission of submissions || []) {
+    const email = String(submission.email || '').toLowerCase();
+    if (!email || latestInterest.has(email)) continue;
+    latestInterest.set(email, submission.payload || {});
+  }
+
+  return (subscribers || []).map((subscriber) => {
+    const email = String(subscriber.email || '').toLowerCase();
+    const payload = latestInterest.get(email) || {};
+    return {
+      id: subscriber.id,
+      email: subscriber.email,
+      full_name: subscriber.full_name || payload.full_name || '',
+      role_interest: payload.role_interest || '',
+      interests: Array.isArray(payload.interests) ? payload.interests : [],
+      academic_interest: payload.academic_interest || '',
+      class_year: payload.class_year || '',
+      source: subscriber.source || '',
+      confirmed: Boolean(subscriber.confirmed),
+      created_at: subscriber.created_at,
+    };
+  });
+}
+
 /* Everyone who has not unsubscribed, minus anyone already delivered to for this
  * broadcast. Ordered by id so the paging is stable across runs. */
 async function pendingRecipients(broadcast, limit) {
@@ -179,8 +214,8 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'GET') {
       const rows = await L.sb('/rest/v1/broadcasts?select=*&order=created_at.desc&limit=100');
-      const subscribers = await L.sb('/rest/v1/subscribers?unsubscribed=eq.false&select=id');
-      return L.send(res, 200, { ok: true, broadcasts: rows || [], audienceSize: (subscribers || []).length });
+      const audienceMembers = await listAudienceMembers();
+      return L.send(res, 200, { ok: true, broadcasts: rows || [], audienceSize: audienceMembers.length, audienceMembers });
     }
 
     if (req.method === 'POST' && !action) {

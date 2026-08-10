@@ -70,11 +70,12 @@ declare global {
   interface MemberRecord extends UnknownRecord { id: string; email: string; full_name?: string; role: string; society_role_id?: string }
   interface InvitationRecord extends UnknownRecord { id: string; email: string; full_name?: string; role_id?: string; status: string; sent_at?: string }
   interface BroadcastRecord extends UnknownRecord { id: string; subject: string; preheader?: string; body_markdown?: string; audience?: string; status: string; scheduled_for?: string; recipient_count: number; last_error?: string; created_at?: string }
+  interface AudienceMemberRecord extends UnknownRecord { id: string; email: string; full_name?: string; role_interest?: string; interests?: string[]; academic_interest?: string; class_year?: string; source?: string; confirmed?: boolean; created_at?: string }
   interface MediaRecord extends UnknownRecord { id: string; public_url: string; file_name: string; title?: string; mime_type?: string; alt_text?: string; created_at?: string; size_bytes?: number; storage_path: string }
   interface SendResponse extends UnknownRecord { sent: number; remaining: number; message: string }
   interface MembersResponse extends UnknownRecord { members: MemberRecord[]; invitations: InvitationRecord[] }
   interface RolesResponse extends UnknownRecord { roles: RoleRecord[] }
-  interface BroadcastsResponse extends UnknownRecord { broadcasts: BroadcastRecord[]; audienceSize: number; broadcast?: BroadcastRecord; message?: string }
+  interface BroadcastsResponse extends UnknownRecord { broadcasts: BroadcastRecord[]; audienceSize: number; audienceMembers?: AudienceMemberRecord[]; broadcast?: BroadcastRecord; message?: string }
 
   const errorMessage = (error: unknown, fallback = 'Something went wrong.'): string => error instanceof Error ? error.message : fallback;
   const asRecord = (value: unknown): UnknownRecord => typeof value === 'object' && value !== null && !Array.isArray(value) ? value as UnknownRecord : {};
@@ -1077,6 +1078,7 @@ declare global {
     if (!viewIsCurrent('broadcasts', epoch)) return;
     const broadcasts = data.broadcasts || [];
     const audienceSize = data.audienceSize || 0;
+    const audienceMembers = data.audienceMembers || [];
     const editing = broadcasts.find((item) => item.id === broadcastDraftId) || null;
     const locked = editing && (editing.status === 'sent' || editing.status === 'sending');
 
@@ -1100,6 +1102,9 @@ declare global {
       </section>
       <section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>All messages</h3><p>${broadcasts.length} total</p></div></header>
         <div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Subject</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>${broadcasts.map((item) => `<tr><td><strong>${escapeHTML(item.subject)}</strong>${item.preheader ? `<br><small>${escapeHTML(item.preheader)}</small>` : ''}</td><td>${escapeHTML(broadcastStatusLabel(item))}</td><td>${escapeHTML(formatDate(item.created_at, true))}</td><td><button class="link-button" type="button" data-open-broadcast="${escapeHTML(item.id)}">Open</button>${item.status === 'draft' || item.status === 'scheduled' ? ` <button class="link-button" type="button" data-delete-broadcast="${escapeHTML(item.id)}">Delete</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="4">No messages yet.</td></tr>'}</tbody></table></div>
+      </section>
+      <section class="panel" style="margin-top:1rem"><header class="panel__head"><div><h3>People on the list</h3><p>Names, emails, and role interests from the <a href="/join" target="_blank" rel="noopener">membership interest form</a>.</p></div></header>
+        <div class="table-wrap" style="border:0;border-radius:0"><table><thead><tr><th>Name</th><th>Email</th><th>Role interest</th><th>Other interests</th><th>Class</th><th>Joined</th></tr></thead><tbody>${audienceMembers.map((member) => `<tr><td>${escapeHTML(member.full_name || 'Not set')}</td><td>${escapeHTML(member.email)}</td><td>${escapeHTML(member.role_interest || 'Member')}</td><td>${escapeHTML(Array.isArray(member.interests) && member.interests.length ? member.interests.join(', ') : '-')}</td><td>${escapeHTML(member.class_year || '-')}</td><td>${escapeHTML(formatDate(member.created_at, true))}</td></tr>`).join('') || '<tr><td colspan="6">No people on the list yet.</td></tr>'}</tbody></table></div>
       </section>`;
 
     const form = $<HTMLFormElement>('[data-broadcast-form]');
