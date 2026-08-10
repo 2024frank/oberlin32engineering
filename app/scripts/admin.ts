@@ -10,7 +10,7 @@ declare global {
   type FieldType = 'text' | 'textarea' | 'checkbox' | 'number' | 'date' | 'datetime-local' | 'array' | 'json' | 'image' | 'select';
   type CollectionKey = 'projects' | 'project_updates' | 'events' | 'leaders' | 'resources' | 'opportunities' | 'news_posts' | 'partner_schools' | 'competition_editions' | 'impact' | 'documents' | 'sponsors';
   type PortalView = CollectionKey | 'dashboard' | 'submissions' | 'site_settings' | 'members' | 'broadcasts' | 'media' | 'content_audit';
-  type AuthView = 'login' | 'recover' | 'password' | 'config';
+  type AuthView = 'boot' | 'login' | 'recover' | 'password' | 'config';
   type HistoryMode = 'push' | 'replace' | 'none';
   type ConfirmAction = () => void | Promise<void>;
 
@@ -113,6 +113,7 @@ declare global {
 
   const authScreen = $<HTMLElement>('[data-auth-screen]')!;
   const portal = $<HTMLElement>('[data-portal]')!;
+  const bootView = $<HTMLElement>('[data-boot-view]')!;
   const loginView = $<HTMLElement>('[data-login-view]')!;
   const recoverView = $<HTMLElement>('[data-recover-view]')!;
   const passwordView = $<HTMLElement>('[data-password-view]')!;
@@ -1324,7 +1325,7 @@ declare global {
     }).catch(() => {});
   }
 
-  function showAuth(view: AuthView): void { loginView.hidden=view!=='login'; recoverView.hidden=view!=='recover'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
+  function showAuth(view: AuthView): void { bootView.hidden=view!=='boot'; loginView.hidden=view!=='login'; recoverView.hidden=view!=='recover'; passwordView.hidden=view!=='password'; configView.hidden=view!=='config'; }
 
   /* The setup link is the whole invitation.
    *
@@ -1380,7 +1381,7 @@ declare global {
   }
 
   async function initialize(): Promise<void> {
-    bindShell(); if(!configured){showAuth('config');return;} showAuth('login');
+    bindShell(); showAuth('boot'); if(!configured){showAuth('config');return;}
     loginForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(loginForm);const message=$<HTMLElement>('[data-login-message]');const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',loginForm);if(!message||!button)return;message.textContent='';try{await runButtonAction(button,'Signing in…',async()=>{await signIn(String(data.get('email')||'').trim(),String(data.get('password')||''));await enterPortal();});}catch(error){saveSession(null);message.textContent=errorMessage(error);}});
     $('[data-request-recover]')?.addEventListener('click',()=>{const target=$<HTMLInputElement>('input[name="email"]',recoverForm);const source=$<HTMLInputElement>('input[name="email"]',loginForm);if(target&&source)target.value=source.value;showAuth('recover');});
     $$('[data-back-login]').forEach((button)=>button.addEventListener('click',()=>showAuth('login')));
@@ -1409,7 +1410,8 @@ declare global {
     passwordForm.addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(passwordForm);const password=String(data.get('password')||'');const confirm=String(data.get('confirm')||'');const message=$<HTMLElement>('[data-password-message]');const button=(event.submitter as HTMLButtonElement|null)||$<HTMLButtonElement>('button[type="submit"]',passwordForm);if(!message||!button)return;if(password.length<10){message.textContent='Use at least 10 characters.';return;}if(password!==confirm){message.textContent='The two passwords do not match.';return;}message.textContent='Saving…';try{await runButtonAction(button,'Saving…',async()=>{await request('/auth/v1/user',{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({password})});await enterPortal();});}catch(error){message.textContent=errorMessage(error);}});
     // A setup or reset link in the URL wins over any stale stored session.
     if (await consumeAuthFragment()) return;
-    session=loadSession(); if(session){try{await ensureSession();await enterPortal();}catch(error){saveSession(null);const message=$('[data-login-message]');if(message)message.textContent=errorMessage(error);}}
+    session=loadSession(); if(session){try{await ensureSession();await enterPortal();return;}catch(error){saveSession(null);showAuth('login');const message=$('[data-login-message]');if(message)message.textContent=errorMessage(error);return;}}
+    showAuth('login');
   }
 
   document.addEventListener('DOMContentLoaded',initialize);

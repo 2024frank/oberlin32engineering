@@ -31,7 +31,14 @@ import '../../../src/assets/css/admin.css';
     </header>
 
     <section class="auth__panel" id="auth-access" aria-label="Officer account access" tabindex="-1">
-      <section class="auth-card" data-login-view aria-labelledby="login-title">
+      <section class="auth-card" data-boot-view aria-labelledby="boot-title">
+        <p class="eyebrow">Officer Portal</p>
+        <h2 id="boot-title">Loading your session</h2>
+        <p>Checking for an active officer session.</p>
+        <div class="loading" role="status" aria-live="polite"><span aria-hidden="true"></span><p>Opening the portal…</p></div>
+      </section>
+
+      <section class="auth-card" data-login-view aria-labelledby="login-title" hidden>
         <p class="eyebrow">Sign In</p>
         <h2 id="login-title">Officer Account</h2>
         <p id="login-description">Use the email address connected to your invitation.</p>
@@ -76,7 +83,7 @@ import '../../../src/assets/css/admin.css';
       </section>
 
       <noscript>
-        <style>.auth-card[data-login-view] { display: none; }</style>
+        <style>.auth-card[data-boot-view], .auth-card[data-login-view] { display: none; }</style>
         <section class="auth-card" aria-labelledby="javascript-title" role="alert">
           <p class="eyebrow">Portal Unavailable</p>
           <h2 id="javascript-title">Enable JavaScript</h2>
