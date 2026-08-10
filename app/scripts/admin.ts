@@ -338,16 +338,54 @@ declare global {
     window.setTimeout(() => node.remove(), 5000);
   }
 
+  /* Never show a raw response body to a person.
+   *
+   * Supabase Auth returns its text under `msg`, which this parser did not
+   * check, so a wrong password fell through every branch and printed the
+   * whole JSON payload on the sign-in screen:
+   * {"code":400,"error_code":"invalid_credentials","msg":"Invalid login
+   * credentials"}. Even the correct field would only have said "Invalid login
+   * credentials", which does not tell an officer whether the account exists,
+   * whether they ever set a password, or what to do next.
+   *
+   * Known failures get a sentence that answers that. Anything unrecognised
+   * falls back to a plain sentence with the status code rather than leaking
+   * the body. */
+  const AUTH_MESSAGES: Record<string, string> = {
+    invalid_credentials: 'That email and password do not match an officer account. If you have never set a password, use “Forgot your password?” below to get a sign-in link.',
+    email_not_confirmed: 'This account has not been confirmed yet. Use the setup link from your invitation email, or request a new one below.',
+    user_not_found: 'There is no officer account for that email address. Ask an administrator to invite you.',
+    weak_password: 'That password is too easy to guess. Use at least 10 characters.',
+    same_password: 'That is already your current password. Choose a different one.',
+    over_email_send_rate_limit: 'Too many emails have been requested for this address in the last hour. Wait a little and try again.',
+    otp_expired: 'That link has expired. Request a new one below.',
+    over_request_rate_limit: 'Too many attempts. Wait a minute and try again.',
+  };
+
+  function humanError(raw: string, status: number): string {
+    let parsed: Record<string, unknown> | null = null;
+    try { parsed = JSON.parse(raw) as Record<string, unknown>; } catch { parsed = null; }
+
+    if (parsed) {
+      const code = String(parsed.error_code ?? parsed.code ?? '');
+      if (AUTH_MESSAGES[code]) return AUTH_MESSAGES[code];
+      const text = parsed.message ?? parsed.msg ?? parsed.error_description ?? parsed.error ?? parsed.hint;
+      // A bare code such as "400" is not a message.
+      if (typeof text === 'string' && text.trim() && !/^\d+$/.test(text.trim())) return text.trim();
+    } else if (raw.trim() && !raw.trim().startsWith('{') && !raw.trim().startsWith('<') && raw.length < 200) {
+      return raw.trim();
+    }
+
+    if (status === 401 || status === 403) return 'You are not signed in, or your session has ended. Sign in again.';
+    if (status === 429) return 'Too many attempts. Wait a minute and try again.';
+    if (status >= 500) return 'The server had a problem. Try again in a moment.';
+    return `Something went wrong (error ${status}). Try again.`;
+  }
+
   async function request<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API}${path}`, options);
     if (!response.ok) {
-      const raw = await response.text();
-      let message = raw;
-      try {
-        const parsed = JSON.parse(raw);
-        message = parsed.message || parsed.error_description || parsed.error || parsed.hint || raw;
-      } catch (_) { /* use raw */ }
-      throw new RequestError(message || `Request failed (${response.status}).`, response.status);
+      throw new RequestError(humanError(await response.text(), response.status), response.status);
     }
     if (response.status === 204 || options.method === 'DELETE') return null as T;
     return ((response.headers.get('content-type') || '').includes('application/json') ? response.json() : response.text()) as Promise<T>;
@@ -455,7 +493,10 @@ declare global {
     if (!accessToken) throw new Error('Sign in required.');
     const response = await fetch(path, { ...options, headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...(options.headers || {}) } });
     const data = asRecord(await response.json().catch(() => ({})));
-    if (!response.ok) throw new Error(valueText(data.error) || `Request failed (${response.status}).`);
+    // Our own endpoints return a readable sentence in `error`; if one is
+    // missing, fall back to the same wording the auth path uses rather than a
+    // bare status line.
+    if (!response.ok) throw new Error(valueText(data.error) || humanError('', response.status));
     return data as T;
   }
 

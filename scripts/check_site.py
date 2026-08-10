@@ -433,6 +433,40 @@ def check_injected_images(errors: list[str]) -> None:
             )
 
 
+def check_error_messages(errors: list[str]) -> None:
+    """The portal must not put a raw response body on screen.
+
+    A wrong password used to print the whole JSON payload on the sign-in
+    screen, because the parser checked message/error_description/error/hint
+    but not Supabase's `msg`, so every branch missed and it fell through to
+    the body. Anyone reading that sees an error, not an explanation.
+
+    The rule is narrow on purpose: a response body may be read freely, it just
+    must not be handed straight to an Error constructor. Checking for
+    response.text() anywhere flagged the success path too.
+    """
+    admin = ROOT / "app" / "scripts" / "admin.ts"
+    if not admin.exists():
+        return
+    source = admin.read_text(encoding="utf-8")
+    if "function humanError(" not in source:
+        fail(errors, "app/scripts/admin.ts no longer maps API failures to human sentences")
+        return
+    # \b after "response.text()" never matches: a closing paren followed by a
+    # comma has no word boundary. Only the bare "raw" alternative needs it.
+    raw_into_error = re.compile(r"new\s+(?:Request)?Error\(\s*(?:await\s+)?(?:response\.text\(\)|raw\b)")
+    for number, line in enumerate(source.splitlines(), 1):
+        stripped = line.strip()
+        if stripped.startswith("*") or stripped.startswith("//"):
+            continue
+        if raw_into_error.search(line):
+            fail(
+                errors,
+                f"app/scripts/admin.ts:{number} passes a raw response body to an Error; "
+                "route it through humanError so a person sees a sentence",
+            )
+
+
 def main() -> int:
     errors: list[str] = []
     if not SITE.exists():
@@ -443,6 +477,7 @@ def main() -> int:
     check_source(errors)
     check_javascript(errors)
     check_injected_images(errors)
+    check_error_messages(errors)
     if errors:
         print(f"Release validation failed with {len(errors)} problem(s):", file=sys.stderr)
         for error in errors:
