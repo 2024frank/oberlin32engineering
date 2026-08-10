@@ -7,14 +7,15 @@
     "class_year": "",
     "major": "Mechanical engineering",
     "bio": "Kwaku is a mechanical engineering student who likes building things and wants to spend more time on hardware. He also works in software and is most interested in projects that use both. He started the society to do that work with other Oberlin students.",
-    "photo_url": "",
+    "photo_url": "https://tpsawnzhhyeddqiefxfp.supabase.co/storage/v1/object/public/society-media/leaders/2026/08/1786136220-kwaku-kusi-appiah.jpg",
     "linkedin_url": "",
-    "email": "",
+    "email": "fkusiapp@oberlin.edu",
     "current": true,
     "advisor": false,
     "open_seat": false,
     "published": true,
-    "sort_order": 10
+    "sort_order": 10,
+    "expected_time": "3–5 hours per week during launch"
   },
   {
     "id": "mahi-zarif",
@@ -23,35 +24,19 @@
     "term": "2026–27",
     "class_year": "Third year",
     "major": "Electrical engineering",
-    "bio": "Mahi is a third-year student studying electrical engineering and the society’s vice president. His role includes member recruitment, project planning, and event coordination.",
-    "photo_url": "",
+    "bio": "Mahi is a third-year student studying electrical engineering and the society's vice president. His role includes member recruitment, project planning, and event coordination.",
+    "photo_url": "https://tpsawnzhhyeddqiefxfp.supabase.co/storage/v1/object/public/society-media/leaders/2026/08/1786109795-mahi-zarif.jpg",
     "linkedin_url": "",
     "email": "",
     "current": true,
     "advisor": false,
     "open_seat": false,
     "published": true,
-    "sort_order": 15
+    "sort_order": 15,
+    "expected_time": ""
   },
   {
-    "id": "mina-stalhamer",
-    "name": "Mina Stalhamer",
-    "role": "Treasurer",
-    "term": "2026–27",
-    "class_year": "Senior",
-    "major": "Physics, Dance, and 3-2 Engineering",
-    "bio": "Mina is a senior pursuing a triple major in physics, dance, and the 3-2 engineering program. She is interested in designing technologies that bridge science and the human body, from biomechanics and medical devices to movement analysis. Outside of academia she is a professional dancer, a gold medalist in figure skating, and an athletic coach. As treasurer she manages the society's budget, funding requests, purchases, and reimbursements.",
-    "photo_url": "",
-    "linkedin_url": "",
-    "email": "",
-    "current": true,
-    "advisor": false,
-    "open_seat": false,
-    "published": true,
-    "sort_order": 18
-  },
-  {
-    "id": "open-liaison",
+    "id": "open-projects-coordinator",
     "name": "Open position",
     "role": "Liaison",
     "term": "2026–27",
@@ -65,10 +50,11 @@
     "advisor": false,
     "open_seat": true,
     "published": true,
-    "sort_order": 30
+    "sort_order": 30,
+    "expected_time": "About 2–3 hours per week"
   },
   {
-    "id": "open-secretary",
+    "id": "open-community-coordinator",
     "name": "Open position",
     "role": "Secretary",
     "term": "2026–27",
@@ -82,6 +68,7 @@
     "advisor": false,
     "open_seat": true,
     "published": true,
-    "sort_order": 40
+    "sort_order": 40,
+    "expected_time": "About 2 hours per week"
   }
 ]

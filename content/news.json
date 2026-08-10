@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "founding-launch",
+    "slug": "founding-launch",
+    "title": "The society is entering its founding stage",
+    "excerpt": "Membership interest, leadership interest, and project proposals are now being collected.",
+    "body": "The public website has been rebuilt around the society’s actual stage. Four project briefs are proposals, the first event is still being scheduled, leadership vacancies are shown as open, and the resource library points to original sources. The next step is to recruit the founding group and confirm the first meeting.",
+    "author": "Frank (Kwaku) Kusi Appiah",
+    "published_at": "2026-08-07",
+    "cover_url": "assets/images/photos/motherboard-macro.jpg",
+    "featured": true,
+    "published": true
+  }
+]
