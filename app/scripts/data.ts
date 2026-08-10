@@ -89,10 +89,24 @@ function normalize(table: PublicTable, value: unknown, options: QueryOptions): u
 
 export async function get(table: PublicTable, options: QueryOptions = {}): Promise<unknown> {
   if (useDatabase) {
-    try {
-      return normalize(table, await fetchSupabase(table, options), options);
-    } catch (error) {
-      console.warn(`[O32] Database unavailable for ${table}; using bundled content.`, error);
+    /* Try twice before giving up on the live data.
+     *
+     * Falling back is a real downgrade: the bundled copy is only as fresh as
+     * the last deploy, so a single dropped request left a visitor reading a
+     * roster that could be weeks out of date, with nothing on screen to say
+     * so. One quick retry covers the common causes -- a flaky connection, a
+     * cold start, a request cancelled during navigation -- without making a
+     * genuine outage noticeably slower. */
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        return normalize(table, await fetchSupabase(table, options), options);
+      } catch (error) {
+        if (attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 400));
+          continue;
+        }
+        console.warn(`[O32] Database unavailable for ${table} after 2 attempts; using bundled content, which is only current as of the last deploy.`, error);
+      }
     }
   }
   return normalize(table, await fetchJson(`/content/${tableFallbacks[table]}`), options);

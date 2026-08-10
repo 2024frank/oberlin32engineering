@@ -53,6 +53,65 @@ async function prepareAssets(): Promise<void> {
   await cp(fromRoot('content'), fromRoot('public', 'content'), { recursive: true });
 }
 
+/* Bake the current database into the bundled fallback at build time.
+ *
+ * The public pages read Supabase directly, so they are live already. The
+ * bundled JSON is what a visitor gets when that request cannot be made -- an
+ * extension blocking the domain, a network that drops it, an outage. Those
+ * files are committed, so without this they show whatever was true at the last
+ * commit: a roster missing an officer, portraits that were uploaded weeks ago
+ * still absent.
+ *
+ * Pulling them fresh on every deploy means the offline copy is never older
+ * than the last release. It uses the anon key, which is public by design and
+ * already shipped in the runtime config, and reads only published rows. A
+ * failure here is not fatal: the committed files remain, and the build says so
+ * rather than shipping something half-written.
+ */
+async function refreshBundledContent(): Promise<void> {
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '').replace(/\/$/, '');
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY ?? '';
+  if (!base || !key) {
+    console.warn('[prepare] no Supabase credentials; keeping the committed fallback content');
+    return;
+  }
+  // Only tables the database fully owns. partner_schools is excluded on
+  // purpose: it has no reviewed_at column, so syncing it would strip the
+  // "checked on" dates the cards show and the release rules require.
+  const tables: Record<string, string> = {
+    leaders: 'leaders.json',
+    projects: 'projects.json',
+    project_updates: 'project_updates.json',
+    events: 'events.json',
+    news_posts: 'news.json',
+    sponsors: 'sponsors.json',
+  };
+  const drop = new Set(['created_at', 'updated_at', 'auth_user_id', 'uploaded_by', 'invited_by']);
+  for (const [table, filename] of Object.entries(tables)) {
+    try {
+      const response = await fetch(`${base}/rest/v1/${table}?select=*&published=eq.true`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const rows = (await response.json()) as Record<string, unknown>[];
+      if (!Array.isArray(rows)) throw new Error('unexpected payload');
+      const cleaned = rows.map((row) =>
+        Object.fromEntries(Object.entries(row).filter(([column]) => !drop.has(column))),
+      );
+      cleaned.sort((a, b) => {
+        const left = typeof a.sort_order === 'number' ? a.sort_order : 999;
+        const right = typeof b.sort_order === 'number' ? b.sort_order : 999;
+        if (left !== right) return left - right;
+        return String(a.title ?? a.name ?? a.id ?? '').localeCompare(String(b.title ?? b.name ?? b.id ?? ''));
+      });
+      await writeFile(fromRoot('public', 'content', filename), `${JSON.stringify(cleaned, null, 2)}\n`, 'utf8');
+      console.log(`[prepare] ${table}: ${cleaned.length} row(s) baked into the fallback`);
+    } catch (error) {
+      console.warn(`[prepare] ${table}: keeping the committed fallback (${(error as Error).message})`);
+    }
+  }
+}
+
 async function writeRuntimeConfig(site: SiteSettings): Promise<void> {
   const portalEnabled = process.env.NEXT_PUBLIC_ENABLE_PORTAL?.trim().toLowerCase() === 'true';
   const useDatabase = portalEnabled && process.env.NEXT_PUBLIC_USE_DATABASE?.trim().toLowerCase() === 'true';
@@ -117,6 +176,8 @@ async function writeStaticFiles(site: SiteSettings): Promise<void> {
 
 async function main(): Promise<void> {
   await prepareAssets();
+  // After the copy, so the fresh rows overwrite the committed ones.
+  await refreshBundledContent();
   const site = await readJson<SiteSettings>(fromRoot('content', 'site.json'));
   await Promise.all([writeRuntimeConfig(site), writeFeed(), writeStaticFiles(site)]);
   console.log('Prepared Astro public assets and runtime configuration.');
