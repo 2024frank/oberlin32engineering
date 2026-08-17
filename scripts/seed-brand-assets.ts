@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { createHash } from 'node:crypto'
+import { createClient } from '@supabase/supabase-js'
+const url=process.env.NEXT_PUBLIC_SUPABASE_URL;const key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new Error('Supabase environment required');const supabase=createClient(url,key,{auth:{persistSession:false}})
+const assets=[['public/brand/oec-horizontal.png','OEC horizontal logo','image/png'],['public/brand/oec-badge.png','OEC badge logo','image/png']] as const
+for(const[file,label,mime]of assets){const bytes=await fs.readFile(path.resolve(file));const hash=createHash('sha256').update(bytes).digest('hex');const{data:existing}=await supabase.from('media').select('id').eq('content_hash',hash).maybeSingle();if(existing){console.log(`${label}: already seeded`);continue}const objectPath=`brand/${path.basename(file)}`;const{error:uploadError}=await supabase.storage.from('oec-media').upload(objectPath,bytes,{contentType:mime,upsert:true});if(uploadError)throw uploadError;const publicUrl=supabase.storage.from('oec-media').getPublicUrl(objectPath).data.publicUrl;const{error}=await supabase.from('media').insert({file_name:path.basename(file),storage_path:objectPath,public_url:publicUrl,mime_type:mime,size_bytes:bytes.length,alt_text:'Oberlin Engineering Club',protected:true,content_hash:hash});if(error)throw error;console.log(`${label}: seeded`)}

@@ -1,0 +1,2 @@
+import type { z } from 'zod'; import type { quoteSchema } from '@/lib/page-builder/schemas/content'
+export function QuoteSection({section}:{section:z.infer<typeof quoteSchema>}){return <section className="cms-section quote-section"><div className="shell"><blockquote>“{section.quote}”</blockquote>{section.attribution&&<p><strong>{section.attribution}</strong>{section.role&&<span> · {section.role}</span>}</p>}</div></section>}

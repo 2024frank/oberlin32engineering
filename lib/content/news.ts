@@ -1,0 +1,3 @@
+import 'server-only';import { createSupabaseServerClient } from '@/lib/supabase/server'
+export async function listPublishedNews(){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return[];const s=await createSupabaseServerClient();const{data,error}=await s.from('news_posts').select('*').eq('publication_state','published').order('published_at',{ascending:false});if(error)throw new Error(`NEWS_LOAD_FAILED:${error.message}`);return data??[]}
+export async function getPublishedNewsPost(slug:string){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return null;const s=await createSupabaseServerClient();const{data,error}=await s.from('news_posts').select('*').eq('slug',slug).eq('publication_state','published').maybeSingle();return error?null:data}

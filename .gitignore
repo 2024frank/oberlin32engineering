@@ -1,18 +1,16 @@
-__pycache__/
-*.py[cod]
-.DS_Store
-.env
-.env.*
-!.env.example
-.vscode/
-.idea/
 node_modules/
-.astro/
-public/
-screenshots/
-scrollshots/
-*.log
+.next/
+coverage/
+playwright-report/
+test-results/
+.env*
+!.env.example
+.vercel/
+.DS_Store
+*.tsbuildinfo
 
-release-previews/
+/artifacts/migration/
 
+# Third-party agent skills installed by tooling; not part of the app.
+.agents/
 .vercel

@@ -1,0 +1,6 @@
+import { NextResponse } from 'next/server'
+import { getCurrentMember } from '@/lib/auth/memberSession'
+import { applyToProject,listMyProjectApplications,reviewProjectApplication } from '@/lib/projects/applications'
+export async function GET(){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});return NextResponse.json({applications:await listMyProjectApplications(member.userId)})}
+export async function POST(request:Request){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});try{return NextResponse.json({ok:true,result:await applyToProject(await request.json())})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'PROJECT_APPLICATION_FAILED'},{status:400})}}
+export async function PUT(request:Request){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});try{return NextResponse.json({ok:true,result:await reviewProjectApplication(await request.json())})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'PROJECT_APPLICATION_REVIEW_FAILED'},{status:400})}}

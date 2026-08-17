@@ -1,111 +1,99 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "python3 scripts/generate_seed.py && npm run check && npm run build && npm run test:site && npm run test:api",
-  "installCommand": "npm ci",
-  "outputDirectory": "site",
-  "framework": null,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 10
-    }
-  },
   "crons": [
     {
-      "path": "/api/dispatch",
-      "schedule": "0 13 * * *"
+      "path": "/api/cron/publish",
+      "schedule": "0 8 * * *"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co; font-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests"
-        }
-      ]
-    },
-    {
       "source": "/admin",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        },
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [
         {
           "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
+          "value": "noindex, nofollow"
         }
       ]
     },
     {
-      "source": "/admin/(.*)",
+      "source": "/member",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        },
         {
           "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
+          "value": "noindex, nofollow"
         }
       ]
     },
     {
-      "source": "/api/(.*)",
+      "source": "/member/:path*",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     },
     {
-      "source": "/content/(.*)",
+      "source": "/member-activate",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, stale-while-revalidate=3600"
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     },
     {
-      "source": "/service-worker.js",
+      "source": "/member-verify",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "no-cache"
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     },
     {
-      "source": "/assets/(.*)",
+      "source": "/staff-activate",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/member-reset-password",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/staff-reset-password",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/auth/email-action",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     }

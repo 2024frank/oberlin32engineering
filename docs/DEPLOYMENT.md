@@ -1,38 +1,104 @@
-# Deployment
+# OEC Deployment Runbook
 
-The Astro production build is generated from `app/`, `src/assets/`, and `content/` into `site/`. Browser behavior and the officer portal are strict TypeScript; existing Vercel API functions remain unchanged.
+## Launch rule
 
-## Build command
+Do not cut production traffic to the Next.js rewrite until migrations, build, RLS checks, and staging E2E acceptance all pass against the same release candidate. The old site remains the rollback target until production verification is complete.
+
+## 1. Provision services
+
+Use one Supabase project per environment, Vercel for the Next.js application, and Resend for transactional mail. Production and staging must not share service-role keys or test accounts.
+
+OEC-generated invitation, verification, magic-link, activation, and recovery emails use Supabase token hashes and first land on `/auth/email-action`. That GET page does not consume the token; the user must press **Continue securely**, which POSTs to `/auth/confirm` so the server can establish the cookie session. This intentionally protects one-time links from email-security prefetch scanners. Keep the Supabase Site URL pointed at the correct environment; `/auth/callback` remains available for future code-based/OAuth flows.
+
+## 2. Configure secrets
+
+Copy `.env.example` and populate the environment-specific values. Never expose `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, migration service keys, `CRON_SECRET`, or `SUBMISSION_SALT` through `NEXT_PUBLIC_*` variables.
+
+Required production values:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `CRON_SECRET`
+- `SUBMISSION_SALT`
+
+## 3. Apply database migrations
+
+Apply `database/migrations/001_core.sql` through `020_first_super_admin_bootstrap.sql` in numeric order to a clean staging database first. Do not skip the RLS or publication-policy migrations.
+
+After applying migrations, run both RLS matrices against the isolated database:
+
+```bash
+psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/rls/role-matrix.sql
+psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/rls/member-staff-project-matrix.sql
+```
+
+The first-Super-Admin bootstrap RPC is executable by the service role only. Normal staff accounts remain invitation-only.
+
+## 4. Create the first Super Admin once
+
+Set:
+
+```bash
+BOOTSTRAP_SUPER_ADMIN_EMAIL=founder@example.edu
+BOOTSTRAP_SUPER_ADMIN_DISPLAY_NAME="Founding Admin"
+```
+
+Then run:
+
+```bash
+npm run bootstrap:super-admin
+```
+
+The command refuses to run if an active Super Admin already exists. If the auth identity does not exist, it creates and confirms it, atomically grants the first `SUPER_ADMIN` role, writes an audit event, and emails a secure password-setup link. Every officer after that must be invited from the Super Admin staff controls.
+
+Remove the bootstrap variables from the deployment environment after the first account is activated. Never use the bootstrap command as a normal officer-management tool.
+
+## 5. Build and verify
+
+From a clean install:
 
 ```bash
 npm ci
-python3 scripts/generate_seed.py
-npm run build
+npm run verify:release
 ```
 
-## Output directory
+`verify:release` runs lint, TypeScript, unit/integration tests, a production build, and Playwright. The staging E2E suite additionally requires the accounts and mailbox variables from `.env.example`.
 
-```text
-site
-```
+The external E2E mailbox service must be staging-only. Its GET endpoint receives `recipient`, `kind`, and `after` query values plus the optional bearer token, and returns `{ "url": "..." }`. Do not add a production API route that exposes authentication links for tests.
 
-## Validation
+## 6. Staging acceptance
 
-```bash
-python3 scripts/generate_seed.py
-npm test
-```
+Verify at minimum:
 
-The repository includes a GitHub Pages workflow for the static public build. The same generated `site/` directory can also be deployed through Vercel. API routes in `api/` require a serverless deployment such as Vercel; GitHub Pages alone cannot execute them. The production custom domain should point to the deployment that serves both the static output and the API routes.
+1. Super Admin can invite an Editor, and the Editor cannot open Super-Admin-only staff controls.
+2. Suspended officers immediately lose portal authorization.
+3. A non-`@oberlin.edu` member request is rejected.
+4. A verified Oberlin member remains blocked until Admin/Super Admin approval and activation.
+5. Member password login, magic-link login, password recovery, and sign-out work.
+6. Private directory fields do not appear in search results or filters.
+7. A member proposal requires Admin/Super Admin approval before a workspace exists.
+8. Team applications and Lead invitations require explicit acceptance before roster membership.
+9. Team-authored updates remain private until Admin/Super Admin review and CMS publication.
+10. Generated photography cannot publish without alt text, provenance, rights where required, and human realism QA.
+11. `/admin`, `/member`, the secure email-action page, activation, verification, and recovery surfaces return `X-Robots-Tag: noindex, nofollow`.
+12. Email-link prefetching does not consume a token until the user presses **Continue securely**.
 
-## Required production variables
+## 7. Production cutover
 
-See `docs/ADMIN_SETUP.md`. The build may run without Supabase public variables, but the officer portal displays a setup state. Public forms require `SUPABASE_URL` and a server-side service key. Email notifications and officer codes also require Resend. Leave `NEXT_PUBLIC_ENABLE_PORTAL=false` and `NEXT_PUBLIC_USE_DATABASE=false` during the first safe cutover. In that state, the browser receives no Supabase public configuration, the public site uses versioned JSON, and forms still use the server endpoint. After the migration, seed, Auth redirects, and first administrator are verified, enable the portal. Turn on database-backed public content only after the seeded records have been checked.
+Deploy the exact staging-accepted commit. Apply the same migration set to production before directing traffic. Run smoke tests for public navigation, public project/event/opportunity/resource pages, officer login, member login, mail delivery, and a draft-preview-publish cycle.
 
-## Domain behavior
+## Rollback
 
-The canonical public URL is `https://www.oberlin32engineeringsociety.com`. Configure the apex domain to redirect to the canonical host. Keep the admin host and any deployment preview hosts in the Supabase redirect allowlist only when needed.
+If a release fails acceptance or production smoke testing:
 
-## After deployment
+1. Restore traffic to the last known-good deployment.
+2. Do not roll database migrations backward destructively while user writes may exist.
+3. Disable affected write paths if necessary.
+4. Export any new production writes before a schema repair.
+5. Fix forward with a new numbered migration and repeat staging acceptance.
 
-Check the homepage, 3-2 guide, project filtering, resource search, all public forms, the 404 page, the officer login, a draft content record, and a published content record. Confirm that `/admin/` is excluded from indexing and that API responses do not expose server configuration.
+Never restore legacy staff profiles as approved staff accounts and never convert legacy submissions into approved members during rollback or migration.

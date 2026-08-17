@@ -1,0 +1,1 @@
+export function AnnouncementBanner({announcement}:{announcement:null|{text:string;href?:string}}){if(!announcement?.text)return null;return <aside className="announcement" aria-label="Announcement">{announcement.href?<a href={announcement.href}>{announcement.text} <span aria-hidden="true">→</span></a>:<span>{announcement.text}</span>}</aside>}

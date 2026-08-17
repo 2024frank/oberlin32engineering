@@ -1,88 +1,45 @@
-# Oberlin 3-2 Engineering Society website
+# Oberlin Engineering Club Platform
 
-This repository contains the public website, officer portal, versioned content, serverless API routes, and Supabase schema for the Oberlin 3-2 Engineering Society.
+A Next.js + Supabase platform for the public Oberlin Engineering Club website, officer CMS, approved-member community portal, and engineering project teams.
 
-The public site is intentionally honest about the organization’s current stage. Proposed projects are labeled as proposals, planned events are not presented as confirmed dates, and the 3-2 guide points students to official sources rather than replacing academic advising.
+## Product surfaces
 
-## Architecture
+- Public site: Home, About, Projects, Events, Opportunities, Resources, 3-2 Pathway, News, Get Involved.
+- Officer portal: `/admin` with Draft → Preview → Publish CMS, structured content managers, Media Library, submissions, member/project review queues, roles, settings, redirects, and audit history.
+- Member portal: `/member` for profiles/privacy, member directory, saved items, applications, proposals, invitations, teams, workspaces, and notifications.
 
-- `app/pages/`: Astro page routes for the public website and officer portal
-- `app/layouts/` and `app/components/`: shared, accessible page chrome
-- `app/scripts/`: strict TypeScript for data access, UI state, forms, public pages, and the officer portal
-- `src/assets/`: design-system CSS and source images copied or bundled by the build
-- `content/`: versioned fallback content and image-license records
-- `api/`: serverless endpoints for public forms, officer invitations, and roles
-- `database/`: Supabase schema, membership tables, migration, and generated seed data
-- `tooling/`: TypeScript build preparation; `scripts/` retains backend tests, seed generation, and release validation
-- `site/`: generated deployment output; do not edit it by hand
+## Stack
 
-The frontend uses Astro, strict TypeScript, and CSS. Astro keeps the delivered HTML lightweight while TypeScript owns behavior, API boundaries, async states, and the complete officer portal. Existing Vercel functions, Supabase contracts, and Resend integration remain server-side JavaScript so the backend deployment contract is unchanged.
+- Next.js App Router / React / TypeScript
+- Supabase Postgres, Auth, Storage, and RLS
+- Resend transactional email
+- Vercel hosting and scheduled publishing cron
+- Vitest + Playwright + SQL RLS acceptance checks
 
-## Local build
+## Local setup
 
 ```bash
-python3 scripts/generate_seed.py
+cp .env.example .env.local
 npm ci
-npm test
-```
-
-Serve the generated site locally:
-
-```bash
 npm run dev
 ```
 
-Then open the Astro URL printed in the terminal (normally `http://localhost:4321`).
+Apply `database/migrations/*.sql` in numeric order to the environment database before running authenticated flows.
 
-## Environment variables
+## Verification
 
-Public build configuration:
+```bash
+npm run verify:release
+```
 
-- `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, or `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_STORAGE_BUCKET` (optional; keep `society-media` unless the storage policies are updated to match)
-- `NEXT_PUBLIC_ENABLE_PORTAL=true` only after the database migration and Auth redirect settings are ready
-- `NEXT_PUBLIC_USE_DATABASE=true` only after the migration and seed have been applied; this flag is ignored while the portal is disabled
+See `docs/DEPLOYMENT.md` for staging/production acceptance, `docs/MIGRATION_RUNBOOK.md` for legacy import, and `docs/ADMIN_OPERATIONS.md` for officer/member operations.
 
-Server-only configuration:
+## First deployment
 
-- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`
-- `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL`
-- `CONTACT_EMAIL` (optional)
-- `SUBMISSION_SALT` (recommended random secret)
+After migrations and mail configuration, create the one-time first Super Admin with:
 
-Never place a service-role key or Resend API key in a public runtime file.
+```bash
+npm run bootstrap:super-admin
+```
 
-## Database setup
-
-Run these files in the Supabase SQL editor in this order:
-
-1. `database/schema.sql`
-2. `database/members.sql`
-3. `database/migrations/2026-08-07-complete-site.sql`
-4. `database/seed.sql`
-
-See `docs/ADMIN_SETUP.md` for the first administrator, Auth settings, storage bucket, and deployment variables.
-
-## Content rules
-
-Every public record must use a status that matches reality:
-
-- **Idea under review**: no project team or commitment exists yet.
-- **Open for interest**: the society is collecting possible participants.
-- **Scoping**: a lead and interested group are defining the work.
-- **Active**: a real team, next task, and meeting rhythm exist.
-- **Complete**: the stated scope was finished and documented.
-
-Do not announce a date before a room and responsible organizer are confirmed. Do not call a conversation a partnership. Do not publish participation counts or impact claims without a record that supports them.
-
-## Photographs and licenses
-
-The versioned photographs currently used by the site are covered by the Unsplash License and are recorded in `content/photo_credits.json`. Keep that record whenever an image is added, replaced, or removed. For photographs of society activities, get permission before publishing identifiable people.
-
-## Forms and privacy
-
-Public forms submit to `/api/submit`. The endpoint validates allowed fields, enforces request-size limits, checks a honeypot and elapsed form time, and stores the submission through a server-only Supabase connection. After the migration is installed, persistent database rate limits use a one-way network-address hash. A compatibility path keeps validated forms working with the previous submissions table during deployment. The browser never receives the service-role key.
-
-See `SECURITY.md` for reporting and operational guidance.
+The bootstrap command is intentionally unusable after an active Super Admin exists. All later officers are email-invited by a Super Admin through the portal.

@@ -1,0 +1,3 @@
+import { CmsPage } from '@/components/public/CmsPage';import { BrandLogo } from '@/components/brand/BrandLogo';import { requireAdmin } from '@/lib/auth/requireRole';import { getDraftPageBySlug } from '@/lib/page-builder/pageService'
+export const metadata={robots:{index:false,follow:false},title:'Draft Preview'}
+export default async function PreviewPage({params}:{params:Promise<{slug:string}>}){await requireAdmin();const page=await getDraftPageBySlug((await params).slug);return <><aside className="preview-bar"><BrandLogo variant="badge"/><div><strong>Draft preview</strong><span>This is not public.</span></div><a href={`/admin/pages/${page.slug}`}>Back to editor</a></aside><CmsPage page={page} mode="preview"/></>}

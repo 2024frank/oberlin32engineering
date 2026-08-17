@@ -1,0 +1,4 @@
+import 'server-only';import { createSupabaseServerClient } from '@/lib/supabase/server'
+export type OpportunityFilters={type?:string;openOnly:boolean}
+export function parseOpportunityFilters(p:URLSearchParams):OpportunityFilters{return{type:p.get('type')||undefined,openOnly:p.get('open')!=='false'}}
+export async function listPublishedOpportunities(filters:OpportunityFilters={openOnly:true}){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return[];const s=await createSupabaseServerClient();let q=s.from('opportunities').select('*').eq('publication_state','published').order('deadline');if(filters.type)q=q.ilike('opportunity_type',filters.type);if(filters.openOnly)q=q.or(`deadline.is.null,deadline.gte.${new Date().toISOString().slice(0,10)}`);const{data,error}=await q;if(error)throw new Error(`OPPORTUNITIES_LOAD_FAILED:${error.message}`);return data??[]}

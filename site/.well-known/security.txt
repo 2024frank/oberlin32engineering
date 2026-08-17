@@ -1,3 +1,0 @@
-Contact: mailto:fkusiapp@oberlin.edu
-Preferred-Languages: en
-Canonical: https://www.oberlin32engineeringsociety.com/.well-known/security.txt

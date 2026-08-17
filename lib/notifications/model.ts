@@ -1,0 +1,2 @@
+export type MemberNotification={id:string;kind:string;title:string;body:string;actionUrl:string|null;readAt:string|null;createdAt:string}
+export function mapNotificationRow(row:{id:unknown;kind:unknown;title:unknown;body:unknown;action_url?:unknown;read_at?:unknown;created_at:unknown}):MemberNotification{return{id:String(row.id),kind:String(row.kind),title:String(row.title),body:String(row.body),actionUrl:row.action_url?String(row.action_url):null,readAt:row.read_at?String(row.read_at):null,createdAt:String(row.created_at)}}

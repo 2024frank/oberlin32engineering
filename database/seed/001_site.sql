@@ -1,0 +1,67 @@
+insert into public.navigation_items(label,destination,visible,sort_order,publication_state) values
+('Home','/',true,10,'published'),('About','/about',true,20,'published'),('Projects','/projects',true,30,'published'),
+('Events','/events',true,40,'published'),('Opportunities','/opportunities',true,50,'published'),('Resources','/resources',true,60,'published'),
+('3-2 Pathway','/pathway',true,70,'published'),('News','/news',true,80,'published'),('Get Involved','/get-involved',true,90,'published')
+on conflict do nothing;
+insert into public.site_settings(key,value,publication_state) values
+('brand',jsonb_build_object('badgeMediaId',null,'horizontalMediaId',null),'published'),
+('contact',jsonb_build_object('email','engineering@oberlin.edu'),'published'),
+('footer',jsonb_build_object('text','Build • Learn • Engineer Together'),'published'),
+('social',jsonb_build_object('instagram','','linkedin','','github',''),'published'),
+('seo',jsonb_build_object('titlePattern','%s · Oberlin Engineering Club','defaultOgMediaId',null),'published'),
+('announcement',jsonb_build_object('enabled',false,'text','','href',''),'published')
+on conflict(key) do update set value=excluded.value;
+
+-- CMS page identities and initial published snapshots. Stable UUIDs make staging/prod seed repeatable.
+insert into public.pages(id,slug) values
+('00000000-0000-4000-8000-000000000101','home'),
+('00000000-0000-4000-8000-000000000102','about'),
+('00000000-0000-4000-8000-000000000103','pathway'),
+('00000000-0000-4000-8000-000000000104','get-involved')
+on conflict(id) do nothing;
+
+insert into public.page_drafts(page_id,title,seo_title,seo_description) values
+('00000000-0000-4000-8000-000000000101','Home','Oberlin Engineering Club','Build, learn, and engineer together at Oberlin.'),
+('00000000-0000-4000-8000-000000000102','About','About OEC','Why the Oberlin Engineering Club exists and how it works.'),
+('00000000-0000-4000-8000-000000000103','3-2 Pathway','3-2 Engineering Pathway','A student-friendly starting point for Oberlin 3-2 planning with official-source links.'),
+('00000000-0000-4000-8000-000000000104','Get Involved','Get Involved','Join the Oberlin Engineering Club.')
+on conflict(page_id) do update set title=excluded.title,seo_title=excluded.seo_title,seo_description=excluded.seo_description;
+
+insert into public.page_sections(page_id,stable_key,section_type,sort_order,is_visible,draft_payload) values
+('00000000-0000-4000-8000-000000000101','hero','hero',10,true,'{"stableKey":"hero","isVisible":true,"type":"hero","layout":"split","eyebrow":"Oberlin Engineering Club","headline":"Build. Learn. Engineer Together.","body":"A student-led home for engineering projects, community, career opportunities, and the 3-2 pathway.","primaryCta":{"label":"Get involved","href":"/get-involved"},"secondaryCta":{"label":"Explore projects","href":"/projects"}}'::jsonb),
+('00000000-0000-4000-8000-000000000101','disciplines','discipline_grid',20,true,'{"stableKey":"disciplines","isVisible":true,"type":"discipline_grid","heading":"Engineering is bigger than one discipline.","items":[{"name":"Mechanical","description":"Design, mechanisms, structures, manufacturing, and physical systems."},{"name":"Electrical","description":"Circuits, embedded systems, controls, power, and sensing."},{"name":"Computing & AI","description":"Software, autonomy, machine learning, and intelligent systems."},{"name":"Chemical & Materials","description":"Chemistry, materials, processes, energy, and experimental design."},{"name":"Robotics","description":"Mechanics, electronics, computation, and control working together."},{"name":"Civil & Environmental","description":"Infrastructure, water, environmental monitoring, and resilient systems."}]}'::jsonb),
+('00000000-0000-4000-8000-000000000101','projects','project_grid',30,true,'{"stableKey":"projects","isVisible":true,"type":"project_grid","eyebrow":"Build with us","heading":"Projects become the center of the community.","limit":6,"featuredOnly":false}'::jsonb),
+('00000000-0000-4000-8000-000000000101','events','event_list',40,true,'{"stableKey":"events","isVisible":true,"type":"event_list","eyebrow":"Meet & learn","heading":"Upcoming events","limit":4,"upcomingOnly":true}'::jsonb),
+('00000000-0000-4000-8000-000000000101','join','cta',50,true,'{"stableKey":"join","isVisible":true,"type":"cta","tone":"cardinal","eyebrow":"OEC","heading":"There is a place for you here.","body":"You do not need to be in the 3-2 program or already know what kind of engineer you want to become.","primaryCta":{"label":"Get involved","href":"/get-involved"},"secondaryCta":{"label":"Learn about the club","href":"/about"}}'::jsonb),
+('00000000-0000-4000-8000-000000000102','hero','hero',10,true,'{"stableKey":"hero","isVisible":true,"type":"hero","layout":"minimal","eyebrow":"About OEC","headline":"One engineering community across Oberlin.","body":"OEC connects students who build, design, experiment, code, research, and explore engineering pathways.","primaryCta":{"label":"Join the club","href":"/get-involved"}}'::jsonb),
+('00000000-0000-4000-8000-000000000102','mission','text_image',20,true,'{"stableKey":"mission","isVisible":true,"type":"text_image","layout":"image_right","eyebrow":"Mission","heading":"Connect people. Build real things. Share the path forward.","body":"Engineering interests at Oberlin span departments and class years. The club creates a common place for project teams, workshops, alumni and mentor connections, career opportunities, and 3-2 planning."}'::jsonb),
+('00000000-0000-4000-8000-000000000102','leaders','leadership_grid',30,true,'{"stableKey":"leaders","isVisible":true,"type":"leadership_grid","eyebrow":"Founding team","heading":"Founding members","limit":8,"currentOnly":true}'::jsonb),
+('00000000-0000-4000-8000-000000000103','hero','hero',10,true,'{"stableKey":"hero","isVisible":true,"type":"hero","layout":"minimal","eyebrow":"3-2 Engineering Pathway","headline":"Plan with good questions and official sources.","body":"OEC keeps 3-2 resources in one place, but the club does not replace academic advising or partner-school requirements.","primaryCta":{"label":"Browse official-source resources","href":"/resources?category=3-2"}}'::jsonb),
+('00000000-0000-4000-8000-000000000103','notice','quote',20,true,'{"stableKey":"notice","isVisible":true,"type":"quote","quote":"Use this page as a planning map, not as an admissions contract. Confirm prerequisites, deadlines, financial aid, degree requirements, and transfer details with Oberlin and the partner engineering school.","attribution":"Oberlin Engineering Club","role":"Student resource notice"}'::jsonb),
+('00000000-0000-4000-8000-000000000103','timeline','project_timeline',30,true,'{"stableKey":"timeline","isVisible":true,"type":"project_timeline","heading":"A simple planning rhythm","items":[{"label":"Year 1","title":"Explore early","body":"Talk with advisers, review math/science sequencing, and understand the combined-plan structure."},{"label":"Year 2","title":"Check requirements","body":"Compare partner-school requirements and make room for prerequisites before deadlines become urgent."},{"label":"Year 3","title":"Apply with verified information","body":"Use current official admissions, financial-aid, and academic sources for every decision."},{"label":"Transfer","title":"Prepare for the engineering school","body":"Confirm housing, financial aid, credit transfer, orientation, and degree expectations directly with the partner institution."}]}'::jsonb)
+on conflict(page_id,stable_key) do update set section_type=excluded.section_type,sort_order=excluded.sort_order,is_visible=excluded.is_visible,draft_payload=excluded.draft_payload;
+
+-- Build initial immutable versions from the seeded drafts.
+insert into public.page_versions(id,page_id,version_number,page_snapshot,sections_snapshot)
+select '10000000-0000-4000-8000-000000000101'::uuid,p.id,1,
+  jsonb_build_object('pageId',p.id,'slug',p.slug,'title',d.title,'seoTitle',d.seo_title,'seoDescription',d.seo_description,'ogMediaId',d.og_media_id),
+  coalesce(jsonb_agg(s.draft_payload order by s.sort_order) filter(where s.id is not null),'[]'::jsonb)
+from public.pages p join public.page_drafts d on d.page_id=p.id left join public.page_sections s on s.page_id=p.id where p.slug='home' group by p.id,p.slug,d.title,d.seo_title,d.seo_description,d.og_media_id
+on conflict(id) do nothing;
+insert into public.page_versions(id,page_id,version_number,page_snapshot,sections_snapshot)
+select '10000000-0000-4000-8000-000000000102'::uuid,p.id,1,jsonb_build_object('pageId',p.id,'slug',p.slug,'title',d.title,'seoTitle',d.seo_title,'seoDescription',d.seo_description,'ogMediaId',d.og_media_id),coalesce(jsonb_agg(s.draft_payload order by s.sort_order) filter(where s.id is not null),'[]'::jsonb) from public.pages p join public.page_drafts d on d.page_id=p.id left join public.page_sections s on s.page_id=p.id where p.slug='about' group by p.id,p.slug,d.title,d.seo_title,d.seo_description,d.og_media_id on conflict(id) do nothing;
+insert into public.page_versions(id,page_id,version_number,page_snapshot,sections_snapshot)
+select '10000000-0000-4000-8000-000000000103'::uuid,p.id,1,jsonb_build_object('pageId',p.id,'slug',p.slug,'title',d.title,'seoTitle',d.seo_title,'seoDescription',d.seo_description,'ogMediaId',d.og_media_id),coalesce(jsonb_agg(s.draft_payload order by s.sort_order) filter(where s.id is not null),'[]'::jsonb) from public.pages p join public.page_drafts d on d.page_id=p.id left join public.page_sections s on s.page_id=p.id where p.slug='pathway' group by p.id,p.slug,d.title,d.seo_title,d.seo_description,d.og_media_id on conflict(id) do nothing;
+insert into public.page_versions(id,page_id,version_number,page_snapshot,sections_snapshot)
+select '10000000-0000-4000-8000-000000000104'::uuid,p.id,1,jsonb_build_object('pageId',p.id,'slug',p.slug,'title',d.title,'seoTitle',d.seo_title,'seoDescription',d.seo_description,'ogMediaId',d.og_media_id),'[]'::jsonb from public.pages p join public.page_drafts d on d.page_id=p.id where p.slug='get-involved' on conflict(id) do nothing;
+update public.pages set published_version_id=case slug when 'home' then '10000000-0000-4000-8000-000000000101'::uuid when 'about' then '10000000-0000-4000-8000-000000000102'::uuid when 'pathway' then '10000000-0000-4000-8000-000000000103'::uuid when 'get-involved' then '10000000-0000-4000-8000-000000000104'::uuid else published_version_id end where slug in ('home','about','pathway','get-involved');
+
+-- legacy_source_id matches the legacy site's partner ids so a legacy import upserts
+-- into these rows (adding descriptions and advising questions) instead of creating a
+-- second copy of every partner school.
+insert into public.partner_schools(id,legacy_source_id,name,short_name,location,official_url,publication_state,sort_order,published_at) values
+('20000000-0000-4000-8000-000000000101','caltech','California Institute of Technology','Caltech','Pasadena, CA','https://www.admissions.caltech.edu/apply/32-program','published',10,now()),
+('20000000-0000-4000-8000-000000000102','case-western','Case Western Reserve University','Case Western Reserve','Cleveland, OH','https://case.edu/engineering/academics/undergraduate/32-program','published',20,now()),
+('20000000-0000-4000-8000-000000000103','columbia','Columbia Engineering','Columbia Engineering','New York, NY','https://undergrad.admissions.columbia.edu/apply/combinedplan','published',30,now()),
+('20000000-0000-4000-8000-000000000104','washu','Washington University in St. Louis','WashU','St. Louis, MO','https://engineering.washu.edu/academics/dual-degree-program/index.html','published',40,now())
+on conflict(id) do update set legacy_source_id=excluded.legacy_source_id,official_url=excluded.official_url,publication_state='published';

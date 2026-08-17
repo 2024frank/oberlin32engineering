@@ -1,0 +1,11 @@
+export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'EDITOR'
+
+export type Permission =
+  | 'MANAGE_USERS'
+  | 'MANAGE_STAFF'
+  | 'REVIEW_MEMBERS'
+  | 'MANAGE_SITE_SETTINGS'
+  | 'EDIT_CONTENT'
+  | 'PUBLISH_CONTENT'
+  | 'REVIEW_SUBMISSIONS'
+  | 'VIEW_AUDIT'

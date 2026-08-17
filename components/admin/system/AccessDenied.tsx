@@ -1,0 +1,2 @@
+import Link from 'next/link'
+export function AccessDenied({title='Super Admin access required',body='Your officer account can view regular club content, but this system control is restricted to Super Admins.'}:{title?:string;body?:string}){return <main className="admin-panel"><section className="access-denied" role="status"><p className="eyebrow">Restricted system control</p><h1>{title}</h1><p>{body}</p><Link href="/admin">Return to dashboard</Link></section></main>}

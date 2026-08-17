@@ -1,0 +1,3 @@
+import { describe,expect,it } from 'vitest'
+import { assertInvitableMember,canManageProjectTeam } from '@/lib/projects/teamPermissions'
+describe('project team permissions',()=>{it('lets a lead manage only a project they lead',()=>{expect(canManageProjectTeam({memberId:'m1',projectId:'p1',leadProjectIds:['p1']})).toBe(true);expect(canManageProjectTeam({memberId:'m1',projectId:'p2',leadProjectIds:['p1']})).toBe(false)});it('requires an active member for an invitation',()=>{expect(()=>assertInvitableMember({status:'ACTIVE'})).not.toThrow();expect(()=>assertInvitableMember({status:'PENDING_APPROVAL'})).toThrow('MEMBER_NOT_INVITABLE')})})

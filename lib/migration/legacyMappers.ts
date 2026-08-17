@@ -1,0 +1,43 @@
+type LegacyRow = Record<string, any>
+
+function text(value: unknown, fallback=''): string { return typeof value === 'string' ? value : fallback }
+function legacySourceId(row: LegacyRow): string { const id=text(row.id).trim(); if(!id) throw new Error('LEGACY_SOURCE_ID_MISSING'); return id }
+function list(value: unknown): string[] { return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [] }
+function publishedState(row: LegacyRow): 'published'|'draft' { return row.published === true || row.publication_state === 'published' ? 'published' : 'draft' }
+function slugify(value: string): string { return value.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || `legacy-${Date.now()}` }
+
+export function mapLegacyProject(row: LegacyRow) {
+  const requested=text(row.status,'proposed').toLowerCase().replaceAll(' ','_')
+  const allowed=new Set(['proposed','open_for_interest','scoping','active','complete'])
+  let status=allowed.has(requested)?requested:'proposed'
+  const leadName=text(row.lead_name??row.leadName)
+  const nextStep=text(row.next_step??row.nextStep)
+  let migration_note=''
+  if(status==='active'&&(!leadName.trim()||!nextStep.trim())){status='scoping';migration_note='Legacy Active status downgraded: lead and next step were not both documented.'}
+  return {legacy_source_id:legacySourceId(row),slug:slugify(text(row.slug)||text(row.title)||text(row.id)),title:text(row.title,'Untitled legacy project'),summary:text(row.summary),problem:text(row.problem),goal:text(row.goal),discipline:text(row.discipline),disciplines:list(row.disciplines),status,recruiting:Boolean(row.recruiting),skills:list(row.skills),lead_name:leadName,next_step:nextStep,team_names:list(row.team_names??row.teamNames),timeline:Array.isArray(row.timeline)?row.timeline:[],legacy_media_id:text(row.cover_media_id??row.coverMediaId),external_url:text(row.external_url??row.externalUrl),github_url:text(row.github_url??row.githubUrl),sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row),migration_note}
+}
+
+export function mapLegacyEvent(row: LegacyRow) { return {legacy_source_id:legacySourceId(row),slug:slugify(text(row.slug)||text(row.title)||text(row.id)),title:text(row.title,'Untitled legacy event'),summary:text(row.summary),description:text(row.description),event_type:text(row.event_type??row.eventType,'Event'),start_at:row.start_at??row.startAt??null,end_at:row.end_at??row.endAt??null,organizer_name:text(row.organizer_name??row.organizerName),location:text(row.location),access_details:text(row.access_details??row.accessDetails),registration_url:text(row.registration_url??row.registrationUrl),legacy_media_id:text(row.cover_media_id??row.coverMediaId),featured:Boolean(row.featured),publication_state:publishedState(row)} }
+export function mapLegacyLeader(row: LegacyRow) { return {legacy_source_id:legacySourceId(row),name:text(row.name,'Unnamed legacy leader'),role_title:text(row.role_title??row.role),term:text(row.term),class_year:text(row.class_year??row.classYear),major:text(row.major),bio:text(row.bio),legacy_media_id:text(row.photo_media_id??row.photoMediaId),linkedin_url:text(row.linkedin_url??row.linkedinUrl),email:text(row.email),current:row.current!==false,advisor:Boolean(row.advisor),open_seat:Boolean(row.open_seat??row.openSeat),sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row)} }
+export function mapLegacyResource(row: LegacyRow) { const sourceName=text(row.source_name??row.source);const explicitlyOfficial=Boolean(row.official_source??row.officialSource);const clubAuthored=/^(oec|oberlin engineering club|3-2 engineering society)$/i.test(sourceName.trim());return {legacy_source_id:legacySourceId(row),title:text(row.title,'Untitled legacy resource'),description:text(row.description),category:text(row.category),source_name:sourceName,url:text(row.url),source_kind:clubAuthored?'club':explicitlyOfficial?'official':'external',official_source:explicitlyOfficial&&!clubAuthored,source_url:text(row.source_url??row.sourceUrl),pinned:Boolean(row.pinned),sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row)} }
+
+export function buildMigrationSafetyReport(input:{submissions?:unknown[];profiles?:unknown[]}) { return {autoApprovedMembers:0,autoApprovedStaff:0,memberCandidatesForReview:input.submissions?.length??0,staffCandidatesForReview:input.profiles?.length??0} }
+
+export function mapLegacyProjectUpdate(row:LegacyRow){return{legacy_source_id:legacySourceId(row),legacy_project_id:text(row.project_id??row.projectId),legacy_media_id:text(row.media_id??row.mediaId),title:text(row.title,'Untitled project update'),summary:text(row.summary),body:text(row.body),milestone:text(row.milestone),update_date:row.update_date??row.updateDate??null,publication_state:publishedState(row)}}
+export function mapLegacyOpportunity(row:LegacyRow){return{legacy_source_id:legacySourceId(row),title:text(row.title,'Untitled opportunity'),organization:text(row.organization),opportunity_type:text(row.opportunity_type??row.opportunityType,'Opportunity'),description:text(row.description),deadline:row.deadline??null,location:text(row.location),url:text(row.url),featured:Boolean(row.featured),publication_state:publishedState(row)}}
+export function mapLegacyNews(row:LegacyRow){return{legacy_source_id:legacySourceId(row),slug:slugify(text(row.slug)||text(row.title)||text(row.id)),title:text(row.title,'Untitled news post'),excerpt:text(row.excerpt),body:text(row.body),author:text(row.author,'Oberlin Engineering Club'),legacy_media_id:text(row.cover_media_id??row.coverMediaId),featured:Boolean(row.featured),publication_state:publishedState(row)}}
+export function mapLegacySponsor(row:LegacyRow){return{legacy_source_id:legacySourceId(row),name:text(row.name,'Unnamed sponsor'),relationship_type:text(row.relationship_type??row.relationshipType,'collaborator'),legacy_media_id:text(row.logo_media_id??row.logoMediaId),url:text(row.url),description:text(row.description),sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row)}}
+export function mapLegacyPartnerSchool(row:LegacyRow){return{legacy_source_id:legacySourceId(row),name:text(row.name,'Unnamed partner school'),short_name:text(row.short_name??row.shortName),location:text(row.location),official_url:text(row.official_url??row.officialUrl),questions:Array.isArray(row.questions)?row.questions:[],sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row)}}
+export function mapLegacyDocument(row:LegacyRow){return{legacy_source_id:legacySourceId(row),title:text(row.title,'Untitled document'),category:text(row.category),description:text(row.description),url:text(row.url),format:text(row.format),sort_order:Number.isInteger(row.sort_order)?row.sort_order:100,publication_state:publishedState(row)}}
+export function mapLegacySubmission(row:LegacyRow){return{legacy_source_id:legacySourceId(row),type:text(row.type,'legacy'),full_name:text(row.full_name??row.name),email:text(row.email),payload:row.payload&&typeof row.payload==='object'?row.payload:{},status:'new' as const,network_hash:null}}
+const mediaSourceTypes=new Set(['original','licensed','generated'])
+export function mapLegacyMedia(row:LegacyRow){
+  // Provenance must survive the import: mislabelling a generated or licensed image as
+  // `original` would strip the rights note and bypass the generated-image QA gate.
+  const requestedSource=text(row.source_type??row.sourceType).toLowerCase()
+  const source_type=(mediaSourceTypes.has(requestedSource)?requestedSource:'original') as 'original'|'licensed'|'generated'
+  const rights_note=text(row.rights_note??row.rightsNote)||'Migrated from the legacy OEC site'
+  return{legacy_source_id:legacySourceId(row),file_name:text(row.file_name??row.fileName,'legacy-media'),storage_path:text(row.storage_path??row.storagePath,`legacy/${text(row.id,'media')}`),public_url:text(row.public_url??row.publicUrl),mime_type:text(row.mime_type??row.mimeType),size_bytes:Number(row.size_bytes??row.sizeBytes??0)||0,alt_text:text(row.alt_text??row.altText),caption:text(row.caption),tags:list(row.tags),width:Number.isFinite(Number(row.width))?Number(row.width):null,height:Number.isFinite(Number(row.height))?Number(row.height):null,protected:Boolean(row.protected),content_hash:text(row.content_hash??row.contentHash)||null,source_type,rights_note,focal_x:null,focal_y:null,
+  // Never inherited from legacy data: a human approves generated imagery in the new Media Library.
+  visual_qa_approved:false}
+}

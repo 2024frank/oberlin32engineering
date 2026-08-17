@@ -1,0 +1,6 @@
+import { NextResponse } from 'next/server'
+import { getCurrentMember } from '@/lib/auth/memberSession'
+import { inviteProjectMember,listMyTeamInvites,respondToTeamInvite } from '@/lib/projects/teamInvites'
+export async function GET(){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});return NextResponse.json({invitations:await listMyTeamInvites(member.userId)})}
+export async function POST(request:Request){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});try{return NextResponse.json({ok:true,result:await inviteProjectMember(await request.json(),member.displayName)})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'PROJECT_INVITE_FAILED'},{status:400})}}
+export async function PUT(request:Request){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});try{return NextResponse.json({ok:true,result:await respondToTeamInvite(await request.json())})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'PROJECT_INVITE_RESPONSE_FAILED'},{status:400})}}

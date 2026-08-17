@@ -1,0 +1,12 @@
+export type ProjectProposalStatus='PENDING'|'APPROVED'|'REJECTED'|'WITHDRAWN'
+export type ProjectProposalDecision='APPROVE'|'REJECT'
+export type ProposalApprovalResult={proposalId?:string;status:'APPROVED';projectId:string;title?:string;email?:string;displayName?:string;membership:{userId:string;role:'LEAD';status:'ACTIVE'}}
+export type ProposalRejectionResult={proposalId:string;status:'REJECTED';title?:string;email?:string;displayName?:string}
+export type ProposalReviewDeps={approve:(input:{proposalId:string;reviewerId:string;feedback?:string})=>Promise<ProposalApprovalResult>;reject:(input:{proposalId:string;reviewerId:string;feedback?:string})=>Promise<ProposalRejectionResult>}
+export type ProjectProposalInput={title:string;problem:string;goal:string;summary:string;disciplines:string[];recruitingNeeds:string;links:string[]}
+
+const clean=(value:unknown,max:number)=>String(value??'').trim().slice(0,max)
+const list=(value:unknown)=>Array.from(new Set((Array.isArray(value)?value:[]).map(item=>clean(item,80)).filter(Boolean))).slice(0,20)
+export function normalizeProjectProposalInput(input:Record<string,unknown>):ProjectProposalInput{const title=clean(input.title,160),problem=clean(input.problem,4000),goal=clean(input.goal,4000);if(title.length<3)throw new Error('PROJECT_TITLE_REQUIRED');if(problem.length<10)throw new Error('PROJECT_PROBLEM_REQUIRED');if(goal.length<10)throw new Error('PROJECT_GOAL_REQUIRED');const links=list(input.links).map(value=>{try{const url=new URL(value);if(!['http:','https:'].includes(url.protocol))throw new Error();return url.toString()}catch{throw new Error('PROJECT_LINK_INVALID')}});return{title,problem,goal,summary:clean(input.summary,1200),disciplines:list(input.disciplines),recruitingNeeds:clean(input.recruitingNeeds,1200),links}}
+export function normalizeProjectProposalDecision(value:string):ProjectProposalDecision{if(value!=='APPROVE'&&value!=='REJECT')throw new Error('PROJECT_PROPOSAL_DECISION_INVALID');return value}
+export async function reviewProjectProposal(input:{proposalId:string;decision:string;reviewerId:string;feedback?:string},deps:ProposalReviewDeps){const decision=normalizeProjectProposalDecision(input.decision);if(!input.proposalId)throw new Error('PROJECT_PROPOSAL_ID_REQUIRED');return decision==='APPROVE'?deps.approve({proposalId:input.proposalId,reviewerId:input.reviewerId,feedback:input.feedback}):deps.reject({proposalId:input.proposalId,reviewerId:input.reviewerId,feedback:input.feedback})}

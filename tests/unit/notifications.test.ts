@@ -1,0 +1,3 @@
+import { describe,expect,it } from 'vitest'
+import { mapNotificationRow } from '@/lib/notifications/model'
+describe('member notifications',()=>{it('does not expose the recipient identity in the client model',()=>{const result:any=mapNotificationRow({id:'n1',kind:'PROJECT_TEAM_INVITE',title:'Invitation',body:'Join a project',action_url:'/member/invitations',read_at:null,created_at:'2026-08-17T00:00:00Z',user_id:'private-user'} as any);expect(result).toEqual({id:'n1',kind:'PROJECT_TEAM_INVITE',title:'Invitation',body:'Join a project',actionUrl:'/member/invitations',readAt:null,createdAt:'2026-08-17T00:00:00Z'});expect(result.userId).toBeUndefined()})})

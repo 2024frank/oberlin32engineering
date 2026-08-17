@@ -1,0 +1,1 @@
+export function ResourceFilters({category}:{category?:string}){return <form className="filter-bar" method="get"><label>Category<input name="category" defaultValue={category??''} placeholder="3-2, career, tools…" /></label><button type="submit">Apply filters</button></form>}

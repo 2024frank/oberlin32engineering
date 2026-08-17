@@ -1,0 +1,5 @@
+import { NextResponse } from 'next/server'
+import { getCurrentMember } from '@/lib/auth/memberSession'
+import { listMemberNotifications,markAllNotificationsRead,markNotificationRead } from '@/lib/notifications/service'
+export async function GET(){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});return NextResponse.json({notifications:await listMemberNotifications()})}
+export async function PUT(request:Request){const member=await getCurrentMember();if(!member)return NextResponse.json({error:'ACTIVE_MEMBER_REQUIRED'},{status:401});try{const body=await request.json();if(body.all===true){await markAllNotificationsRead();return NextResponse.json({ok:true})}const id=String(body.notificationId??'');if(!id)return NextResponse.json({error:'NOTIFICATION_ID_REQUIRED'},{status:400});return NextResponse.json({ok:true,notification:await markNotificationRead(id)})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'NOTIFICATION_UPDATE_FAILED'},{status:400})}}

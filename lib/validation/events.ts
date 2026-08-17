@@ -1,0 +1,5 @@
+import { z } from 'zod'
+export const eventPublishSchema=z.object({
+  slug:z.string().min(1).max(140).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),title:z.string().min(1).max(180),summary:z.string().max(700).default(''),description:z.string().max(8000).default(''),eventType:z.string().max(100).default('Event'),
+  startAt:z.string().datetime({offset:true}).nullable().default(null),endAt:z.string().datetime({offset:true}).nullable().default(null),organizerName:z.string().max(160).default(''),location:z.string().max(300).default(''),accessDetails:z.string().max(500).default(''),registrationUrl:z.string().url().or(z.literal('')).default(''),coverMediaId:z.string().uuid().nullable().default(null),featured:z.boolean().default(false)
+}).superRefine((value,ctx)=>{if(!value.startAt)ctx.addIssue({code:'custom',path:['startAt'],message:'Confirmed start time required'});if(!value.organizerName.trim())ctx.addIssue({code:'custom',path:['organizerName'],message:'Organizer required'});if(!value.location.trim()&&!value.accessDetails.trim())ctx.addIssue({code:'custom',path:['location'],message:'Location or access details required'})})

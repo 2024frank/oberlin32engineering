@@ -1,26 +1,55 @@
 {
-  "name": "oberlin-32-engineering-society",
-  "version": "2.0.0",
+  "name": "oberlin-engineering-club-platform",
+  "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "prepare:public": "tsx tooling/prepare-public.ts",
-    "dev": "npm run prepare:public && astro dev",
-    "build": "npm run prepare:public && astro build",
-    "check": "astro check",
-    "test:api": "node scripts/test_api.js",
-    "test:site": "python3 scripts/check_site.py",
-    "test": "npm run check && npm run build && npm run test:site && npm run test:api"
-  },
-  "dependencies": {
-    "astro": "^7.2.0"
-  },
-  "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@types/node": "^24.3.0",
-    "tsx": "^4.20.4",
-    "typescript": "^5.9.2"
-  },
   "engines": {
     "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "fixture:legacy": "node --experimental-strip-types scripts/build-legacy-fixture.ts",
+    "migrate:legacy": "node --experimental-strip-types scripts/migrate-legacy.ts",
+    "verify:migration": "node --experimental-strip-types scripts/verify-migration.ts",
+    "verify:release": "npm run lint && npm run typecheck && npm run test && npm run build && npm run test:e2e",
+    "bootstrap:super-admin": "node --experimental-strip-types scripts/bootstrap-super-admin.ts"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "^0.34.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "16.2.6",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.55.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

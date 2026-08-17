@@ -1,0 +1,2 @@
+import { z } from 'zod'
+export const opportunityPublishSchema=z.object({title:z.string().min(1).max(180),organization:z.string().max(180).default(''),opportunityType:z.string().min(1).max(100).default('Opportunity'),description:z.string().max(5000).default(''),deadline:z.string().date().nullable().default(null),location:z.string().max(240).default(''),url:z.string().url(),featured:z.boolean().default(false)})

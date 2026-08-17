@@ -1,0 +1,2 @@
+import type { z } from 'zod'; import type { statisticsSchema } from '@/lib/page-builder/schemas/content'
+export function StatisticsSection({section}:{section:z.infer<typeof statisticsSchema>}){return <section className="cms-section cms-section--soft"><div className="shell">{section.heading&&<h2>{section.heading}</h2>}<div className="stats-grid">{section.items.map(item=><div key={`${item.value}-${item.label}`}><strong>{item.value}</strong><span>{item.label}</span>{item.note&&<small>{item.note}</small>}</div>)}</div></div></section>}

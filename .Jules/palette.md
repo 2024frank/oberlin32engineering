@@ -1,3 +1,0 @@
-## 2026-03-01 - Keyboard Navigation in Dynamic Search Dialogs
-**Learning:** For dynamic or modal search results (like custom site indices or autocompletes), users using keyboard navigation should not be trapped or forced to tab through the entire layout to select results. Providing seamless ArrowUp and ArrowDown mapping directly focuses interactive search items, which greatly simplifies screen reader and keyboard-only experiences.
-**Action:** Always intercept arrow key navigation in overlays to navigate linearly through matching result links, looping back to the input element on boundary limits.

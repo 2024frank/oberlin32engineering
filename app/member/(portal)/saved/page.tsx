@@ -1,0 +1,4 @@
+import Link from 'next/link'
+import { requireActiveMember } from '@/lib/auth/memberSession'
+import { listSavedItems } from '@/lib/members/saves'
+export default async function SavedPage(){const member=await requireActiveMember();const items=await listSavedItems(member.userId);return <main className="admin-panel"><div className="admin-page-heading"><div><p className="eyebrow">Your library</p><h1>Saved</h1><p>Projects, opportunities, and resources you want to come back to.</p></div></div>{items.length?<div className="saved-items-list">{items.map(item=><article className="content-card" key={`${item.itemType}:${item.itemId}`}><p className="eyebrow">{item.itemType.toLowerCase()}</p><h2>{item.title}</h2>{item.subtitle&&<p>{item.subtitle}</p>}<Link href={item.href}>Open →</Link></article>)}</div>:<div className="empty-state"><h2>Nothing saved yet.</h2><p>Browse public projects, opportunities, and resources and use Save to build your list.</p></div>}</main>}
