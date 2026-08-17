@@ -69,5 +69,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon|robots.txt|sitemap.xml|brand/).*)']
+  // Skip _next internals and anything with a file extension. Without the extension rule
+  // the officer host rewrote /icon.png to /admin/icon.png, so its browser tab had no logo.
+  matcher: ['/((?!_next|.*\\..*).*)']
 }
