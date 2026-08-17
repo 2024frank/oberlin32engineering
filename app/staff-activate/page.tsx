@@ -12,7 +12,7 @@ export default async function StaffActivatePage({ searchParams }: { searchParams
       <p>Your email identity must match the invitation before administrative access is activated.</p>
     </section>
     <section className="admin-login__card">
-      <BrandLogo />
+      <BrandLogo variant="badge" />
       <h2>Activate account</h2>
       {token ? <StaffActivationForm token={token} /> : <p role="alert">This invitation link is incomplete. Ask the Super Admin for a new invitation.</p>}
     </section>
