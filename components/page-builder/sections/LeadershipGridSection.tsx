@@ -12,7 +12,7 @@ export function LeadershipGridSection({ section, context }: { section: z.infer<t
     const photo = person.photo_media_id ? context?.media?.[person.photo_media_id] : undefined
     return <article className="content-card leader-card" key={person.id}>
       {photo
-        ? <Image className="leader-card__photo" src={photo.url} alt={photo.alt || person.name} width={420} height={420} sizes="(max-width: 900px) 90vw, 30vw" quality={78} />
+        ? <Image className="leader-card__photo" src={photo.url} alt={person.role_title ? `${person.name}, ${person.role_title}` : person.name} width={420} height={420} sizes="(max-width: 900px) 90vw, 30vw" quality={78} />
         : <span className="leader-card__photo leader-card__photo--placeholder" aria-hidden="true">{initials(person.name)}</span>}
       <h3>{person.name}</h3>
       {person.role_title && <p className="eyebrow">{person.role_title}</p>}
