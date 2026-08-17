@@ -29,6 +29,10 @@
 .hero--bg:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(26,26,25,.84) 0 26%,rgba(26,26,25,.52) 58%,rgba(26,26,25,.2) 100%)}
 .hero--bg .hero__inner{grid-template-columns:1fr}
 .hero--bg .hero__copy{max-width:44rem}
+/* Detail pages (news, events, projects) show their cover as the hero background. */
+.detail-hero--image{position:relative;isolation:isolate;overflow:hidden}
+.detail-hero--image .detail-hero__bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.detail-hero--image:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(30,30,29,.86) 0 28%,rgba(30,30,29,.55) 62%,rgba(30,30,29,.25) 100%)}
 .directory-hero--image{position:relative;isolation:isolate;overflow:hidden}
 .directory-hero__bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
 .directory-hero--image:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(30,30,29,.86) 0 28%,rgba(30,30,29,.55) 62%,rgba(30,30,29,.25) 100%)}
