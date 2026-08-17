@@ -29,9 +29,14 @@ const PUBLIC_HOSTS = new Set<string>()
 }
 
 // Paths that must reach their real route on the officer host without gaining an
-// /admin prefix: the portal itself, API handlers, and the auth landing pages that
-// officer invite and password-reset emails point at.
-const PASS_THROUGH = [/^\/admin(?:\/|$)/, /^\/api\//, /^\/auth\//, /^\/staff-activate$/, /^\/staff-reset-password$/]
+// /admin prefix: the portal itself, API handlers, the auth landing pages that officer
+// invite and password-reset emails point at, and draft preview. Preview has to run on
+// this host specifically, because that is where the officer's session cookie lives.
+const PASS_THROUGH = [
+  /^\/admin(?:\/|$)/, /^\/api\//, /^\/auth\//, /^\/preview(?:\/|$)/,
+  /^\/staff-activate$/, /^\/staff-reset-password$/,
+  /^\/member-activate$/, /^\/member-verify$/, /^\/member-reset-password$/
+]
 
 export function middleware(request: NextRequest) {
   const url = new URL(request.url)
