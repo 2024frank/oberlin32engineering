@@ -21,9 +21,9 @@ insert into public.pages(id,slug) values
 on conflict(id) do nothing;
 
 insert into public.page_drafts(page_id,title,seo_title,seo_description) values
-('00000000-0000-4000-8000-000000000101','Home','Oberlin Engineering Club','Build, learn, and engineer together at Oberlin.'),
-('00000000-0000-4000-8000-000000000102','About','About OEC','Why the Oberlin Engineering Club exists and how it works.'),
-('00000000-0000-4000-8000-000000000103','3-2 Pathway','3-2 Engineering Pathway','A student-friendly starting point for Oberlin 3-2 planning with official-source links.'),
+('00000000-0000-4000-8000-000000000101','Home','Oberlin Engineering Club | Oberlin College 3-2 Engineering','A student engineering group at Oberlin College. Projects, events, and guidance on the 3-2 dual-degree pathway with Caltech, Case Western, Columbia and WashU.'),
+('00000000-0000-4000-8000-000000000102','About','About the club','Oberlin has no engineering major, but it has a 3-2 pathway. The club is where students interested in engineering find each other. Meet the founding members.'),
+('00000000-0000-4000-8000-000000000103','3-2 Pathway','3-2 Engineering Pathway','How the 3-2 pathway works: three years at Oberlin, two at Caltech, Case Western, Columbia or WashU, a BA from Oberlin, plus the courses and official sources.'),
 ('00000000-0000-4000-8000-000000000104','Get Involved','Get Involved','Join the Oberlin Engineering Club.')
 on conflict(page_id) do update set title=excluded.title,seo_title=excluded.seo_title,seo_description=excluded.seo_description;
 
