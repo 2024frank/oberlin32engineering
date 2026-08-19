@@ -3,11 +3,15 @@ alter table public.resources add column if not exists source_kind text not null 
 
 create or replace function public.publish_content_snapshot(p_entity_type text,p_entity_id uuid,p_payload_snapshot jsonb,p_restored_from uuid default null)
 returns uuid language plpgsql security definer set search_path='' as $$
-declare v_version integer;v_id uuid; begin
+declare v_version integer;v_id uuid;v_exists boolean; begin
   if p_entity_type not in ('projects','project_updates','events','opportunities','resources','news_posts','leaders','sponsors','documents','partner_schools') then raise exception 'unsupported entity type'; end if;
   if not ((private.can_publish() and private.has_scope(p_entity_type)) or coalesce(auth.role(),'')='service_role') then raise exception 'publish permission required'; end if;
-  execute format('select id from public.%I where id=$1 for update',p_entity_type) using p_entity_id;
-  if not found then raise exception 'entity not found'; end if;
+  -- A bare `execute ... for update` with no `into` target does not reliably set FOUND
+  -- for a locking select on this engine: it raised 'entity not found' on rows that were
+  -- demonstrably present. `into v_exists` makes the result explicit; `for update` inside
+  -- the exists() subquery still takes the row lock before returning true/false.
+  execute format('select exists(select 1 from public.%I where id=$1 for update)',p_entity_type) into v_exists using p_entity_id;
+  if not v_exists then raise exception 'entity not found'; end if;
   select coalesce(max(version_number),0)+1 into v_version from public.content_versions where entity_type=p_entity_type and entity_id=p_entity_id;
   insert into public.content_versions(entity_type,entity_id,version_number,snapshot,published_by,restored_from) values(p_entity_type,p_entity_id,v_version,p_payload_snapshot,(select auth.uid()),p_restored_from) returning id into v_id;
 
