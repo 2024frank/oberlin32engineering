@@ -45,6 +45,41 @@ export async function submitMembershipRequest(input: { email: string; displayNam
   return { requestId: data.id, status: 'REQUESTED' as const }
 }
 
+// Officer-initiated equivalent of submitMembershipRequest(), for a "join the club"
+// public submission an admin has approved. It cannot skip straight to an active member:
+// approve_membership_request hard-requires the applicant to have already proven they own
+// the @oberlin.edu inbox (auth_user_id set by verify_membership_request), which only
+// happens once they click this email's link and sign in. Bypassing that would let anyone
+// type in someone else's Oberlin address on the public form and get them "approved".
+// So this starts the same verified pipeline the self-serve signup uses: create (or reuse)
+// the membership_requests row and send the verification/signup email. The request then
+// surfaces in Member Applications once verified, for the final approval.
+export async function startMembershipFromSubmission(input: { email: string; displayName: string }, origin: string) {
+  const email = input.email.trim().toLowerCase()
+  const displayName = input.displayName.trim() || email
+  if (!isOberlinEmail(email)) throw new Error('OBERLIN_EMAIL_REQUIRED')
+  const supabase = createSupabaseAdminClient()
+  const { data: existing } = await supabase.from('membership_requests').select('id,status').ilike('email', email).maybeSingle()
+
+  if (existing) {
+    if (existing.status === 'APPROVED' || existing.status === 'ACTIVE') throw new Error(`ALREADY_MEMBER:${existing.status}`)
+    if (existing.status === 'REJECTED' || existing.status === 'SUSPENDED') throw new Error(`MEMBERSHIP_REQUEST_BLOCKED:${existing.status}`)
+    // REQUESTED / EMAIL_VERIFIED / PENDING_APPROVAL: resend rather than error, so
+    // re-clicking Approve on the submission just nudges them again.
+    const nextPath = `/member-verify?request=${encodeURIComponent(existing.id)}`
+    const verificationUrl = await generateVerificationLink(email, origin, nextPath)
+    await sendTransactionalEmail({ to: email, message: membershipVerificationEmail({ displayName, verificationUrl }) })
+    return { requestId: existing.id, status: existing.status as MembershipStatus, resent: true }
+  }
+
+  const { data, error } = await supabase.from('membership_requests').insert({ email, display_name: displayName, status: 'REQUESTED' }).select('id').single()
+  if (error || !data) throw new Error(`MEMBERSHIP_REQUEST_CREATE_FAILED:${error?.message ?? 'unknown'}`)
+  const nextPath = `/member-verify?request=${encodeURIComponent(data.id)}`
+  const verificationUrl = await generateVerificationLink(email, origin, nextPath)
+  await sendTransactionalEmail({ to: email, message: membershipVerificationEmail({ displayName, verificationUrl }) })
+  return { requestId: data.id, status: 'REQUESTED' as const, resent: false }
+}
+
 export async function verifyServerMembershipRequest(requestId: string, currentUser: { id: string; email: string }) {
   if (!isOberlinEmail(currentUser.email)) throw new Error('OBERLIN_EMAIL_REQUIRED')
   const supabase = createSupabaseAdminClient()
