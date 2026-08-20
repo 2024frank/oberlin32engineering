@@ -5,6 +5,9 @@ import type { ImageSourceType } from '@/lib/media/imagePolicy'
 import { getImagePublishBlockReason } from '@/lib/media/imagePolicy'
 
 const reasonLabel={IMAGE_ALT_REQUIRED:'Needs alt text',LICENSED_IMAGE_RIGHTS_REQUIRED:'Needs license / rights details',GENERATED_IMAGE_QA_REQUIRED:'Needs human realism QA'} as const
+// Mirrors the server's deleteMedia() guards, so the message here matches why the
+// request will actually fail instead of a generic "Delete failed".
+const deleteErrorLabel:Record<string,string>={PROTECTED_MEDIA:'Protected brand asset — cannot be deleted.',MEDIA_IN_USE:'In use on the site — remove it from every page or record first.',MEDIA_NOT_FOUND:'Already deleted.'}
 
 function MetadataForm({asset,onSaved}:{asset:MediaAsset;onSaved:(asset:MediaAsset)=>void}){
   const[busy,setBusy]=useState(false)
@@ -14,9 +17,27 @@ function MetadataForm({asset,onSaved}:{asset:MediaAsset;onSaved:(asset:MediaAsse
   return <form className="media-metadata-form" onSubmit={save}><div className="media-status-row"><span className={`media-status ${blocked?'is-blocked':'is-ready'}`}>{blocked?reasonLabel[blocked]:'Publish-ready'}</span><span>{asset.sourceType}</span></div><label>Alt text<input name="altText" defaultValue={asset.altText} placeholder="Describe what matters in the image" /></label><label>Caption / credit<input name="caption" defaultValue={asset.caption} /></label><label>Tags<input name="tags" defaultValue={asset.tags.join(', ')} placeholder="robotics, workshop, students" /></label><label>Source<select name="sourceType" defaultValue={asset.sourceType}><option value="original">Original / OEC photo</option><option value="licensed">Licensed photo</option><option value="generated">Generated photo</option></select></label><label>Rights / provenance<textarea name="rightsNote" rows={2} defaultValue={asset.rightsNote??''} placeholder="Photographer, license/source, or generation provenance" /></label><div className="form-grid"><label>Focal X<input name="focalX" type="number" min="0" max="1" step="0.05" defaultValue={asset.focalX??''} /></label><label>Focal Y<input name="focalY" type="number" min="0" max="1" step="0.05" defaultValue={asset.focalY??''} /></label></div>{asset.sourceType==='generated'&&<label className="inline-check media-qa-check"><input name="visualQaApproved" type="checkbox" defaultChecked={asset.visualQaApproved}/>Human visual QA approved</label>}<p className="media-qa-note">For generated photography, inspect hands, tools, text, lighting, reflections, proportions, and textures at full size. Reject anything plastic, distorted, or obviously synthetic.</p><button type="submit" disabled={busy}>{busy?'Saving…':'Save metadata'}</button>{message&&<small role="status">{message}</small>}</form>
 }
 
+function DeleteButton({asset,onDeleted}:{asset:MediaAsset;onDeleted:(id:string)=>void}){
+  const[confirming,setConfirming]=useState(false)
+  const[busy,setBusy]=useState(false)
+  const[error,setError]=useState('')
+  if(asset.protected)return null
+  async function confirm(){
+    setBusy(true);setError('')
+    const response=await fetch(`/api/media?id=${encodeURIComponent(asset.id)}`,{method:'DELETE'})
+    if(response.ok){onDeleted(asset.id);return}
+    const body=await response.json().catch(()=>({}))
+    setError(deleteErrorLabel[body.error]??body.error??'Delete failed.')
+    setBusy(false);setConfirming(false)
+  }
+  if(!confirming)return <button type="button" className="media-delete-trigger" onClick={()=>setConfirming(true)}>Delete</button>
+  return <span className="media-delete-confirm"><span>Delete this file?</span><button type="button" className="media-delete-confirm-yes" disabled={busy} onClick={confirm}>{busy?'Deleting…':'Yes, delete'}</button><button type="button" onClick={()=>setConfirming(false)} disabled={busy}>Cancel</button>{error&&<small role="alert">{error}</small>}</span>
+}
+
 export function MediaLibrary({initialAssets}:{initialAssets:MediaAsset[]}){
   const[assets,setAssets]=useState(initialAssets);const[busy,setBusy]=useState(false);const[message,setMessage]=useState('')
   async function upload(e:FormEvent<HTMLFormElement>){e.preventDefault();const form=e.currentTarget;const fd=new FormData(form);setBusy(true);setMessage('');const res=await fetch('/api/media',{method:'POST',body:fd});const body=await res.json();if(res.ok){setAssets(current=>[body.item,...current]);form.reset();setMessage('Uploaded. Add metadata before using the asset publicly.')}else setMessage(body.error??'Upload failed.');setBusy(false)}
   function replace(updated:MediaAsset){setAssets(current=>current.map(asset=>asset.id===updated.id?updated:asset))}
-  return <div className="admin-panel"><div className="admin-panel__heading"><div><p className="eyebrow">Media Library</p><h1>Images & documents</h1><p>Upload once, record provenance, approve realistic generated photography, and reuse assets across the site.</p></div><form className="media-upload-form" onSubmit={upload}><label>Source<select name="sourceType" defaultValue="original"><option value="original">Original / OEC</option><option value="licensed">Licensed</option><option value="generated">Generated</option></select></label><label className="upload-button">{busy?'Uploading…':'Upload media'}<input name="file" type="file" accept="image/*,application/pdf" disabled={busy} required onChange={e=>e.currentTarget.form?.requestSubmit()} /></label></form></div>{message&&<p role="status">{message}</p>}<div className="admin-media-grid">{assets.map(asset=><article key={asset.id}>{asset.mimeType.startsWith('image/')?<img src={asset.publicUrl} alt={asset.altText}/>:<div className="file-tile">PDF</div>}<div className="media-card-heading"><strong>{asset.fileName}</strong><small>{asset.protected?'Protected brand asset':asset.mimeType}</small></div>{asset.mimeType.startsWith('image/')&&<MetadataForm key={`${asset.id}:${asset.sourceType}:${asset.visualQaApproved}`} asset={asset} onSaved={replace}/>}</article>)}</div></div>
+  function remove(id:string){setAssets(current=>current.filter(asset=>asset.id!==id))}
+  return <div className="admin-panel"><div className="admin-panel__heading"><div><p className="eyebrow">Media Library</p><h1>Images & documents</h1><p>Upload once, record provenance, approve realistic generated photography, and reuse assets across the site.</p></div><form className="media-upload-form" onSubmit={upload}><label>Source<select name="sourceType" defaultValue="original"><option value="original">Original / OEC</option><option value="licensed">Licensed</option><option value="generated">Generated</option></select></label><label className="upload-button">{busy?'Uploading…':'Upload media'}<input name="file" type="file" accept="image/*,application/pdf" disabled={busy} required onChange={e=>e.currentTarget.form?.requestSubmit()} /></label></form></div>{message&&<p role="status">{message}</p>}<div className="admin-media-grid">{assets.map(asset=><article key={asset.id}>{asset.mimeType.startsWith('image/')?<img src={asset.publicUrl} alt={asset.altText}/>:<div className="file-tile">PDF</div>}<div className="media-card-heading"><strong>{asset.fileName}</strong><small>{asset.protected?'Protected brand asset':asset.mimeType}</small><DeleteButton asset={asset} onDeleted={remove}/></div>{asset.mimeType.startsWith('image/')&&<MetadataForm key={`${asset.id}:${asset.sourceType}:${asset.visualQaApproved}`} asset={asset} onSaved={replace}/>}</article>)}</div></div>
 }
