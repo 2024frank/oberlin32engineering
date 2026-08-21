@@ -239,3 +239,74 @@ body{font-family:var(--font-body-stack)}
 .gallery-grid img,.media-placeholder{border-radius:6px}
 .media-frame{border-radius:8px}
 .hero__media{border-radius:8px;box-shadow:none;border:1px solid rgba(41,41,40,.14)}
+
+/* ============================================================
+   Officer portal pass: same drawing-sheet language as the public
+   site — Fraunces headings, mono labels, machined controls,
+   hairline cards — plus friendlier hit targets and hover states.
+   ============================================================ */
+
+/* Headings across the portal move to the display face. */
+.admin-panel h1,.admin-page-heading h1,.admin-card__heading h2,.ui-dialog__head h2,.settings-form>section h2,.admin-login__intro h1,.admin-login__card h2,.member-card h2,.member-profile-form h2,.workspace-section h2,.proposal-page-grid>section>h2,.member-review-list .content-card h2,.dashboard-cards strong,.member-dashboard-cards strong,.admin-table-empty h2{font-family:var(--font-display-stack)}
+.admin-panel h1,.admin-page-heading h1{font-weight:560;letter-spacing:-.015em}
+.admin-panel__heading p,.admin-page-heading p{max-width:56rem}
+
+/* Sidebar: ink ground, mono group labels, gold-ticked active state,
+   larger targets. Applies to officer and member sidebars alike. */
+.admin-sidebar,.member-sidebar{background:var(--oec-ink);padding:1.4rem 1.1rem}
+.admin-sidebar nav p{font-family:var(--font-mono-stack);font-weight:500;font-size:.64rem;letter-spacing:.16em;color:var(--oec-gold);margin:.4rem .7rem .25rem}
+.admin-sidebar nav a,.member-sidebar nav a{padding:.7rem .75rem;border-radius:4px;font-size:.92rem;font-weight:600;color:#e6e0d7;position:relative}
+.admin-sidebar nav a:hover,.member-sidebar nav a:hover{background:rgba(252,247,241,.07);color:#fff}
+.admin-sidebar nav a[aria-current=page],.member-sidebar nav a[aria-current=page]{background:var(--oec-cardinal);color:#fff}
+.admin-sidebar nav a[aria-current=page]::before,.member-sidebar nav a[aria-current=page]::before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--oec-gold);border-radius:0 2px 2px 0}
+.admin-sidebar__brand small,.member-sidebar__brand small{font-family:var(--font-mono-stack);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase}
+.admin-sidebar__user small{font-family:var(--font-mono-stack);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase}
+
+/* Topbar: quieter chrome, mono wayfinding. */
+.admin-topbar,.member-shell__topbar{background:rgba(252,247,241,.96)}
+.admin-topbar small,.member-shell__topbar small{font-family:var(--font-mono-stack);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase}
+.admin-topbar a{font-family:var(--font-mono-stack);font-weight:600;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* Dashboard cards read like instrument readouts, as on the public site. */
+.dashboard-cards article,.member-dashboard-cards a{border-radius:6px;box-shadow:none;position:relative;padding:1.3rem 1.4rem}
+.dashboard-cards article::before,.member-dashboard-cards a::before{content:"";position:absolute;top:-1px;left:0;width:2.2rem;height:2px;background:var(--oec-gold)}
+.dashboard-cards article>span,.member-dashboard-cards span{font-family:var(--font-mono-stack);font-weight:500;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase}
+.dashboard-cards strong,.member-dashboard-cards strong{font-weight:560}
+.member-dashboard-cards a:hover{border-color:rgba(193,138,34,.65)}
+
+/* Panels, lists, and dialogs: hairlines and consistent radii. */
+.admin-card,.admin-table-wrap,.manager-list,.user-list,.redirect-list,.submission-inbox>article,.page-meta-editor,.section-row,.workspace-section,.notification-list article,.audit-list details{border-radius:6px;box-shadow:none}
+.ui-dialog{border-radius:8px}
+.toast{border-radius:5px}
+
+/* Tables: mono headers, calmer rows, hover feedback. */
+.admin-table th{font-family:var(--font-mono-stack);font-weight:500;font-size:.66rem;letter-spacing:.12em;color:#8a8378}
+.admin-table td{padding:.95rem 1rem}
+.admin-table tbody tr:hover{background:#faf6ef}
+.admin-table td:before{font-family:var(--font-mono-stack);font-weight:500;letter-spacing:.1em}
+
+/* Machined controls everywhere: mono, squared, obvious hierarchy. */
+.editor-actions button,.system-actions button,.page-editor-actions a,.page-editor-actions button,.page-builder-head button,.manager-list button,.submission-inbox button,.nav-manager button,.user-list button,.redirect-list button,.audit-filters button,.upload-button,.workspace-roster button,.notification-list button,.admin-login__card button,.member-auth-grid .settings-form button,.member-activation-card .settings-form button,.member-profile-actions button,.member-directory-filters button,.project-proposal-form button,.workspace-inline-form button,.filter-bar button{font-family:var(--font-mono-stack);font-weight:600;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;border-radius:3px}
+.editor-actions button,.system-actions button,.manager-list button,.submission-inbox button,.nav-manager button,.user-list button,.redirect-list button,.audit-filters button,.workspace-roster button,.notification-list button,.page-editor-actions a,.page-editor-actions button,.page-builder-head button{transition:border-color .15s ease,color .15s ease}
+.editor-actions button:hover,.system-actions button:hover,.manager-list button:hover,.submission-inbox button:hover,.nav-manager button:hover,.user-list button:hover,.redirect-list button:hover,.workspace-roster button:hover,.notification-list button:hover,.page-editor-actions a:hover,.page-editor-actions button:hover,.page-builder-head button:hover{border-color:var(--oec-cardinal);color:var(--oec-cardinal)}
+.editor-actions .button--cardinal:hover,.system-actions .button--cardinal:hover,.page-editor-actions .button--cardinal:hover{color:#fff;background:var(--oec-cardinal-dark);border-color:var(--oec-cardinal-dark)}
+.quick-actions a{border-radius:4px;font-family:var(--font-mono-stack);font-weight:600;font-size:.76rem;letter-spacing:.07em;text-transform:uppercase;transition:border-color .15s ease,color .15s ease}
+
+/* Inputs: consistent squared fields with comfortable padding. */
+.editor-form input,.editor-form select,.editor-form textarea,.section-editor-fields input,.section-editor-fields textarea,.section-editor-fields select,.page-meta-editor input,.page-meta-editor textarea,.nav-manager input,.settings-form input,.settings-form textarea,.settings-form select,.audit-filters input,.filter-bar input,.filter-bar select,.admin-login__card input,.member-profile-form input,.member-profile-form textarea,.member-profile-form select,.member-directory-filters input,.member-directory-filters select,.media-metadata-form input,.media-metadata-form select,.media-metadata-form textarea{border-radius:4px}
+.editor-form label,.section-editor-fields label,.page-meta-editor label,.settings-form label,.filter-bar label,.audit-filters label,.member-directory-filters label{font-weight:650}
+.filter-bar label,.audit-filters label,.member-directory-filters label{font-family:var(--font-mono-stack);font-weight:500;font-size:.64rem;letter-spacing:.12em}
+
+/* Pills and statuses: squared mono chips, colors kept for meaning. */
+.role-pill,.media-status,.proposal-review-grid h3{font-family:var(--font-mono-stack)}
+.role-pill,.media-status{border-radius:3px;font-weight:600;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+
+/* Activity feed and small labels join the annotation voice. */
+.activity-feed li>span,.dashboard-cards article>span,.media-status-row,.member-card__tags>span{font-family:var(--font-mono-stack);font-weight:500;letter-spacing:.1em}
+.preview-bar span{font-family:var(--font-mono-stack);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase}
+.preview-bar a{font-family:var(--font-mono-stack);font-weight:600;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* Login screens match the public identity. */
+.admin-login__intro h1{font-weight:560;letter-spacing:-.02em}
+.admin-login__card label{font-weight:650}
+.admin-login__card button{padding:.95rem 1rem}
