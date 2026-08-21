@@ -22,5 +22,7 @@ export function HeroSection({ section, context }: { section: z.infer<typeof hero
       </div>
       {!media && <div className="hero__mark" aria-hidden="true"><span>OEC</span><i /></div>}
     </div>
+    {/* Drafting-sheet corner annotation: the club's real coordinates. */}
+    {media && <p className="hero__annotation" aria-hidden="true"><span>41.29° N / 82.22° W</span><span>Oberlin, Ohio</span></p>}
   </section>
 }
